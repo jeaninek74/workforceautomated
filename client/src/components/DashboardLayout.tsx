@@ -21,15 +21,19 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Bot, Users, TrendingUp, Shield, CreditCard } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Bot, label: "Agents", path: "/agents" },
+  { icon: Users, label: "Teams", path: "/teams" },
+  { icon: TrendingUp, label: "Risk Monitor", path: "/monitor" },
+  { icon: Shield, label: "Audit Log", path: "/audit" },
+  { icon: CreditCard, label: "Billing", path: "/billing" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -170,8 +174,11 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold tracking-tight truncate">
-                    Navigation
+                  <div className="w-5 h-5 rounded bg-primary flex items-center justify-center shrink-0">
+                    <Bot className="w-3 h-3 text-primary-foreground" />
+                  </div>
+                  <span className="font-semibold tracking-tight truncate text-sm">
+                    WorkforceAutomated
                   </span>
                 </div>
               ) : null}
