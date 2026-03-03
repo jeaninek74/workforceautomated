@@ -74,3 +74,18 @@ authRouter.put("/profile", authenticate, async (req: AuthRequest, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// Admin-only: promote user to admin (only works if already admin or first user)
+authRouter.post("/promote-admin", authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { userId: targetUserId } = z.object({ userId: z.number() }).parse(req.body);
+    // Only admins or user promoting themselves (first user) can do this
+    if (req.user!.role !== 'admin' && req.user!.id !== targetUserId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    await db.update(users).set({ role: 'admin' as any, updatedAt: new Date() }).where(eq(users.id, targetUserId));
+    res.json({ success: true, message: "User promoted to admin" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
