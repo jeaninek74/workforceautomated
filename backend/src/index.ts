@@ -75,6 +75,7 @@ app.get("/api/health", (_req, res) => {
 
 // Serve frontend static files in production
 if (process.env.NODE_ENV === "production") {
+  // nixpacks copies frontend/dist -> backend/dist/public during build
   const frontendPath = path.join(__dirname, "public");
   app.use(express.static(frontendPath));
   app.get("*", (_req, res) => {
