@@ -65,34 +65,40 @@ const TESTIMONIALS = [
 
 const EXECUTION_TOOLS = [
   {
-    icon: "🗄️",
-    title: "Databases & Spreadsheets",
-    desc: "Agents read from and write to your databases, spreadsheets, and data warehouses. They can query records, update fields, and generate reports — just like a human analyst would."
+    icon: "📄",
+    title: "Upload Files Directly",
+    desc: "Upload PDFs, CSVs, Excel spreadsheets, Word documents, or plain text. The agent reads the actual content and reasons over it — no manual copy-paste required.",
+    live: true
   },
   {
     icon: "🔌",
-    title: "APIs & Web Services",
-    desc: "Agents connect to any REST API or web service you authorize. Salesforce, HubSpot, QuickBooks, Slack, Jira, ServiceNow — if it has an API, the agent can use it."
-  },
-  {
-    icon: "📧",
-    title: "Email & Messaging",
-    desc: "Agents can read incoming emails, send notifications, post to Slack channels, and trigger alerts — all within the permission boundaries you define."
+    title: "REST API Connector",
+    desc: "Connect to any REST API endpoint using bearer tokens, API keys, or basic auth. The agent fetches live data at execution time and incorporates it into its analysis.",
+    live: true
   },
   {
     icon: "📁",
-    title: "Files & Documents",
-    desc: "Agents read PDFs, Word docs, CSVs, and other files from your connected storage (Google Drive, SharePoint, S3). They extract data, summarize content, and generate new documents."
+    title: "Google Drive",
+    desc: "Connect your Google Drive folder. The agent lists and reads files automatically at execution time — no manual upload needed.",
+    live: true
   },
   {
-    icon: "🌐",
-    title: "Web & Public Data",
-    desc: "Agents can retrieve publicly available information — pricing data, regulatory updates, news feeds — and incorporate it into their analysis and reports."
+    icon: "💬",
+    title: "Slack",
+    desc: "Connect a Slack channel. The agent reads recent messages and can post results and alerts back to your team automatically.",
+    live: true
   },
   {
-    icon: "🔗",
-    title: "Webhooks & Triggers",
-    desc: "Agents can be triggered by external events — a new form submission, a calendar event, a payment received — and respond automatically according to your defined rules."
+    icon: "🪝",
+    title: "Webhooks",
+    desc: "Trigger agents automatically when external events occur — a new form submission, a payment received, or a system alert.",
+    live: true
+  },
+  {
+    icon: "🗄️",
+    title: "Database Connector",
+    desc: "Direct database integration — query your PostgreSQL, MySQL, or other databases. On the roadmap for the next release.",
+    live: false
   }
 ];
 
@@ -293,14 +299,19 @@ export default function Landing() {
             </div>
           </div>
 
-          <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>What Systems Can Agents Connect To?</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>How Agents Get the Work Done</h3>
           <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 32, fontSize: 14 }}>
-            You grant access to the systems you choose. The agent only uses what you have explicitly authorized.
+            Two ways to give an agent access to data: upload files directly, or connect a live system. You choose what each agent can see.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {EXECUTION_TOOLS.map((tool) => (
-              <div key={tool.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 22 }}>
-                <div style={{ fontSize: 28, marginBottom: 10 }}>{tool.icon}</div>
+              <div key={tool.title} style={{ background: "#0a0a0f", border: `1px solid ${(tool as any).live ? "#2a2a4e" : "#1e1e2e"}`, borderRadius: 10, padding: 22, opacity: (tool as any).live ? 1 : 0.7 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ fontSize: 28 }}>{tool.icon}</div>
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: (tool as any).live ? "#1a2e1a" : "#1e1e2e", color: (tool as any).live ? "#4ade80" : "#6060a0", border: `1px solid ${(tool as any).live ? "#2a4a2a" : "#2a2a3e"}` }}>
+                    {(tool as any).live ? "Live" : "Roadmap"}
+                  </span>
+                </div>
                 <h4 style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{tool.title}</h4>
                 <p style={{ fontSize: 13, color: "#6060a0", lineHeight: 1.7, margin: 0 }}>{tool.desc}</p>
               </div>
@@ -312,7 +323,10 @@ export default function Landing() {
             <div>
               <h4 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 8 }}>How Access Works</h4>
               <p style={{ fontSize: 14, color: "#8080a0", lineHeight: 1.8, margin: 0 }}>
-                You connect your systems once through the WorkforceAutomated dashboard — using API keys, OAuth, or database credentials. Each agent is then assigned only the permissions it needs for its specific job. An invoice review agent can read the invoice database but cannot touch payroll. A lead scoring agent can update CRM records but cannot send emails. You define the boundaries. The agent stays within them. Every action is recorded in a tamper-proof audit log.
+                <strong style={{ color: "#c0c0d8" }}>Option 1 — You bring the data to the agent:</strong> Upload a file (PDF, CSV, Excel, Word) directly in the execution console. The agent reads the actual content and reasons over it using AI. Great for one-off tasks or when you want full control over what the agent sees.
+              </p>
+              <p style={{ fontSize: 14, color: "#8080a0", lineHeight: 1.8, margin: "12px 0 0" }}>
+                <strong style={{ color: "#c0c0d8" }}>Option 2 — Connect a live system:</strong> Add an integration (Google Drive, Slack, REST API) in the Integrations dashboard. Assign it to an agent. At execution time, the agent pulls live data automatically — no manual upload needed. You define exactly what each agent can access. Every action is logged in the audit trail.
               </p>
             </div>
           </div>

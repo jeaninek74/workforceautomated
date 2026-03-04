@@ -21,6 +21,7 @@ import AuditLog from "@/pages/AuditLog";
 import KPIBuilder from "@/pages/KPIBuilder";
 import Billing from "@/pages/Billing";
 import Settings from "@/pages/Settings";
+import Integrations from "@/pages/Integrations";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -65,6 +66,7 @@ function AppRoutes() {
       <Route path="/kpi" element={<ProtectedRoute><KPIBuilder /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

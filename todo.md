@@ -9,5 +9,43 @@
 - [x] Audit logging
 - [x] Stripe billing integration
 - [x] Deploy to Railway at workforceautomated.com
-- [ ] Landing page: clarify single agent vs. team of agents, show agent limits per plan
-- [ ] Landing page: explain how agents execute work and what systems/tools they connect to
+- [x] Landing page: clarify single agent vs. team of agents, show agent limits per plan
+- [x] Landing page: explain how agents execute work and what systems/tools they connect to
+
+## Phase 2: Real Execution Engine
+- [x] Replace keyword-matching LLM stub with real OpenAI API calls
+- [x] File upload support: PDF, CSV, Excel, Word, plain text
+- [x] Extract text content from uploaded files for agent context
+- [x] User-defined output format control (bullet points, table, formal report, etc.)
+- [x] Update execution API to accept files and output format
+
+## Phase 3: System Integration Connectors
+- [x] Integration connector framework (credential storage, connector types)
+- [x] Google Drive connector (read files from Drive folders)
+- [x] Slack connector (send notifications/results to channels)
+- [x] Generic REST API connector (call any API with stored credentials)
+- [x] Webhook connector
+- [x] Integration management UI (add/edit/delete/test connectors)
+- [x] At execution time: pull live data from connected systems
+- [x] Integrations table created in database
+
+## Phase 4: Frontend Updates
+- [x] Execution console: file upload UI (PDF, CSV, Excel, Word, TXT)
+- [x] Execution console: output format selector (8 format options)
+- [x] Execution console: show connected integrations for agent
+- [x] Execution console: copy output button
+- [x] Integrations page: manage connectors (add/test/delete/expand)
+- [x] Sidebar nav: Integrations link added
+- [x] App.tsx: /integrations route registered
+
+## Phase 5: Landing Page
+- [x] Rewrite EXECUTION_TOOLS to reflect real capabilities (Live/Roadmap badges)
+- [x] Update "How Access Works" to explain Option 1 (file upload) and Option 2 (live integrations)
+- [x] Honest messaging: what is live vs. coming soon
+
+## Upcoming
+- [ ] Agent builder: assign integrations to specific agents from the builder UI
+- [ ] S3 file storage for uploaded files (currently in-memory during execution)
+- [ ] Database connector (PostgreSQL/MySQL)
+- [ ] Email/messaging connector
+- [ ] Outbound webhook actions
