@@ -36,7 +36,7 @@ agentsRouter.post("/", async (req: AuthRequest, res) => {
   }
 });
 
-agentsRouter.post("/from-job-description", async (req: AuthRequest, res) => {
+async function handleGenerateFromJD(req: AuthRequest, res: any) {
   try {
     const { jobDescription } = z.object({ jobDescription: z.string().min(10) }).parse(req.body);
     const agentConfig = await generateAgentFromJobDescription(jobDescription);
@@ -46,7 +46,11 @@ agentsRouter.post("/from-job-description", async (req: AuthRequest, res) => {
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
-});
+}
+
+// Both route names supported (frontend uses /generate-from-jd)
+agentsRouter.post("/from-job-description", handleGenerateFromJD);
+agentsRouter.post("/generate-from-jd", handleGenerateFromJD);
 
 agentsRouter.get("/:id", async (req: AuthRequest, res) => {
   const [agent] = await db.select().from(agents).where(and(eq(agents.id, parseInt(req.params.id)), eq(agents.userId, req.user!.id))).limit(1);

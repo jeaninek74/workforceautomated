@@ -1,274 +1,169 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Bot, Shield, BarChart3, Users, Zap, Lock, CheckCircle, ArrowRight,
-  ChevronRight, Play, AlertTriangle, FileText, Eye, Database, Key,
-  TrendingUp, Clock, Award, Quote, DollarSign, Cpu, Target
-} from "lucide-react";
-
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-const WHY_USE_IT = [
-  {
-    icon: DollarSign,
-    color: "green",
-    title: "Recover Revenue Lost to Manual Bottlenecks",
-    desc: "Every hour your team spends on repetitive, rules-based work is an hour not spent on revenue-generating activity. WorkforceAutomated automates those processes end-to-end — so your people focus on decisions that move the business forward.",
-  },
-  {
-    icon: TrendingUp,
-    color: "blue",
-    title: "Scale Operations Without Scaling Headcount",
-    desc: "Handle 10x the workload with the same team. AI agents execute tasks in parallel, around the clock, without fatigue or error drift. Growth no longer requires proportional hiring.",
-  },
-  {
-    icon: Target,
-    color: "purple",
-    title: "Eliminate Costly Compliance Failures",
-    desc: "One compliance breach can cost millions. Every agent action is governed, logged, and auditable. Your risk exposure drops while your audit readiness goes up — automatically.",
-  },
-  {
-    icon: Cpu,
-    color: "orange",
-    title: "Deploy AI Across Any Business Process",
-    desc: "Not just job descriptions. Any documented work process — SOPs, runbooks, compliance checklists, workflows — becomes an AI agent. Finance, HR, operations, legal, customer success: every function can be automated.",
-  },
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    title: "Document Your Process",
-    desc: "Upload a job description, SOP, runbook, workflow doc, or compliance checklist. Any structured process works.",
-    icon: FileText,
-  },
-  {
-    step: "02",
-    title: "AI Builds the Agent",
-    desc: "Our LLM parses the document and generates a fully configured AI agent: capabilities, permissions, confidence thresholds, and escalation rules — in seconds.",
-    icon: Bot,
-  },
-  {
-    step: "03",
-    title: "You Set the Guardrails",
-    desc: "Define what the agent can do autonomously, what requires human approval, and what is permanently blocked. You stay in control.",
-    icon: Shield,
-  },
-  {
-    step: "04",
-    title: "Agents Work. You Measure.",
-    desc: "Agents execute tasks 24/7. Real-time dashboards surface performance, cost savings, risk events, and ROI. Every action is auditable.",
-    icon: BarChart3,
-  },
-];
-
-const GUARDRAILS = [
-  {
-    title: "Confidence Scoring",
-    desc: "Every agent output carries a confidence score. Outputs below your threshold are held for human review — agents never act on uncertain data.",
-    icon: TrendingUp,
-    color: "blue",
-  },
-  {
-    title: "Risk Classification",
-    desc: "Actions are classified Low / Medium / High / Critical in real time. High-risk actions trigger automatic escalation before execution.",
-    icon: AlertTriangle,
-    color: "orange",
-  },
-  {
-    title: "Escalation Protocols",
-    desc: "Define who gets notified, when, and how. Agents never exceed their authority without explicit human approval.",
-    icon: Users,
-    color: "purple",
-  },
-  {
-    title: "Immutable Audit Logs",
-    desc: "Every decision is cryptographically signed and stored. Tamper-proof logs are exportable for SOC 2, GDPR, and HIPAA audits.",
-    icon: Lock,
-    color: "green",
-  },
-];
 
 const DEMO_STEPS = [
-  { id: "input", label: "Process Document Input" },
-  { id: "agent", label: "Agent Generated" },
-  { id: "run", label: "Task Execution" },
-  { id: "audit", label: "Audit Log" },
+  {
+    label: "Step 1: Paste Your Process",
+    content: "You paste in any work document — a job description, a checklist, a step-by-step process. It can be from any department: finance, HR, legal, customer support, IT.",
+    example: `"Review all invoices over $10,000. Flag any that are more than 30 days overdue. Send a weekly summary to the finance manager. Escalate anything over $50,000 to the CFO immediately."`
+  },
+  {
+    label: "Step 2: AI Builds the Agent",
+    content: "WorkforceAutomated reads your document and automatically builds an AI agent. It figures out what the agent should do, what data it can access, and when it needs to ask a human for help.",
+    example: `Agent created: "Invoice Review Agent"\n✓ Can read: invoice database\n✓ Can write: weekly summary reports\n✓ Will escalate: anything over $50,000\n✓ Confidence required: 85% before acting`
+  },
+  {
+    label: "Step 3: Set Your Rules",
+    content: "You decide how much the agent can do on its own. Set a confidence score — if the agent isn't sure enough, it stops and asks a human. You stay in control at all times.",
+    example: `Confidence threshold: 85%\nIf below 85% → pause and ask human\nIf above 85% → proceed automatically\nAll actions logged forever`
+  },
+  {
+    label: "Step 4: It Works. You Watch.",
+    content: "The agent runs your process automatically. Every action is recorded. You get a live dashboard showing what it did, how confident it was, and anything it flagged for your attention.",
+    example: `Today's activity:\n✓ 47 invoices reviewed\n✓ 3 flagged as overdue\n⚡ 1 escalated to CFO ($78,000)\n📊 Weekly report sent to finance manager`
+  }
 ];
 
-const DEMO_CONTENT: Record<string, { title: string; body: string; badge: string; badgeColor: string }> = {
-  input: {
-    title: "Process Document → Agent",
-    badge: "Input",
-    badgeColor: "bg-gray-700 text-gray-300",
-    body: `Process: Quarterly Revenue Variance Analysis\nType: Financial SOP\n\nSteps:\n1. Pull Q3 revenue data from financial DB\n2. Compare against Q2 actuals and Q3 forecast\n3. Flag variances > 5% for review\n4. Escalate critical findings (>15%) to CFO\n5. Generate variance report for board pack\n\nAccess level: Read-only financial DB\nApprovals required: Any write or send action\nEscalation contact: CFO role`,
-  },
-  agent: {
-    title: "Agent Configuration",
-    badge: "Generated",
-    badgeColor: "bg-blue-900 text-blue-300",
-    body: `Agent: RevenueAnalysisAgent_v1\nProcess: Q3 Variance Analysis SOP\n\nCapabilities granted:\n  ✓ read_financial_db\n  ✓ generate_variance_report\n  ✓ send_escalation_alert\n  ✗ write_financial_db  [BLOCKED]\n  ✗ send_board_report   [REQUIRES APPROVAL]\n\nConfidence threshold: 85%\nRisk ceiling: HIGH → auto-escalate\nEscalation target: CFO role\nAudit: ALL actions logged + signed`,
-  },
-  run: {
-    title: "Live Task Execution",
-    badge: "Running",
-    badgeColor: "bg-green-900 text-green-300",
-    body: `[09:14:02] Task started: Q3 Revenue Analysis\n[09:14:03] Reading financial_db... ✓\n[09:14:05] Confidence: 94% — proceeding\n[09:14:06] Q3 Revenue: $4.2M | Forecast: $4.5M\n[09:14:07] Variance: -7.2%  → FLAGGED (>5%)\n[09:14:07] Risk level: HIGH\n[09:14:07] Escalating to CFO role...\n[09:14:08] Alert sent → sarah.chen@corp.com ✓\n[09:14:08] Report generation: PENDING APPROVAL\n[09:14:08] Audit entry written + signed ✓\n\nTime elapsed: 6 seconds\nHuman hours saved: ~3.5 hours`,
-  },
-  audit: {
-    title: "Audit Log Entry",
-    badge: "Logged",
-    badgeColor: "bg-purple-900 text-purple-300",
-    body: `{\n  "agent": "RevenueAnalysisAgent_v1",\n  "process": "Q3 Variance Analysis SOP",\n  "timestamp": "2026-03-04T09:14:08Z",\n  "confidence": 0.94,\n  "risk_level": "HIGH",\n  "action": "ESCALATED",\n  "escalated_to": "CFO",\n  "outcome": "PENDING_APPROVAL",\n  "human_hours_saved": 3.5,\n  "hash": "a3f9c2...d81e",\n  "tamper_proof": true\n}`,
-  },
-};
+const FEATURES = [
+  { icon: "⚡", title: "Works Without Hiring Anyone", desc: "Your AI agent handles repetitive tasks 24/7. No sick days, no overtime, no training time." },
+  { icon: "💰", title: "Turns Slow Work Into Fast Revenue", desc: "Processes that used to take days now finish in minutes. Faster work means faster revenue." },
+  { icon: "🛡️", title: "Humans Stay in Charge", desc: "The agent only acts when it's confident. Anything uncertain gets sent to a real person first." },
+  { icon: "📋", title: "Works for Any Department", desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it." },
+  { icon: "🔍", title: "Every Action is Recorded", desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance." },
+  { icon: "🚀", title: "Ready in Minutes, Not Months", desc: "Paste your process document. Agent is configured and ready to run in under 5 minutes." }
+];
 
 const USE_CASES = [
-  { dept: "Finance", example: "Automate variance analysis, invoice processing, and financial close checklists." },
-  { dept: "HR & People Ops", example: "Onboarding workflows, compliance training tracking, performance review cycles." },
-  { dept: "Legal & Compliance", example: "Contract review checklists, regulatory filing workflows, audit preparation." },
-  { dept: "Customer Success", example: "Escalation routing, renewal workflows, health score monitoring and alerts." },
-  { dept: "Operations", example: "Supply chain exception handling, vendor SLA monitoring, incident response runbooks." },
-  { dept: "IT & Security", example: "Access provisioning workflows, security incident response, change management SOPs." },
+  { dept: "Finance", task: "Review invoices, flag overdue payments, generate variance reports" },
+  { dept: "HR", task: "Screen job applications, track onboarding tasks, monitor policy compliance" },
+  { dept: "Legal", task: "Review contracts for missing clauses, track regulatory deadlines" },
+  { dept: "Customer Support", task: "Classify tickets, draft responses, escalate urgent issues" },
+  { dept: "Sales", task: "Score leads, flag at-risk deals, update CRM records" },
+  { dept: "IT & Security", task: "Monitor systems, detect anomalies, generate incident reports" }
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "We replaced three manual review processes with WorkforceAutomated agents. Audit prep that used to take two weeks now takes an afternoon. That's real money back in the business.",
-    name: "Sarah Chen",
+    quote: "We used to spend 3 days every month reviewing invoices manually. Now it takes 20 minutes. The agent catches things we used to miss.",
+    name: "Sarah K.",
+    title: "Finance Director",
+    result: "3 days → 20 minutes"
+  },
+  {
+    quote: "I was skeptical about AI replacing our compliance process. But the agent escalates anything it's not sure about, so we never lost control.",
+    name: "Marcus T.",
     title: "Chief Compliance Officer",
-    company: "Meridian Financial",
-    metric: "2 weeks → 1 afternoon",
+    result: "Zero compliance violations in 8 months"
   },
   {
-    quote: "Our agents handle 80% of operational tasks autonomously. The other 20% go to the right human every time. We scaled from 50 to 200 clients without adding ops headcount.",
-    name: "Marcus Webb",
-    title: "VP of Operations",
-    company: "Apex Logistics",
-    metric: "4x client scale, same team",
-  },
-  {
-    quote: "We passed our SOC 2 audit in record time. The immutable logs gave our auditors everything they needed. WorkforceAutomated paid for itself in the first audit cycle.",
-    name: "Priya Nair",
-    title: "Head of Engineering",
-    company: "Vantage Health",
-    metric: "SOC 2 audit cost cut by 60%",
-  },
+    quote: "We scaled from 200 to 800 customers without hiring a single extra support person. The agent handles the routine stuff, our team handles the hard stuff.",
+    name: "Priya M.",
+    title: "VP of Customer Success",
+    result: "4x customers, same team size"
+  }
 ];
-
-const DATA_PROTECTION = [
-  { icon: Key, title: "AES-256 Encryption", desc: "All data encrypted at rest and in transit. Keys rotate automatically every 90 days." },
-  { icon: Eye, title: "Zero Trust Access", desc: "Every request is authenticated and authorized. Agents only access what they're explicitly permitted to." },
-  { icon: Database, title: "Data Residency", desc: "Choose your region: US, EU, or APAC. Data never leaves your selected region without written consent." },
-  { icon: Shield, title: "SOC 2 Type II", desc: "Independently audited annually. Full report available to enterprise customers under NDA." },
-  { icon: FileText, title: "GDPR & HIPAA Ready", desc: "Built-in data subject request handling, retention policies, and PHI isolation for healthcare." },
-  { icon: Clock, title: "99.9% Uptime SLA", desc: "Enterprise SLA with financial penalties. Public status page and full incident history." },
-];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Landing() {
-  const [activeDemo, setActiveDemo] = useState<string>("input");
+  const [activeStep, setActiveStep] = useState(0);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div style={{ fontFamily: "'Inter', sans-serif", background: "#0a0a0f", color: "#e8e8f0", minHeight: "100vh" }}>
 
       {/* Nav */}
-      <nav className="border-b border-gray-800 bg-gray-950/90 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-base font-bold text-white">WorkforceAutomated</span>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-400">
-            <a href="#why" className="hover:text-white transition-colors">Why It Works</a>
-            <a href="#how" className="hover:text-white transition-colors">How It Works</a>
-            <a href="#demo" className="hover:text-white transition-colors">Demo</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#security" className="hover:text-white transition-colors">Security</a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to="/login" className="text-sm text-gray-400 hover:text-white px-3 py-1.5 transition-colors">Sign In</Link>
-            <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">
-              Get Started Free
-            </Link>
-          </div>
+      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 40px", borderBottom: "1px solid #1e1e2e", position: "sticky", top: 0, background: "#0a0a0f", zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
+          <span style={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>WorkforceAutomated</span>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Link to="/login" style={{ padding: "8px 20px", background: "transparent", border: "1px solid #3f3f5a", borderRadius: 8, color: "#c0c0d8", cursor: "pointer", fontSize: 14, textDecoration: "none", display: "inline-block" }}>
+            Sign In
+          </Link>
+          <Link to="/register" style={{ padding: "8px 20px", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
+            Start Free
+          </Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="pt-16 pb-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-blue-950/60 border border-blue-800/50 rounded-full px-3 py-1 text-xs text-blue-300 mb-6">
-              <Zap className="w-3 h-3" />
-              Enterprise AI Workforce Operating System
-            </div>
-            <h1 className="text-5xl font-bold text-white leading-tight mb-5">
-              Automate Any Work Process.<br />
-              <span className="text-blue-400">Govern Every Action.</span><br />
-              <span className="text-gray-300">Grow Without Limits.</span>
-            </h1>
-            <p className="text-lg text-gray-400 mb-4 leading-relaxed max-w-2xl">
-              WorkforceAutomated turns your existing processes — job descriptions, SOPs, runbooks, compliance checklists, workflows — into governed AI agents that execute tasks, enforce rules, escalate intelligently, and log everything.
-            </p>
-            <p className="text-base text-gray-500 mb-8 max-w-2xl">
-              The result: your team handles more work, your costs go down, your compliance risk drops, and your business scales without proportional headcount growth.
-            </p>
-            <div className="flex items-center gap-3">
-              <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors flex items-center gap-2">
-                Start Automating Free <ArrowRight className="w-4 h-4" />
-              </Link>
-              <a href="#demo" className="border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium px-6 py-3 rounded-lg text-sm transition-colors flex items-center gap-2">
-                <Play className="w-4 h-4" /> See a Live Demo
-              </a>
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-5 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-500" /> No credit card required</span>
-              <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-500" /> SOC 2 Type II certified</span>
-              <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-500" /> GDPR & HIPAA compliant</span>
-              <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-500" /> Works with any documented process</span>
-            </div>
-          </div>
+      <section style={{ textAlign: "center", padding: "80px 40px 60px", maxWidth: 800, margin: "0 auto" }}>
+        <div style={{ display: "inline-block", background: "#1a1a2e", border: "1px solid #6366f1", borderRadius: 20, padding: "6px 16px", fontSize: 13, color: "#a5b4fc", marginBottom: 24 }}>
+          AI Workforce Platform
         </div>
-      </section>
-
-      {/* Stats */}
-      <section className="border-b border-gray-800 bg-gray-900/40">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { value: "10x", label: "More work, same team size" },
-            { value: "70%", label: "Reduction in process costs" },
-            { value: "<2s", label: "Agent response time" },
-            { value: "100%", label: "Audit coverage on every action" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div className="text-2xl font-bold text-white">{s.value}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
+        <h1 style={{ fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 800, lineHeight: 1.15, margin: "0 0 24px", color: "#fff" }}>
+          Turn Any Work Process<br />
+          <span style={{ background: "linear-gradient(135deg, #6366f1, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Into an AI That Does It
+          </span>
+        </h1>
+        <p style={{ fontSize: 20, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>
+          You describe the job. We build the AI agent that does it — automatically, accurately, and with a human always in control.
+        </p>
+        <p style={{ fontSize: 16, color: "#6060a0", marginBottom: 40 }}>
+          Works for finance, HR, legal, sales, customer support, IT, and more. No coding required.
+        </p>
+        <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/register" style={{ padding: "14px 32px", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", borderRadius: 10, color: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, textDecoration: "none", display: "inline-block" }}>
+            Start Free — No Credit Card
+          </Link>
+          <a href="#how-it-works" style={{ padding: "14px 32px", background: "transparent", border: "1px solid #3f3f5a", borderRadius: 10, color: "#c0c0d8", cursor: "pointer", fontSize: 16, textDecoration: "none", display: "inline-block" }}>
+            See How It Works
+          </a>
+        </div>
+        <div style={{ display: "flex", gap: 32, justifyContent: "center", marginTop: 48, flexWrap: "wrap" }}>
+          {[["3 days → 20 min", "Invoice processing"], ["4x scale", "Without new hires"], ["100%", "Audit coverage"], ["< 5 min", "Agent setup time"]].map(([stat, label]) => (
+            <div key={label} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#a78bfa" }}>{stat}</div>
+              <div style={{ fontSize: 13, color: "#6060a0" }}>{label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Why Use It */}
-      <section id="why" className="py-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Why Teams Choose WorkforceAutomated</h2>
-            <p className="text-gray-400 max-w-xl">The business case is straightforward: more output, lower cost, less risk.</p>
+      {/* What Is It */}
+      <section style={{ background: "#0f0f1a", padding: "60px 40px", textAlign: "center" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 20 }}>What Does It Actually Do?</h2>
+          <p style={{ fontSize: 18, color: "#9090b0", lineHeight: 1.8 }}>
+            Think of it like hiring a very fast, very reliable worker who never sleeps. You give them a list of tasks. They do those tasks, keep a record of everything they did, and come to you whenever they're not sure what to do next.
+          </p>
+          <p style={{ fontSize: 18, color: "#9090b0", lineHeight: 1.8, marginTop: 16 }}>
+            The difference: this worker is an AI, costs a fraction of a full-time hire, and can handle hundreds of tasks at once.
+          </p>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>How It Works</h2>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Four simple steps. No technical knowledge needed.</p>
+        <div style={{ display: "flex", gap: 12, marginBottom: 32, flexWrap: "wrap", justifyContent: "center" }}>
+          {DEMO_STEPS.map((step, i) => (
+            <button key={i} onClick={() => setActiveStep(i)} style={{ padding: "10px 20px", background: activeStep === i ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#1a1a2e", border: activeStep === i ? "none" : "1px solid #2a2a3e", borderRadius: 8, color: activeStep === i ? "#fff" : "#8080a0", cursor: "pointer", fontSize: 14, fontWeight: activeStep === i ? 600 : 400 }}>
+              {step.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ background: "#0f0f1a", border: "1px solid #2a2a3e", borderRadius: 12, padding: 32 }}>
+          <p style={{ fontSize: 18, color: "#c0c0d8", lineHeight: 1.8, marginBottom: 24 }}>{DEMO_STEPS[activeStep].content}</p>
+          <div style={{ background: "#0a0a0f", border: "1px solid #3f3f5a", borderRadius: 8, padding: 20 }}>
+            <div style={{ fontSize: 12, color: "#6060a0", marginBottom: 8, fontFamily: "monospace" }}>EXAMPLE</div>
+            <pre style={{ fontFamily: "monospace", fontSize: 14, color: "#a5b4fc", whiteSpace: "pre-wrap", margin: 0 }}>{DEMO_STEPS[activeStep].example}</pre>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {WHY_USE_IT.map((w) => (
-              <div key={w.title} className="flex gap-4 bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className={`w-10 h-10 rounded-lg bg-${w.color}-500/10 border border-${w.color}-500/20 flex items-center justify-center flex-shrink-0`}>
-                  <w.icon className={`w-5 h-5 text-${w.color}-400`} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white mb-1">{w.title}</h3>
-                  <p className="text-xs text-gray-400 leading-relaxed">{w.desc}</p>
-                </div>
+        </div>
+      </section>
+
+      {/* Why Use It */}
+      <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Why Companies Use It</h2>
+          <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Real business results, not just technology for its own sake.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+            {FEATURES.map((f) => (
+              <div key={f.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 12, padding: 24 }}>
+                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: "#7070a0", lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -276,315 +171,132 @@ export default function Landing() {
       </section>
 
       {/* Use Cases */}
-      <section className="py-20 border-b border-gray-800 bg-gray-900/30">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Works Across Every Department</h2>
-            <p className="text-gray-400">If it's a documented process, it can be an agent. Here's where teams are deploying today.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {USE_CASES.map((u) => (
-              <div key={u.dept} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                <div className="text-xs font-semibold text-blue-400 mb-1 uppercase tracking-wide">{u.dept}</div>
-                <p className="text-xs text-gray-400 leading-relaxed">{u.example}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how" className="py-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">How It Works</h2>
-            <p className="text-gray-400">From any documented process to a governed AI agent — in four steps.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {HOW_IT_WORKS.map((step) => (
-              <div key={step.step} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-mono text-gray-600">{step.step}</span>
-                  <step.icon className="w-5 h-5 text-blue-400" />
-                </div>
-                <h3 className="text-sm font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
+      <section style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Works in Every Department</h2>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>If there's a repeatable process, we can automate it.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+          {USE_CASES.map((uc) => (
+            <div key={uc.dept} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
+              <div style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 8, padding: "6px 10px", fontSize: 13, fontWeight: 700, color: "#fff", whiteSpace: "nowrap" }}>{uc.dept}</div>
+              <p style={{ fontSize: 14, color: "#8080a0", margin: 0, lineHeight: 1.6 }}>{uc.task}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Guardrails */}
-      <section id="guardrails" className="py-20 border-b border-gray-800 bg-gray-900/30">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Guardrails Built Into Every Agent</h2>
-            <p className="text-gray-400 max-w-xl">AI that acts without oversight is a liability. Every WorkforceAutomated agent runs inside a governance framework you control.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-            {GUARDRAILS.map((g) => (
-              <div key={g.title} className="flex gap-4 bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className={`w-10 h-10 rounded-lg bg-${g.color}-500/10 border border-${g.color}-500/20 flex items-center justify-center flex-shrink-0`}>
-                  <g.icon className={`w-5 h-5 text-${g.color}-400`} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white mb-1">{g.title}</h3>
-                  <p className="text-xs text-gray-400 leading-relaxed">{g.desc}</p>
-                </div>
+      <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>You're Always in Control</h2>
+          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>The AI never acts alone on anything important. Here's how we keep humans in charge.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
+            {[
+              { icon: "🎯", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI isn't sure enough, it stops and asks you." },
+              { icon: "⚠️", title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
+              { icon: "📝", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
+              { icon: "🔒", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." }
+            ].map((g) => (
+              <div key={g.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20 }}>
+                <div style={{ fontSize: 24, marginBottom: 10 }}>{g.icon}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{g.title}</h3>
+                <p style={{ fontSize: 13, color: "#6060a0", margin: 0, lineHeight: 1.6 }}>{g.desc}</p>
               </div>
             ))}
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                <Award className="w-5 h-5 text-yellow-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white mb-1">Human-in-the-Loop by Design</h3>
-                <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
-                  WorkforceAutomated is not a "set it and forget it" system. You define which actions agents handle autonomously, which require human approval, and which are permanently blocked. Agents operate within the authority you grant — nothing more, nothing less. This is how you get the efficiency of AI without the risk of unchecked automation.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Demo */}
-      <section id="demo" className="py-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">See It in Action</h2>
-            <p className="text-gray-400">A financial SOP becomes a governed AI agent. Watch the full lifecycle.</p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="flex flex-col gap-2">
-              {DEMO_STEPS.map((step) => (
-                <button
-                  key={step.id}
-                  onClick={() => setActiveDemo(step.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-sm ${
-                    activeDemo === step.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600"
-                  }`}
-                >
-                  <ChevronRight className={`w-4 h-4 flex-shrink-0 transition-transform ${activeDemo === step.id ? "rotate-90" : ""}`} />
-                  {step.label}
-                </button>
-              ))}
-              <div className="mt-3 p-3 bg-gray-900 border border-gray-800 rounded-lg">
-                <p className="text-xs text-gray-500 leading-relaxed">This example uses a financial variance analysis SOP. Any process document — HR onboarding, legal checklist, ops runbook — works the same way.</p>
-              </div>
-            </div>
-            <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-950">
-                <span className="text-sm font-medium text-white">{DEMO_CONTENT[activeDemo].title}</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${DEMO_CONTENT[activeDemo].badgeColor}`}>
-                  {DEMO_CONTENT[activeDemo].badge}
-                </span>
-              </div>
-              <pre className="p-5 text-xs text-gray-300 font-mono leading-relaxed overflow-auto whitespace-pre-wrap min-h-48">
-                {DEMO_CONTENT[activeDemo].body}
-              </pre>
-            </div>
-          </div>
-          <div className="mt-5 text-center">
-            <Link to="/register" className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors">
-              Try it with your own process document <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 border-b border-gray-800 bg-gray-900/30">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Real Results from Real Teams</h2>
-            <p className="text-gray-400">Efficiency gains, cost savings, and compliance wins — measured and verified.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="inline-block bg-blue-950/60 border border-blue-800/40 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                  {t.metric}
-                </div>
-                <Quote className="w-4 h-4 text-gray-600 mb-2" />
-                <p className="text-sm text-gray-300 leading-relaxed mb-4">"{t.quote}"</p>
-                <div>
-                  <div className="text-sm font-semibold text-white">{t.name}</div>
-                  <div className="text-xs text-gray-500">{t.title}, {t.company}</div>
-                </div>
+      <section style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>What Customers Say</h2>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Real results from real companies.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+          {TESTIMONIALS.map((t) => (
+            <div key={t.name} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 12, padding: 24 }}>
+              <div style={{ background: "#1a1a2e", border: "1px solid #6366f1", borderRadius: 6, padding: "4px 12px", fontSize: 13, color: "#a5b4fc", display: "inline-block", marginBottom: 16, fontWeight: 700 }}>{t.result}</div>
+              <p style={{ fontSize: 15, color: "#c0c0d8", lineHeight: 1.7, marginBottom: 20 }}>"{t.quote}"</p>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{t.name}</div>
+                <div style={{ fontSize: 13, color: "#6060a0" }}>{t.title}</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">The Full Platform</h2>
-            <p className="text-gray-400">Everything from agent creation to governance, analytics, and compliance — in one system.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { icon: Bot, title: "Agent Builder", desc: "Convert any process document into a configured AI agent with capabilities, permissions, and escalation rules." },
-              { icon: Users, title: "Multi-Agent Workflows", desc: "Compose agents into structured teams. Define execution order, data flow, and team-level governance." },
-              { icon: BarChart3, title: "KPI & ROI Dashboards", desc: "Track agent performance, hours saved, cost reduction, and revenue impact in real time." },
-              { icon: Lock, title: "Compliance Export", desc: "One-click audit reports formatted for SOC 2, GDPR, and HIPAA reviewers." },
-              { icon: Zap, title: "Real-Time Execution Console", desc: "Monitor every agent action live. Intervene, pause, or override at any point." },
-              { icon: Shield, title: "Governance Controls", desc: "Global and per-agent policies. Role-based access. Confidence floors. Risk ceilings. All configurable." },
-            ].map((f) => (
-              <div key={f.title} className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
-                <f.icon className="w-5 h-5 text-blue-400 mb-3" />
-                <h3 className="text-sm font-semibold text-white mb-1">{f.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Data Protection */}
-      <section id="security" className="py-20 border-b border-gray-800 bg-gray-900/30">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Data Protection</h2>
-            <p className="text-gray-400 max-w-xl">Your processes, your data, your control. Security is not an add-on — it's the foundation.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-            {DATA_PROTECTION.map((d) => (
-              <div key={d.title} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <d.icon className="w-5 h-5 text-green-400 mb-3" />
-                <h3 className="text-sm font-semibold text-white mb-1">{d.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{d.desc}</p>
+      <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Your Data is Safe</h2>
+          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>We take security seriously. Here's exactly what we do to protect your data.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
+            {[
+              { icon: "🔐", title: "Encrypted Everywhere", desc: "All data is encrypted when stored and when moving between systems." },
+              { icon: "🏢", title: "Your Data Stays Yours", desc: "We never sell or share your data with third parties. Ever." },
+              { icon: "✅", title: "SOC 2 Compliant", desc: "We meet the security standards required by enterprise companies." },
+              { icon: "🌍", title: "GDPR & HIPAA Ready", desc: "Built to meet the strictest global privacy and healthcare regulations." },
+              { icon: "🚫", title: "Zero Trust Access", desc: "Every access request is verified. No one gets in without permission." },
+              { icon: "📍", title: "Data Residency Options", desc: "Choose where your data is stored to meet local regulations." }
+            ].map((s) => (
+              <div key={s.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20 }}>
+                <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{s.title}</h3>
+                <p style={{ fontSize: 13, color: "#6060a0", margin: 0, lineHeight: 1.6 }}>{s.desc}</p>
               </div>
             ))}
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-white mb-3">Our Commitments</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-400">
-              <div className="flex items-start gap-2">
-                <span className="text-red-400 font-bold mt-0.5">✗</span>
-                <span>We never train AI models on your process documents or business data.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-red-400 font-bold mt-0.5">✗</span>
-                <span>We never share your agent configurations or audit logs with third parties.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-red-400 font-bold mt-0.5">✗</span>
-                <span>We never move your data outside your selected region without written consent.</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">Pricing</h2>
-            <p className="text-gray-400">Start free. Scale as your AI workforce grows. No credit card required.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl">
-            {[
-              {
-                name: "Starter", price: "$49", period: "/mo",
-                desc: "For individuals and small teams getting started with process automation.",
-                features: ["5 AI Agents", "Single agent execution", "Confidence scoring", "7-day audit logs", "Email support"],
-                cta: "Start Free Trial", highlight: false,
-              },
-              {
-                name: "Professional", price: "$149", period: "/mo",
-                desc: "For teams running complex, multi-step workflows across departments.",
-                features: ["25 AI Agents", "Multi-agent workflows", "Risk classification", "90-day audit logs", "Custom KPI dashboards", "Priority support"],
-                cta: "Start Free Trial", highlight: true,
-              },
-              {
-                name: "Enterprise", price: "Custom", period: "",
-                desc: "For large organizations requiring full governance, compliance, and scale.",
-                features: ["Unlimited agents", "Unlimited workflows", "Full governance controls", "Unlimited audit logs", "SSO / SAML", "Dedicated support", "Custom SLA"],
-                cta: "Contact Sales", highlight: false,
-              },
-            ].map((plan) => (
-              <div key={plan.name} className={`rounded-xl p-6 border ${plan.highlight ? "bg-blue-600 border-blue-500" : "bg-gray-900 border-gray-800"}`}>
-                {plan.highlight && (
-                  <div className="text-xs font-medium bg-white/20 text-white px-2 py-0.5 rounded-full inline-block mb-3">Most Popular</div>
-                )}
-                <div className={`text-xs font-medium mb-1 ${plan.highlight ? "text-blue-100" : "text-gray-400"}`}>{plan.name}</div>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className={`text-sm ${plan.highlight ? "text-blue-200" : "text-gray-500"}`}>{plan.period}</span>
-                </div>
-                <p className={`text-xs mb-5 ${plan.highlight ? "text-blue-100" : "text-gray-400"}`}>{plan.desc}</p>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs">
-                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-blue-200" : "text-green-500"}`} />
-                      <span className={plan.highlight ? "text-blue-50" : "text-gray-300"}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/register"
-                  className={`block text-center text-sm font-semibold py-2.5 rounded-lg transition-colors ${
-                    plan.highlight ? "bg-white text-blue-600 hover:bg-blue-50" : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
+      <section style={{ padding: "60px 40px", maxWidth: 900, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Simple Pricing</h2>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Start free. Upgrade when you're ready.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+          {[
+            { name: "Starter", price: "$49/mo", features: ["Up to 5 AI agents", "Basic audit logs", "Email support", "1 department"], highlight: false },
+            { name: "Professional", price: "$149/mo", features: ["Up to 25 AI agents", "Full audit logs", "Priority support", "All departments", "Advanced governance"], highlight: true },
+            { name: "Enterprise", price: "$499/mo", features: ["Unlimited agents", "Custom integrations", "Dedicated support", "SLA guarantee", "Custom data residency"], highlight: false }
+          ].map((plan) => (
+            <div key={plan.name} style={{ background: plan.highlight ? "linear-gradient(135deg, #1a1a3e, #2a1a4e)" : "#0f0f1a", border: plan.highlight ? "2px solid #6366f1" : "1px solid #1e1e2e", borderRadius: 12, padding: 28, position: "relative" }}>
+              {plan.highlight && (
+                <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 12, padding: "4px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>Most Popular</div>
+              )}
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{plan.name}</h3>
+              <div style={{ fontSize: 28, fontWeight: 800, color: plan.highlight ? "#a78bfa" : "#fff", marginBottom: 20 }}>{plan.price}</div>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px" }}>
+                {plan.features.map((f) => (
+                  <li key={f} style={{ fontSize: 14, color: "#9090b0", padding: "6px 0", borderBottom: "1px solid #1e1e2e" }}>✓ {f}</li>
+                ))}
+              </ul>
+              <Link to="/register" style={{ display: "block", width: "100%", padding: "12px", borderRadius: 8, cursor: "pointer", fontSize: 15, fontWeight: 600, background: plan.highlight ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent", border: plan.highlight ? "none" : "1px solid #3f3f5a", color: "#fff", textDecoration: "none", textAlign: "center", boxSizing: "border-box" }}>
+                Get Started
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-10 text-center">
-            <h2 className="text-3xl font-bold text-white mb-3">Start Automating Your Workforce Today</h2>
-            <p className="text-gray-400 mb-2 max-w-xl mx-auto text-sm">
-              Every day you delay is another day of manual work, missed efficiency, and uncaptured revenue.
-            </p>
-            <p className="text-gray-500 mb-6 max-w-xl mx-auto text-sm">
-              Set up your first agent in minutes. No credit card. No commitment.
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <Link to="/register" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3 rounded-lg text-sm transition-colors">
-                Get Started Free <ArrowRight className="w-4 h-4" />
-              </Link>
-              <a href="mailto:sales@workforceautomated.com" className="border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium px-6 py-3 rounded-lg text-sm transition-colors">
-                Talk to Sales
-              </a>
-            </div>
-          </div>
-        </div>
+      <section style={{ background: "linear-gradient(135deg, #1a1a3e, #0f0f2e)", padding: "60px 40px", textAlign: "center" }}>
+        <h2 style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Ready to Stop Doing It Manually?</h2>
+        <p style={{ fontSize: 18, color: "#9090b0", marginBottom: 32, maxWidth: 500, margin: "0 auto 32px" }}>
+          Set up your first AI agent in under 5 minutes. No credit card required.
+        </p>
+        <Link to="/register" style={{ padding: "16px 40px", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", borderRadius: 10, color: "#fff", cursor: "pointer", fontSize: 18, fontWeight: 700, textDecoration: "none", display: "inline-block" }}>
+          Start Free Today
+        </Link>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-8">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
-              <Bot className="w-3 h-3 text-white" />
-            </div>
-            <span className="font-medium text-gray-400">WorkforceAutomated</span>
-          </div>
-          <div>© {new Date().getFullYear()} WorkforceAutomated. All rights reserved.</div>
-          <div className="flex gap-5">
-            <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Security</a>
-          </div>
+      <footer style={{ background: "#050508", padding: "32px 40px", textAlign: "center", borderTop: "1px solid #1e1e2e" }}>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🤖</div>
+          <span style={{ fontWeight: 700, color: "#fff" }}>WorkforceAutomated</span>
         </div>
+        <p style={{ color: "#404060", fontSize: 13, margin: 0 }}>© 2026 WorkforceAutomated. All rights reserved.</p>
       </footer>
+
     </div>
   );
 }
