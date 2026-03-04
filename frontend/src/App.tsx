@@ -53,6 +53,7 @@ function AppRoutes() {
       <Route path="/agents/new" element={<ProtectedRoute><AgentBuilder /></ProtectedRoute>} />
       <Route path="/agents/:id" element={<ProtectedRoute><AgentDetail /></ProtectedRoute>} />
       <Route path="/agents/:id/edit" element={<ProtectedRoute><AgentBuilder /></ProtectedRoute>} />
+      <Route path="/agents/:id/run" element={<ProtectedRoute><ExecutionConsole /></ProtectedRoute>} />
       <Route path="/teams" element={<ProtectedRoute><Teams /></ProtectedRoute>} />
       <Route path="/teams/new" element={<ProtectedRoute><TeamBuilder /></ProtectedRoute>} />
       <Route path="/teams/:id/edit" element={<ProtectedRoute><TeamBuilder /></ProtectedRoute>} />
