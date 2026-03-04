@@ -63,6 +63,39 @@ const TESTIMONIALS = [
   }
 ];
 
+const EXECUTION_TOOLS = [
+  {
+    icon: "🗄️",
+    title: "Databases & Spreadsheets",
+    desc: "Agents read from and write to your databases, spreadsheets, and data warehouses. They can query records, update fields, and generate reports — just like a human analyst would."
+  },
+  {
+    icon: "🔌",
+    title: "APIs & Web Services",
+    desc: "Agents connect to any REST API or web service you authorize. Salesforce, HubSpot, QuickBooks, Slack, Jira, ServiceNow — if it has an API, the agent can use it."
+  },
+  {
+    icon: "📧",
+    title: "Email & Messaging",
+    desc: "Agents can read incoming emails, send notifications, post to Slack channels, and trigger alerts — all within the permission boundaries you define."
+  },
+  {
+    icon: "📁",
+    title: "Files & Documents",
+    desc: "Agents read PDFs, Word docs, CSVs, and other files from your connected storage (Google Drive, SharePoint, S3). They extract data, summarize content, and generate new documents."
+  },
+  {
+    icon: "🌐",
+    title: "Web & Public Data",
+    desc: "Agents can retrieve publicly available information — pricing data, regulatory updates, news feeds — and incorporate it into their analysis and reports."
+  },
+  {
+    icon: "🔗",
+    title: "Webhooks & Triggers",
+    desc: "Agents can be triggered by external events — a new form submission, a calendar event, a payment received — and respond automatically according to your defined rules."
+  }
+];
+
 export default function Landing() {
   const [activeStep, setActiveStep] = useState(0);
 
@@ -125,11 +158,164 @@ export default function Landing() {
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 20 }}>What Does It Actually Do?</h2>
           <p style={{ fontSize: 18, color: "#9090b0", lineHeight: 1.8 }}>
-            Think of it like hiring a very fast, very reliable worker who never sleeps. You give them a list of tasks. They do those tasks, keep a record of everything they did, and come to you whenever they're not sure what to do next.
+            Think of it like hiring a very fast, very reliable worker who never sleeps. You give them a list of tasks. They do those tasks, keep a record of everything they did, and come to you whenever they are not sure what to do next.
           </p>
           <p style={{ fontSize: 18, color: "#9090b0", lineHeight: 1.8, marginTop: 16 }}>
             The difference: this worker is an AI, costs a fraction of a full-time hire, and can handle hundreds of tasks at once.
           </p>
+        </div>
+      </section>
+
+      {/* Single Agent vs Team Section */}
+      <section id="agent-model" style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>
+          One Agent or a Whole Team — You Decide
+        </h2>
+        <p style={{ color: "#6060a0", textAlign: "center", fontSize: 16, maxWidth: 640, margin: "0 auto 48px" }}>
+          Some tasks need a single focused agent. Others need a coordinated team. WorkforceAutomated supports both — and you can mix them freely within the same account.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24, marginBottom: 48 }}>
+          <div style={{ background: "#0f0f1a", border: "1px solid #2a2a3e", borderRadius: 14, padding: 32 }}>
+            <div style={{ fontSize: 36, marginBottom: 16 }}>🤖</div>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Single AI Agent</h3>
+            <p style={{ fontSize: 15, color: "#8080a0", lineHeight: 1.7, marginBottom: 20 }}>
+              Deploy one dedicated agent to own a specific process end-to-end. Ideal for focused, repeatable tasks that belong to a single domain — invoice review, lead scoring, ticket triage, or contract checking.
+            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {[
+                "One agent, one process, full ownership",
+                "Runs 24/7 without supervision",
+                "Escalates to a human when uncertain",
+                "Every action logged and auditable"
+              ].map((item) => (
+                <li key={item} style={{ fontSize: 14, color: "#9090b0", padding: "6px 0", borderBottom: "1px solid #1e1e2e", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <span style={{ color: "#6366f1", flexShrink: 0 }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style={{ background: "linear-gradient(135deg, #1a1a3e, #2a1a4e)", border: "2px solid #6366f1", borderRadius: 14, padding: 32, position: "relative" }}>
+            <div style={{ position: "absolute", top: -12, left: 24, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 12, padding: "4px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>Most Powerful</div>
+            <div style={{ fontSize: 36, marginBottom: 16 }}>🤝</div>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Team of AI Agents</h3>
+            <p style={{ fontSize: 15, color: "#8080a0", lineHeight: 1.7, marginBottom: 20 }}>
+              Deploy a coordinated team of specialized agents that work together on a complex workflow. Each agent handles its own domain — one reads data, one analyzes it, one writes the report, one sends the alert.
+            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {[
+                "Multiple agents, each with a defined role",
+                "Agents hand off work to each other automatically",
+                "Team-level governance and confidence thresholds",
+                "Parallel execution — faster results at scale",
+                "One dashboard for the entire team's activity"
+              ].map((item) => (
+                <li key={item} style={{ fontSize: 14, color: "#9090b0", padding: "6px 0", borderBottom: "1px solid #2a2a4e", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <span style={{ color: "#a78bfa", flexShrink: 0 }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div style={{ background: "#0f0f1a", border: "1px solid #2a2a3e", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ padding: "20px 28px", borderBottom: "1px solid #2a2a3e" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>How Many Agents Can I Deploy?</h3>
+            <p style={{ fontSize: 14, color: "#6060a0", margin: "6px 0 0" }}>Agent limits apply to the total number of active agents across all your teams and solo deployments.</p>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#0a0a0f" }}>
+                  {["Plan", "Active Agents", "Teams", "Agents per Team", "Best For"].map((h) => (
+                    <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 13, fontWeight: 600, color: "#6060a0", borderBottom: "1px solid #1e1e2e" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { plan: "Starter", agents: "Up to 5", teams: "1 team", perTeam: "Up to 5", best: "Small teams, single department", highlight: false },
+                  { plan: "Professional", agents: "Up to 25", teams: "Unlimited teams", perTeam: "Up to 10", best: "Multi-department automation", highlight: true },
+                  { plan: "Enterprise", agents: "Unlimited", teams: "Unlimited teams", perTeam: "Unlimited", best: "Org-wide AI workforce at scale", highlight: false }
+                ].map((row) => (
+                  <tr key={row.plan} style={{ background: row.highlight ? "rgba(99,102,241,0.06)" : "transparent", borderBottom: "1px solid #1e1e2e" }}>
+                    <td style={{ padding: "14px 20px", fontSize: 14, fontWeight: 700, color: row.highlight ? "#a78bfa" : "#fff" }}>{row.plan}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 14, color: "#c0c0d8" }}>{row.agents}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 14, color: "#c0c0d8" }}>{row.teams}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 14, color: "#c0c0d8" }}>{row.perTeam}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 13, color: "#7070a0" }}>{row.best}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* How Agents Execute Work Section */}
+      <section id="execution-model" style={{ background: "#0f0f1a", padding: "60px 40px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>
+            How Agents Actually Do the Work
+          </h2>
+          <p style={{ color: "#6060a0", textAlign: "center", fontSize: 16, maxWidth: 680, margin: "0 auto 12px" }}>
+            An agent is not just a chatbot. It is an active worker that connects to your real systems, reads and writes real data, and takes real actions — all within the boundaries you set.
+          </p>
+          <p style={{ color: "#5050a0", textAlign: "center", fontSize: 14, maxWidth: 680, margin: "0 auto 48px" }}>
+            You grant access once. The agent uses only what you have authorized. Every action is logged.
+          </p>
+
+          <div style={{ background: "#0a0a0f", border: "1px solid #2a2a3e", borderRadius: 12, padding: 32, marginBottom: 40 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: "#a5b4fc", marginBottom: 24, textAlign: "center" }}>What Happens When an Agent Runs a Task</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 0, alignItems: "stretch", justifyContent: "center" }}>
+              {[
+                { step: "1", label: "Receives Task", detail: "A job description or trigger event starts the agent" },
+                { step: "arr", label: "", detail: "" },
+                { step: "2", label: "Reads Data", detail: "Pulls records from your connected databases, files, or APIs" },
+                { step: "arr", label: "", detail: "" },
+                { step: "3", label: "Reasons & Decides", detail: "AI analyzes the data and determines the right action with a confidence score" },
+                { step: "arr", label: "", detail: "" },
+                { step: "4", label: "Acts or Escalates", detail: "If confident: takes the action. If not: pauses and asks a human." },
+                { step: "arr", label: "", detail: "" },
+                { step: "5", label: "Logs Everything", detail: "Every step recorded in the immutable audit log" }
+              ].map((item, i) => (
+                item.step === "arr" ? (
+                  <div key={i} style={{ display: "flex", alignItems: "center", padding: "0 8px", color: "#3f3f5a", fontSize: 20, flexShrink: 0 }}>→</div>
+                ) : (
+                  <div key={i} style={{ background: "#0f0f1a", border: "1px solid #2a2a3e", borderRadius: 10, padding: "16px 20px", flex: "1 1 140px", minWidth: 120, maxWidth: 180 }}>
+                    <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>{item.step}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.label}</div>
+                    <div style={{ fontSize: 12, color: "#6060a0", lineHeight: 1.5 }}>{item.detail}</div>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>What Systems Can Agents Connect To?</h3>
+          <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 32, fontSize: 14 }}>
+            You grant access to the systems you choose. The agent only uses what you have explicitly authorized.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+            {EXECUTION_TOOLS.map((tool) => (
+              <div key={tool.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 22 }}>
+                <div style={{ fontSize: 28, marginBottom: 10 }}>{tool.icon}</div>
+                <h4 style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{tool.title}</h4>
+                <p style={{ fontSize: 13, color: "#6060a0", lineHeight: 1.7, margin: 0 }}>{tool.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 32, background: "linear-gradient(135deg, #1a1a3e, #0f0f2e)", border: "1px solid #3f3f6a", borderRadius: 12, padding: 28, display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <div style={{ fontSize: 36, flexShrink: 0 }}>🔑</div>
+            <div>
+              <h4 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 8 }}>How Access Works</h4>
+              <p style={{ fontSize: 14, color: "#8080a0", lineHeight: 1.8, margin: 0 }}>
+                You connect your systems once through the WorkforceAutomated dashboard — using API keys, OAuth, or database credentials. Each agent is then assigned only the permissions it needs for its specific job. An invoice review agent can read the invoice database but cannot touch payroll. A lead scoring agent can update CRM records but cannot send emails. You define the boundaries. The agent stays within them. Every action is recorded in a tamper-proof audit log.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -173,7 +359,7 @@ export default function Landing() {
       {/* Use Cases */}
       <section style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
         <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Works in Every Department</h2>
-        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>If there's a repeatable process, we can build a team of AI agents to do it.</p>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>If there is a repeatable process, we can build a team of AI agents to do it.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
           {USE_CASES.map((uc) => (
             <div key={uc.dept} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
@@ -187,11 +373,11 @@ export default function Landing() {
       {/* Guardrails */}
       <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>You're Always in Control</h2>
-          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>The AI never acts alone on anything important. Here's how we keep humans in charge.</p>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>You are Always in Control</h2>
+          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>The AI never acts alone on anything important. Here is how we keep humans in charge.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
             {[
-              { icon: "🎯", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI isn't sure enough, it stops and asks you." },
+              { icon: "🎯", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI is not sure enough, it stops and asks you." },
               { icon: "⚠️", title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
               { icon: "📝", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
               { icon: "🔒", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." }
@@ -228,7 +414,7 @@ export default function Landing() {
       <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
           <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Your Data is Safe</h2>
-          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>We take security seriously. Here's exactly what we do to protect your data.</p>
+          <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>We take security seriously. Here is exactly what we do to protect your data.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
             {[
               { icon: "🔐", title: "Encrypted Everywhere", desc: "All data is encrypted when stored and when moving between systems." },
@@ -249,24 +435,68 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section style={{ padding: "60px 40px", maxWidth: 900, margin: "0 auto" }}>
+      <section id="pricing" style={{ padding: "60px 40px", maxWidth: 960, margin: "0 auto" }}>
         <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Simple Pricing</h2>
-        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Start free. Upgrade when you're ready.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>Start free. Upgrade when you are ready.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
           {[
-            { name: "Starter", price: "$49/mo", features: ["Up to 5 AI agents", "Basic audit logs", "Email support", "1 department"], highlight: false },
-            { name: "Professional", price: "$149/mo", features: ["Up to 25 AI agents", "Full audit logs", "Priority support", "All departments", "Advanced governance"], highlight: true },
-            { name: "Enterprise", price: "$499/mo", features: ["Unlimited agents", "Custom integrations", "Dedicated support", "SLA guarantee", "Custom data residency"], highlight: false }
+            {
+              name: "Starter",
+              price: "$49/mo",
+              tagline: "Perfect for a single team or department",
+              features: [
+                "Up to 5 active AI agents",
+                "1 agent team",
+                "Up to 5 agents per team",
+                "Basic audit logs",
+                "Email support",
+                "1 department"
+              ],
+              highlight: false
+            },
+            {
+              name: "Professional",
+              price: "$149/mo",
+              tagline: "For multi-department automation",
+              features: [
+                "Up to 25 active AI agents",
+                "Unlimited agent teams",
+                "Up to 10 agents per team",
+                "Full audit logs + CSV export",
+                "Priority support",
+                "All departments",
+                "Advanced governance controls"
+              ],
+              highlight: true
+            },
+            {
+              name: "Enterprise",
+              price: "$499/mo",
+              tagline: "Org-wide AI workforce at scale",
+              features: [
+                "Unlimited active AI agents",
+                "Unlimited agent teams",
+                "Unlimited agents per team",
+                "Custom integrations",
+                "Dedicated support + SLA",
+                "Custom data residency",
+                "SSO & advanced security"
+              ],
+              highlight: false
+            }
           ].map((plan) => (
             <div key={plan.name} style={{ background: plan.highlight ? "linear-gradient(135deg, #1a1a3e, #2a1a4e)" : "#0f0f1a", border: plan.highlight ? "2px solid #6366f1" : "1px solid #1e1e2e", borderRadius: 12, padding: 28, position: "relative" }}>
               {plan.highlight && (
-                <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 12, padding: "4px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>Most Popular</div>
+                <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 12, padding: "4px 14px", fontSize: 12, fontWeight: 700, color: "#fff", whiteSpace: "nowrap" }}>Most Popular</div>
               )}
               <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{plan.name}</h3>
+              <p style={{ fontSize: 13, color: "#6060a0", marginBottom: 12 }}>{plan.tagline}</p>
               <div style={{ fontSize: 28, fontWeight: 800, color: plan.highlight ? "#a78bfa" : "#fff", marginBottom: 20 }}>{plan.price}</div>
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px" }}>
                 {plan.features.map((f) => (
-                  <li key={f} style={{ fontSize: 14, color: "#9090b0", padding: "6px 0", borderBottom: "1px solid #1e1e2e" }}>✓ {f}</li>
+                  <li key={f} style={{ fontSize: 14, color: "#9090b0", padding: "7px 0", borderBottom: "1px solid #1e1e2e", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                    <span style={{ color: plan.highlight ? "#a78bfa" : "#6366f1", flexShrink: 0 }}>✓</span> {f}
+                  </li>
                 ))}
               </ul>
               <Link to="/register" style={{ display: "block", width: "100%", padding: "12px", borderRadius: 8, cursor: "pointer", fontSize: 15, fontWeight: 600, background: plan.highlight ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent", border: plan.highlight ? "none" : "1px solid #3f3f5a", color: "#fff", textDecoration: "none", textAlign: "center", boxSizing: "border-box" }}>
