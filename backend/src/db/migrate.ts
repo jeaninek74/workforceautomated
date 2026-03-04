@@ -132,8 +132,10 @@ async function migrate() {
       updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     );`);
 
-    // KPI definitions
-    await client.query(`CREATE TABLE IF NOT EXISTS kpi_definitions (
+    // KPI definitions - drop and recreate to ensure all columns exist
+    await client.query(`DROP TABLE IF EXISTS kpi_results CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS kpi_definitions CASCADE;`);
+    await client.query(`CREATE TABLE kpi_definitions (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       name VARCHAR(255) NOT NULL,
@@ -150,7 +152,7 @@ async function migrate() {
     );`);
 
     // KPI results
-    await client.query(`CREATE TABLE IF NOT EXISTS kpi_results (
+    await client.query(`CREATE TABLE kpi_results (
       id SERIAL PRIMARY KEY,
       kpi_id INTEGER NOT NULL REFERENCES kpi_definitions(id) ON DELETE CASCADE,
       value REAL NOT NULL,
