@@ -91,9 +91,9 @@ export default function Landing() {
           AI Workforce Platform
         </div>
         <h1 style={{ fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 800, lineHeight: 1.15, margin: "0 0 24px", color: "#fff" }}>
-          Turn Any Work Process<br />
+          Automate Any Work Process.<br />
           <span style={{ background: "linear-gradient(135deg, #6366f1, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Into an AI That Does It
+            Govern Every Action. Grow Without Limits.
           </span>
         </h1>
         <p style={{ fontSize: 20, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>
