@@ -99,16 +99,19 @@ async function migrate() {
     await client.query(`CREATE INDEX IF NOT EXISTS executions_agent_idx ON executions(agent_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS executions_created_idx ON executions(created_at DESC);`);
 
-    // Audit logs
-    await client.query(`CREATE TABLE IF NOT EXISTS audit_logs (
+    // Audit logs - drop and recreate with all required columns
+    await client.query(`DROP TABLE IF EXISTS audit_logs CASCADE;`);
+    await client.query(`CREATE TABLE audit_logs (
       id SERIAL PRIMARY KEY,
       user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      action VARCHAR(255) NOT NULL,
+      execution_id INTEGER REFERENCES executions(id) ON DELETE SET NULL,
+      agent_id INTEGER REFERENCES agents(id) ON DELETE SET NULL,
+      action VARCHAR(128) NOT NULL,
       entity_type VARCHAR(64),
       entity_id VARCHAR(64),
-      ip_address VARCHAR(64),
+      details JSONB,
+      ip_address VARCHAR(45),
       user_agent TEXT,
-      metadata JSONB,
       created_at TIMESTAMP DEFAULT NOW() NOT NULL
     );`);
     await client.query(`CREATE INDEX IF NOT EXISTS audit_user_idx ON audit_logs(user_id);`);

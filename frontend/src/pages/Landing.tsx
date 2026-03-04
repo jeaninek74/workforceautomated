@@ -30,7 +30,7 @@ const FEATURES = [
   { icon: "🛡️", title: "Humans Stay in Charge", desc: "The agent only acts when it's confident. Anything uncertain gets sent to a real person first." },
   { icon: "📋", title: "Works for Any Department", desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it." },
   { icon: "🔍", title: "Every Action is Recorded", desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance." },
-  { icon: "🚀", title: "Ready in Minutes, Not Months", desc: "Paste your process document. Agent is configured and ready to run in under 5 minutes." }
+  { icon: "🚀", title: "Ready in Minutes, Not Months", desc: "Paste your process document. A team of AI agents is configured and ready to run in under 5 minutes." }
 ];
 
 const USE_CASES = [
@@ -97,7 +97,7 @@ export default function Landing() {
           </span>
         </h1>
         <p style={{ fontSize: 20, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>
-          You describe the job. We build the AI agent that does it — automatically, accurately, and with a human always in control.
+          You describe the job. We build the AI team that does it — automatically, accurately, and with a human always in control.
         </p>
         <p style={{ fontSize: 16, color: "#6060a0", marginBottom: 40 }}>
           Works for finance, HR, legal, sales, customer support, IT, and more. No coding required.
@@ -173,7 +173,7 @@ export default function Landing() {
       {/* Use Cases */}
       <section style={{ padding: "60px 40px", maxWidth: 1000, margin: "0 auto" }}>
         <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Works in Every Department</h2>
-        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>If there's a repeatable process, we can automate it.</p>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40 }}>If there's a repeatable process, we can build a team of AI agents to do it.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
           {USE_CASES.map((uc) => (
             <div key={uc.dept} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
