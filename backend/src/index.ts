@@ -20,6 +20,7 @@ import { metricsRouter } from "./api/metrics.js";
 import { kpiRouter } from "./api/kpi.js";
 import { governanceRouter } from "./api/governance.js";
 import { stripeWebhookRouter } from "./api/stripeWebhook.js";
+import { integrationsRouter } from "./api/integrations.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -68,6 +69,7 @@ app.use("/api/billing", billingRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/kpi", kpiRouter);
 app.use("/api/governance", governanceRouter);
+app.use("/api/integrations", integrationsRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), version: "1.0.0" });

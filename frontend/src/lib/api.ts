@@ -68,9 +68,44 @@ export const executionsApi = {
   list: (params?: { agentId?: number; teamId?: number; status?: string; limit?: number; page?: number }) =>
     api.get("/api/executions", { params }),
   get: (id: number) => api.get(`/api/executions/${id}`),
-  create: (data: { agentId?: number; teamId?: number; input: string; type?: string }) =>
-    api.post("/api/executions", data),
+  create: (data: {
+    agentId?: number;
+    teamId?: number;
+    input: string;
+    type?: string;
+    outputFormat?: string;
+    files?: File[];
+  }) => {
+    if (data.files && data.files.length > 0) {
+      const form = new FormData();
+      if (data.agentId) form.append("agentId", String(data.agentId));
+      if (data.teamId) form.append("teamId", String(data.teamId));
+      form.append("input", data.input);
+      form.append("type", data.type || "single");
+      if (data.outputFormat) form.append("outputFormat", data.outputFormat);
+      for (const file of data.files) form.append("files", file);
+      return api.post("/api/executions", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    }
+    return api.post("/api/executions", data);
+  },
   cancel: (id: number) => api.post(`/api/executions/${id}/cancel`),
+};
+
+// Integrations
+export const integrationsApi = {
+  list: () => api.get("/api/integrations"),
+  create: (data: { name: string; type: string; credentials?: Record<string, string>; config?: Record<string, string> }) =>
+    api.post("/api/integrations", data),
+  update: (id: number, data: any) => api.put(`/api/integrations/${id}`, data),
+  delete: (id: number) => api.delete(`/api/integrations/${id}`),
+  test: (id: number) => api.post(`/api/integrations/${id}/test`),
+  getAgentAssignments: (agentId: number) => api.get(`/api/integrations/agent/${agentId}`),
+  assignToAgent: (agentId: number, data: { integrationId: number; permissions?: string[] }) =>
+    api.post(`/api/integrations/agent/${agentId}/assign`, data),
+  removeFromAgent: (agentId: number, assignmentId: number) =>
+    api.delete(`/api/integrations/agent/${agentId}/assign/${assignmentId}`),
 };
 
 // Audit

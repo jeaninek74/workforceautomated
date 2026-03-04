@@ -1,6 +1,15 @@
-// Smart agent generation engine — no external API required.
-// Uses keyword analysis and domain pattern matching to produce
-// fully configured AI agents from any work process document.
+import OpenAI from "openai";
+import * as fs from "fs";
+import * as path from "path";
+import csv from "csv-parser";
+import * as XLSX from "xlsx";
+import { Readable } from "stream";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// ─── Agent Config Types ───────────────────────────────────────────────────────
 
 interface AgentConfig {
   name: string;
@@ -13,6 +22,8 @@ interface AgentConfig {
   confidenceThreshold: number;
   escalationThreshold: number;
 }
+
+// ─── Domain Patterns (used for agent config generation only) ─────────────────
 
 const DOMAIN_PATTERNS: Array<{
   keywords: string[];
@@ -113,11 +124,13 @@ function detectConnectorType(text: string): "readonly" | "overlay" | "write_back
   return "readonly";
 }
 
+// ─── Agent Config Generation (uses OpenAI if available, falls back to patterns) ─
+
 export async function generateAgentFromJobDescription(jobDescription: string): Promise<AgentConfig> {
   const lower = jobDescription.toLowerCase();
   const roleName = extractRoleName(jobDescription);
 
-  let bestMatch = DOMAIN_PATTERNS[6]; // default: Operations
+  let bestMatch = DOMAIN_PATTERNS[6];
   let bestScore = 0;
   for (const pattern of DOMAIN_PATTERNS) {
     const score = pattern.keywords.filter((kw) => lower.includes(kw)).length;
@@ -165,60 +178,167 @@ Operating rules:
   };
 }
 
-export async function runAgentTask(
-  systemPrompt: string,
-  input: string
-): Promise<{
+// ─── File Text Extraction ─────────────────────────────────────────────────────
+
+export async function extractTextFromFile(filePath: string, mimeType: string): Promise<string> {
+  const ext = path.extname(filePath).toLowerCase();
+
+  // Plain text / CSV as text
+  if (mimeType === "text/plain" || ext === ".txt" || ext === ".md") {
+    return fs.readFileSync(filePath, "utf-8");
+  }
+
+  // CSV — parse into readable table text
+  if (mimeType === "text/csv" || ext === ".csv") {
+    return new Promise((resolve, reject) => {
+      const rows: Record<string, string>[] = [];
+      fs.createReadStream(filePath)
+        .pipe(csv())
+        .on("data", (row: Record<string, string>) => rows.push(row))
+        .on("end", () => {
+          if (rows.length === 0) { resolve("(empty CSV)"); return; }
+          const headers = Object.keys(rows[0]);
+          const lines = [headers.join(" | ")];
+          lines.push(headers.map(() => "---").join(" | "));
+          for (const row of rows.slice(0, 500)) {
+            lines.push(headers.map((h) => String(row[h] ?? "")).join(" | "));
+          }
+          if (rows.length > 500) lines.push(`... (${rows.length - 500} more rows)`);
+          resolve(lines.join("\n"));
+        })
+        .on("error", reject);
+    });
+  }
+
+  // Excel — convert to text table
+  if (
+    mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    mimeType === "application/vnd.ms-excel" ||
+    ext === ".xlsx" ||
+    ext === ".xls"
+  ) {
+    const workbook = XLSX.readFile(filePath);
+    const lines: string[] = [];
+    for (const sheetName of workbook.SheetNames) {
+      lines.push(`\n=== Sheet: ${sheetName} ===`);
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_csv(sheet);
+      lines.push(data.slice(0, 8000));
+    }
+    return lines.join("\n");
+  }
+
+  // PDF — extract text using pdf-parse if available, otherwise read buffer
+  if (mimeType === "application/pdf" || ext === ".pdf") {
+    try {
+      const { default: pdfParse } = await import("pdf-parse/lib/pdf-parse.js" as any);
+      const buffer = fs.readFileSync(filePath);
+      const data = await pdfParse(buffer);
+      return data.text || "(PDF text extraction returned empty)";
+    } catch {
+      return "(PDF uploaded — text extraction unavailable. Please paste the content as text for best results.)";
+    }
+  }
+
+  // Word documents
+  if (
+    mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    ext === ".docx"
+  ) {
+    try {
+      const mammoth = await import("mammoth");
+      const result = await mammoth.extractRawText({ path: filePath });
+      return result.value || "(Word document text extraction returned empty)";
+    } catch {
+      return "(Word document uploaded — text extraction unavailable. Please paste the content as text for best results.)";
+    }
+  }
+
+  return "(Unsupported file type — please paste the content as text)";
+}
+
+// ─── Real OpenAI Agent Task Execution ────────────────────────────────────────
+
+export interface AgentTaskResult {
   output: string;
   confidenceScore: number;
   riskLevel: "low" | "medium" | "high" | "critical";
   tokenCount: number;
-}> {
-  const inputLower = input.toLowerCase();
-  const wordCount = input.split(/\s+/).length;
+}
 
-  let confidenceScore = 0.82;
-  if (wordCount < 5) confidenceScore = 0.65;
-  else if (wordCount > 200) confidenceScore = 0.88;
-  if (inputLower.includes("urgent") || inputLower.includes("critical")) confidenceScore = Math.min(confidenceScore, 0.70);
-  if (inputLower.includes("unclear") || inputLower.includes("ambiguous")) confidenceScore = Math.min(confidenceScore, 0.55);
-  confidenceScore = Math.min(0.99, Math.max(0.30, confidenceScore + (Math.random() * 0.1 - 0.05)));
+export async function runAgentTask(
+  systemPrompt: string,
+  input: string,
+  outputFormat?: string,
+  fileContext?: string
+): Promise<AgentTaskResult> {
 
+  // Build the full user message
+  let userMessage = input;
+  if (fileContext) {
+    userMessage = `The following content was uploaded for you to work with:\n\n${fileContext.slice(0, 12000)}${fileContext.length > 12000 ? "\n\n[Content truncated — showing first 12,000 characters]" : ""}\n\n---\n\nTask instruction: ${input}`;
+  }
+
+  // Append output format instruction if specified
+  const outputInstruction = outputFormat
+    ? `\n\nIMPORTANT: Format your response as: ${outputFormat}`
+    : "";
+
+  const fullSystemPrompt = systemPrompt + `\n\nAfter completing your analysis, end your response with exactly this line:\nCONFIDENCE: [0.00-1.00]` + outputInstruction;
+
+  let output = "";
+  let confidenceScore = 0.75;
+  let tokenCount = 0;
+
+  if (!process.env.OPENAI_API_KEY) {
+    // Fallback if no API key — honest stub
+    output = `[Agent Response — OpenAI API key not configured]\n\nThe agent received your task but cannot process it without an OpenAI API key. Please add OPENAI_API_KEY to the environment variables.\n\nTask received: "${input.slice(0, 200)}"`;
+    confidenceScore = 0.0;
+  } else {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: fullSystemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 2000,
+        temperature: 0.3,
+      });
+
+      const rawOutput = response.choices[0]?.message?.content || "(No response from model)";
+      tokenCount = response.usage?.total_tokens || 0;
+
+      // Extract confidence score from the response
+      const confMatch = rawOutput.match(/CONFIDENCE:\s*(0\.\d+|1\.0+|1)/i);
+      if (confMatch) {
+        confidenceScore = Math.min(0.99, Math.max(0.01, parseFloat(confMatch[1])));
+        // Remove the confidence line from the visible output
+        output = rawOutput.replace(/\nCONFIDENCE:\s*(0\.\d+|1\.0+|1)\s*$/i, "").trim();
+      } else {
+        output = rawOutput;
+        // Estimate confidence from output tone
+        const lowerOut = rawOutput.toLowerCase();
+        if (lowerOut.includes("cannot") || lowerOut.includes("unclear") || lowerOut.includes("insufficient")) {
+          confidenceScore = 0.45;
+        } else if (lowerOut.includes("uncertain") || lowerOut.includes("may") || lowerOut.includes("possibly")) {
+          confidenceScore = 0.65;
+        } else {
+          confidenceScore = 0.82;
+        }
+      }
+    } catch (err: any) {
+      output = `[Execution Error] The agent encountered an error while processing: ${err.message}`;
+      confidenceScore = 0.0;
+    }
+  }
+
+  // Determine risk level from confidence
   let riskLevel: "low" | "medium" | "high" | "critical";
   if (confidenceScore >= 0.80) riskLevel = "low";
   else if (confidenceScore >= 0.65) riskLevel = "medium";
   else if (confidenceScore >= 0.45) riskLevel = "high";
   else riskLevel = "critical";
 
-  const agentRole = systemPrompt.match(/You are ([^,\n]+)/)?.[1] || "AI Agent";
-  const timestamp = new Date().toISOString();
-
-  const output = `[${agentRole}] — Execution Report
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Timestamp: ${timestamp}
-Input: "${input.slice(0, 120)}${input.length > 120 ? "..." : ""}"
-
-${confidenceScore >= 0.80
-    ? `✓ Task completed within normal operating parameters.
-✓ All actions are within defined capability boundaries.
-✓ No escalation required.
-
-Result: Task processed successfully. All actions logged in the immutable audit trail.`
-    : confidenceScore >= 0.65
-    ? `⚠ Task completed with moderate confidence.
-⚠ Some aspects of the input required interpretation.
-⚠ Human review recommended before acting on these results.
-
-Result: Partial results generated. Awaiting human review.`
-    : `⚡ LOW CONFIDENCE — ESCALATION TRIGGERED
-Confidence (${(confidenceScore * 100).toFixed(1)}%) is below the escalation threshold.
-The assigned escalation contact has been notified. No autonomous action taken.
-
-Result: Escalated to supervisor.`}
-
-Confidence: ${(confidenceScore * 100).toFixed(1)}%
-Risk Level: ${riskLevel.toUpperCase()}
-Audit Record: Created ✓`;
-
-  return { output, confidenceScore, riskLevel, tokenCount: wordCount * 4 };
+  return { output, confidenceScore, riskLevel, tokenCount };
 }

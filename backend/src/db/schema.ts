@@ -157,9 +157,41 @@ export const metricsSnapshots = pgTable("metrics_snapshots", {
   escalatedExecutions: integer("escalated_executions"),
 });
 
+// ─── Integration Connectors ──────────────────────────────────────────────────
+export const integrationTypeEnum = pgEnum("integration_type", ["google_drive", "slack", "rest_api", "webhook", "database"]);
+export const integrationStatusEnum = pgEnum("integration_status", ["active", "inactive", "error"]);
+
+export const integrations = pgTable("integrations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: integrationTypeEnum("type").notNull(),
+  status: integrationStatusEnum("status").default("active").notNull(),
+  // Encrypted credentials stored as JSON — never expose raw to frontend
+  credentials: jsonb("credentials").$type<Record<string, string>>(),
+  // Non-sensitive config (folder IDs, channel names, base URLs, etc.)
+  config: jsonb("config").$type<Record<string, string>>(),
+  lastTestedAt: timestamp("last_tested_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (t) => ({ userIdx: index("integrations_user_idx").on(t.userId) }));
+
+// Agent <-> Integration assignments
+export const agentIntegrations = pgTable("agent_integrations", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+  integrationId: integer("integration_id").notNull().references(() => integrations.id, { onDelete: "cascade" }),
+  permissions: jsonb("permissions").$type<string[]>(), // e.g. ["read", "write"]
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Agent = typeof agents.$inferSelect;
 export type Team = typeof teams.$inferSelect;
 export type Execution = typeof executions.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
+export type Integration = typeof integrations.$inferSelect;
+export type AgentIntegration = typeof agentIntegrations.$inferSelect;

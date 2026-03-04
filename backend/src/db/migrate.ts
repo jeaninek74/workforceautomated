@@ -179,6 +179,40 @@ async function migrate() {
     );`);
     await client.query(`CREATE INDEX IF NOT EXISTS metrics_user_idx ON metrics_snapshots(user_id);`);
 
+    // Integration connectors
+    await client.query(`DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'integration_type') THEN
+        CREATE TYPE integration_type AS ENUM ('google_drive', 'slack', 'rest_api', 'webhook', 'database');
+      END IF;
+    END $$;`);
+    await client.query(`DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'integration_status') THEN
+        CREATE TYPE integration_status AS ENUM ('active', 'inactive', 'error');
+      END IF;
+    END $$;`);
+    await client.query(`CREATE TABLE IF NOT EXISTS integrations (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      type integration_type NOT NULL,
+      status integration_status DEFAULT 'active' NOT NULL,
+      credentials JSONB,
+      config JSONB,
+      last_tested_at TIMESTAMP,
+      last_used_at TIMESTAMP,
+      error_message TEXT,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+    await client.query(`CREATE INDEX IF NOT EXISTS integrations_user_idx ON integrations(user_id);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS agent_integrations (
+      id SERIAL PRIMARY KEY,
+      agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+      integration_id INTEGER NOT NULL REFERENCES integrations(id) ON DELETE CASCADE,
+      permissions JSONB,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+
     console.log("Database migration completed successfully!");
   } catch (err) {
     console.error("Migration error:", err);
