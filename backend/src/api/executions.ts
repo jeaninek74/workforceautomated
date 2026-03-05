@@ -50,12 +50,16 @@ const upload = multer({
 
 // ─── GET /api/executions ──────────────────────────────────────────────────────
 executionsRouter.get("/", async (req: AuthRequest, res) => {
+  const teamId = req.query.teamId ? parseInt(req.query.teamId as string) : undefined;
+  const whereClause = teamId
+    ? and(eq(executions.userId, req.user!.id), eq(executions.teamId, teamId))
+    : eq(executions.userId, req.user!.id);
   const list = await db
     .select()
     .from(executions)
-    .where(eq(executions.userId, req.user!.id))
+    .where(whereClause)
     .orderBy(desc(executions.createdAt))
-    .limit(50);
+    .limit(100);
   res.json({ executions: list });
 });
 

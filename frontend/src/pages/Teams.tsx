@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Users, Plus, Play, Edit, Trash2, Bot, ArrowDown, Layers,
-  GitBranch, Zap, ChevronRight, AlertCircle
+  GitBranch, Zap, ChevronRight, AlertCircle, History
 } from "lucide-react";
 import { teamsApi } from "../lib/api";
 
@@ -194,10 +194,17 @@ export default function Teams() {
                     <Play className="w-3 h-3" /> Run
                   </Link>
                   <Link
-                    to={`/teams/${team.id}/edit`}
+                    to={`/teams/${team.id}/history`}
                     className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium py-2 rounded-lg transition-colors"
                   >
-                    <Edit className="w-3 h-3" /> Edit
+                    <History className="w-3 h-3" /> History
+                  </Link>
+                  <Link
+                    to={`/teams/${team.id}/edit`}
+                    className="flex items-center justify-center w-8 h-8 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                    title="Edit team"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
                   </Link>
                   <button
                     onClick={() => handleDelete(team.id)}

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { runAgentTask, extractTextFromFile } from "./llm.js";
 import { fetchIntegrationData } from "./integrations.js";
 import { logAudit } from "./audit.js";
+import { sendEscalationNotification } from "./notifications.js";
 
 interface ExecutionInput {
   agentId?: number;
@@ -324,6 +325,7 @@ export async function runAgentExecution(
     let escalated = false;
     let escalationReason = "";
     let agentMessages: AgentMessage[] = [];
+    let teamResultsForMeta: AgentResult[] = [];
 
     // ── Single agent ──
     if (input.agentId) {
@@ -358,8 +360,7 @@ export async function runAgentExecution(
       const branchingRules = ((team as any).branchingRules || []) as BranchingRule[];
 
       let teamResult: { output: string; results: AgentResult[]; messages: AgentMessage[] };
-
-      if (mode === "parallel") {
+       if (mode === "parallel") {
         teamResult = await runParallel(memberIds, input.input, input.outputFormat, combinedFileContext);
       } else if (mode === "conditional") {
         teamResult = await runConditional(memberIds, branchingRules, input.input, input.outputFormat, combinedFileContext);
@@ -369,6 +370,7 @@ export async function runAgentExecution(
 
       output = teamResult.output;
       agentMessages = teamResult.messages;
+      teamResultsForMeta = teamResult.results;
       tokenCount = teamResult.results.reduce((s, r) => s + r.tokenCount, 0);
 
       const avgConf = teamResult.results.length > 0
@@ -411,8 +413,39 @@ export async function runAgentExecution(
         fileNames: input.files?.map((f) => f.originalName) || [],
         agentMessages,
         executionMode: input.teamId ? "team" : "single",
+        agentResults: teamResultsForMeta.length > 0
+          ? teamResultsForMeta.map((r) => ({
+              agentId: r.agentId,
+              agentName: r.agentName,
+              confidenceScore: r.confidenceScore,
+              riskLevel: r.riskLevel,
+              tokenCount: r.tokenCount,
+              outputSnippet: r.output?.slice(0, 300),
+            }))
+          : null,
       },
     }).where(eq(executions.id, executionId));
+
+    // Send escalation notifications if needed
+    if (escalated) {
+      const [agentRow] = input.agentId
+        ? await db.select().from(agents).where(eq(agents.id, input.agentId)).limit(1)
+        : [null];
+      const [teamRow] = input.teamId
+        ? await db.select().from(teams).where(eq(teams.id, input.teamId)).limit(1)
+        : [null];
+      sendEscalationNotification({
+        userId,
+        executionId,
+        agentName: agentRow?.name,
+        teamName: (teamRow as any)?.name,
+        taskInput: input.input,
+        escalationReason,
+        confidenceScore,
+        riskLevel,
+        output: output?.slice(0, 800),
+      }).catch((e) => console.error("[Executor] Notification error:", e.message));
+    }
 
     await logAudit({
       userId,

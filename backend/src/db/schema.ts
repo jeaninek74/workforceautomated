@@ -191,6 +191,21 @@ export const agentIntegrations = pgTable("agent_integrations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Notification settings per user
+export const notificationSettings = pgTable("notification_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  escalationEmailEnabled: boolean("escalation_email_enabled").default(false).notNull(),
+  escalationEmail: text("escalation_email"),
+  slackWebhookEnabled: boolean("slack_webhook_enabled").default(false).notNull(),
+  slackWebhookUrl: text("slack_webhook_url"),
+  notifyOnHighRisk: boolean("notify_on_high_risk").default(true).notNull(),
+  notifyOnCriticalRisk: boolean("notify_on_critical_risk").default(true).notNull(),
+  notifyOnLowConfidence: boolean("notify_on_low_confidence").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Agent = typeof agents.$inferSelect;
