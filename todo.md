@@ -93,3 +93,18 @@
 - [ ] Review Queue: Role-based access — restrict approve/reject to reviewer/admin roles only
 - [ ] Landing page: Full premium redesign inspired by mbusa.com — custom typography, real visual hierarchy, no AI-generated look
 - [ ] Agent skill library: Add web developer, design critique, and code review system prompt templates
+
+## Phase 12: Agent Skill Templates + E2E Testing
+- [ ] Agent skill templates: pre-built system prompt library (Invoice Reviewer, Contract Analyst, Support Classifier, Lead Scorer, HR Screener, Compliance Checker, Web Developer, Design Critic, Code Reviewer)
+- [ ] Agent Builder: template picker UI — browse and select a template to pre-fill the form
+- [ ] Backend: /api/agent-templates endpoint serving the template library
+- [ ] E2E test: user registration and login
+- [ ] E2E test: create agent from scratch
+- [ ] E2E test: create agent from template
+- [ ] E2E test: create team, add agents, configure execution mode
+- [ ] E2E test: run execution with file upload
+- [ ] E2E test: review queue approve/reject
+- [ ] E2E test: generate and download PDF/CSV report
+- [ ] E2E test: schedule creation and run-now
+- [ ] E2E test: integration add and test connection
+- [ ] E2E test: notification settings save and test
