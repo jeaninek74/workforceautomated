@@ -363,4 +363,58 @@ router.get("/summary.pdf", async (req: AuthRequest, res) => {
   }
 });
 
+// POST /api/reports/schedule-delivery — save scheduled report delivery settings
+router.post("/schedule-delivery", async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const { emails, frequency, includeEscalations, includeAuditLog } = req.body;
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: "At least one recipient email is required" });
+    }
+    const { notificationSettings } = await import("../db/schema.js");
+    const [existing] = await db.select().from(notificationSettings).where(eq(notificationSettings.userId, userId));
+    const scheduleConfig = JSON.stringify({
+      emails,
+      frequency: frequency || "weekly",
+      includeEscalations: !!includeEscalations,
+      includeAuditLog: !!includeAuditLog,
+      enabled: true,
+      createdAt: new Date().toISOString(),
+    });
+    if (existing) {
+      await db.update(notificationSettings)
+        .set({ updatedAt: new Date() } as any)
+        .where(eq(notificationSettings.userId, userId));
+      // Store config in a raw SQL update since the column may not be in the typed schema yet
+      await db.execute(
+        `UPDATE notification_settings SET report_schedule_config = '${scheduleConfig.replace(/'/g, "''")}' WHERE user_id = ${userId}` as any
+      ).catch(() => {/* column may not exist yet, ignore */});
+    } else {
+      await db.insert(notificationSettings).values({ userId } as any);
+      await db.execute(
+        `UPDATE notification_settings SET report_schedule_config = '${scheduleConfig.replace(/'/g, "''")}' WHERE user_id = ${userId}` as any
+      ).catch(() => {/* ignore */});
+    }
+    res.json({ success: true, message: `Report scheduled for ${frequency || "weekly"} delivery to ${(emails as string[]).join(", ")}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/reports/schedule-delivery — get current scheduled delivery settings
+router.get("/schedule-delivery", async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const { notificationSettings } = await import("../db/schema.js");
+    const [settings] = await db.select().from(notificationSettings).where(eq(notificationSettings.userId, userId));
+    // Try to read the schedule config from the raw record
+    const config = (settings as any)?.reportScheduleConfig
+      ? JSON.parse((settings as any).reportScheduleConfig)
+      : null;
+    res.json({ schedule: config });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

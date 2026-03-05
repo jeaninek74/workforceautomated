@@ -37,6 +37,7 @@ export default function ReviewQueue() {
   const [statusFilter, setStatusFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, string>>({});
+  const [markAllConfirm, setMarkAllConfirm] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["reviews", statusFilter],
@@ -59,7 +60,16 @@ export default function ReviewQueue() {
     },
   });
 
+  const markAllMutation = useMutation({
+    mutationFn: () => api.post("/api/reviews/mark-all-reviewed", {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      setMarkAllConfirm(false);
+    },
+  });
+
   const reviews: ReviewItem[] = data?.reviews || [];
+  const canReview: boolean = data?.canReview ?? false;
 
   const statusBadge = (status: string) => {
     if (status === "approved") return <span className="flex items-center gap-1 text-green-400 text-xs font-medium"><CheckCircle className="w-3 h-3" /> Approved</span>;
@@ -75,6 +85,34 @@ export default function ReviewQueue() {
           <p className="text-gray-400 text-sm mt-1">Review and approve or reject escalated agent executions</p>
         </div>
         <div className="flex items-center gap-2">
+          {canReview && statusFilter === "pending" && reviews.length > 0 && (
+            markAllConfirm ? (
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-400 text-xs">Mark all {reviews.length} as reviewed?</span>
+                <button
+                  onClick={() => markAllMutation.mutate()}
+                  disabled={markAllMutation.isPending}
+                  className="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {markAllMutation.isPending ? "Processing..." : "Confirm"}
+                </button>
+                <button
+                  onClick={() => setMarkAllConfirm(false)}
+                  className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-xs font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setMarkAllConfirm(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-xs font-medium transition-colors"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                Mark all reviewed
+              </button>
+            )
+          )}
           <Filter className="w-4 h-4 text-gray-400" />
           {(["pending", "approved", "rejected", "all"] as const).map((s) => (
             <button
