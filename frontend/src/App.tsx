@@ -23,6 +23,9 @@ import Billing from "@/pages/Billing";
 import Settings from "@/pages/Settings";
 import Integrations from "@/pages/Integrations";
 import TeamExecutionHistory from "@/pages/TeamExecutionHistory";
+import ReviewQueue from "@/pages/ReviewQueue";
+import Schedules from "@/pages/Schedules";
+import Reports from "@/pages/Reports";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -69,6 +72,9 @@ function AppRoutes() {
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
+      <Route path="/reviews" element={<ProtectedRoute><ReviewQueue /></ProtectedRoute>} />
+      <Route path="/schedules" element={<ProtectedRoute><Schedules /></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

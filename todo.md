@@ -72,3 +72,12 @@
 - [ ] Team execution history page: per-agent breakdowns, confidence scores, branch paths taken
 - [ ] Escalation notifications: email (SendGrid) + Slack webhook when agent escalates a task
 - [ ] Notification settings page: configure email and Slack webhook per user
+
+## Phase 9: Review & Approve, Scheduling, Reports
+
+- [ ] Review & Approve workflow: escalation_reviews DB table, review page, approve/reject with comments
+- [ ] Escalation review queue in sidebar nav with badge count
+- [ ] Execution scheduling: schedules DB table, cron engine, schedule builder UI
+- [ ] Scheduled runs management page
+- [ ] Report generation: PDF and CSV export of executions, team history, audit logs
+- [ ] Reports page in dashboard with date range filters and download buttons
