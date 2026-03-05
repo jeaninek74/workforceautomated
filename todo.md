@@ -49,3 +49,14 @@
 - [ ] Database connector (PostgreSQL/MySQL)
 - [ ] Email/messaging connector
 - [ ] Outbound webhook actions
+
+## Phase 6: Advanced Multi-Agent Execution
+- [ ] Parallel execution: run multiple agents simultaneously and merge their outputs
+- [ ] Conditional branching: define rules (if Agent 1 flags high risk, route to Agent 3)
+- [ ] Agent-to-agent messaging: agents send structured questions/responses mid-execution
+- [ ] Schema update: executionMode (sequential/parallel/conditional), branchingRules, agentMessages
+- [ ] Teams UI: execution mode selector (sequential / parallel / conditional)
+- [ ] Teams UI: branching rules builder (condition + target agent)
+- [ ] Teams UI: agent message log showing inter-agent communication
+- [ ] Teams UI: visual pipeline diagram showing agent flow
+- [ ] Teams UI: full redesign — step-by-step team builder wizard, drag-and-drop agent ordering, clear execution mode explanation

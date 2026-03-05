@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE teams \n  ADD COLUMN IF NOT EXISTS execution_mode VARCHAR(32) NOT NULL DEFAULT 'sequential';\nALTER TABLE teams \n  ADD COLUMN IF NOT EXISTS branching_rules JSON;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4TCdEkG57UNdEiY.e3cb3ba9095f --database DGioqiaheNVbM7PKjQHUKu --execute \nALTER TABLE teams \n  ADD COLUMN IF NOT EXISTS execution_mode VARCHAR(32) NOT NULL DEFAULT 'sequential';\nALTER TABLE teams \n  ADD COLUMN IF NOT EXISTS branching_rules JSON;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1034
+}
