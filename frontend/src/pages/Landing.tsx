@@ -123,9 +123,24 @@ export default function Landing() {
       minHeight: "100vh",
     }}>
 
+      {/* ── UNDER CONSTRUCTION BANNER ── */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 200,
+        background: "#f59e0b",
+        color: "#000",
+        textAlign: "center",
+        padding: "10px 24px",
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+      }}>
+        Under Construction — Not For Use
+      </div>
+
       {/* ── NAV ── */}
       <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        position: "fixed", top: 38, left: 0, right: 0, zIndex: 100,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "20px 48px",
         background: "rgba(8,8,8,0.88)",

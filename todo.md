@@ -108,3 +108,9 @@
 - [ ] E2E test: schedule creation and run-now
 - [ ] E2E test: integration add and test connection
 - [ ] E2E test: notification settings save and test
+
+## Phase 13: Under Construction + Production Deployment Fix
+- [ ] Landing page: add "Under Construction — Not For Use" banner at top
+- [ ] Identify correct GitHub repo connected to Railway web service
+- [ ] Push all built features to the correct GitHub repo for Railway deployment
+- [ ] Run E2E tests against production after correct deployment
