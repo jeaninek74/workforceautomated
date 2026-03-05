@@ -60,3 +60,8 @@
 - [ ] Teams UI: agent message log showing inter-agent communication
 - [ ] Teams UI: visual pipeline diagram showing agent flow
 - [ ] Teams UI: full redesign — step-by-step team builder wizard, drag-and-drop agent ordering, clear execution mode explanation
+
+## Phase 7: UX Improvements
+- [x] Execution Console: Agent Communications panel showing handoff notes and branch decisions
+- [x] Team Builder: "Test with sample data" button in wizard to run a quick test execution
+- [x] Team Builder: Agent performance badges (avg confidence, total runs) in agent selection step

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Bot, Play, Loader2, CheckCircle, XCircle, AlertTriangle,
   ArrowLeft, Shield, Upload, X, FileText, ChevronDown, Zap,
-  Link2, Copy, Check
+  Link2, Copy, Check, MessageSquare, ChevronRight, ArrowRight
 } from "lucide-react";
 import { agentsApi, executionsApi, integrationsApi } from "../lib/api";
 
@@ -20,6 +20,79 @@ const OUTPUT_FORMATS = [
 
 const ACCEPTED_FILE_TYPES = ".pdf,.csv,.xlsx,.xls,.docx,.doc,.txt,.md";
 const MAX_FILE_SIZE_MB = 20;
+
+// Agent Communications Panel component
+function AgentCommunicationsPanel({ messages }: { messages: any[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const typeConfig: Record<string, { color: string; bg: string; label: string }> = {
+    handoff: { color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", label: "Handoff" },
+    branch_decision: { color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", label: "Branch Decision" },
+    question: { color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20", label: "Question" },
+    answer: { color: "text-green-400", bg: "bg-green-500/10 border-green-500/20", label: "Answer" },
+    note: { color: "text-gray-400", bg: "bg-gray-700/50 border-gray-600", label: "Note" },
+  };
+
+  return (
+    <div className="border border-gray-700 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-800 hover:bg-gray-750 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-blue-400" />
+          <span className="text-sm font-medium text-gray-200">Agent Communications</span>
+          <span className="text-xs bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">
+            {messages.length} message{messages.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
+
+      {expanded && (
+        <div className="p-4 space-y-3 bg-gray-900">
+          {messages.map((msg: any, idx: number) => {
+            const cfg = typeConfig[msg.type] || typeConfig.note;
+            return (
+              <div key={idx} className={`rounded-lg border p-3 ${cfg.bg}`}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    {msg.fromAgent && (
+                      <>
+                        <div className="flex items-center gap-1 text-xs text-gray-300">
+                          <Bot className="w-3 h-3" />
+                          <span className="font-medium">{msg.fromAgent}</span>
+                        </div>
+                        {msg.toAgent && (
+                          <>
+                            <ArrowRight className="w-3 h-3 text-gray-500" />
+                            <div className="flex items-center gap-1 text-xs text-gray-300">
+                              <Bot className="w-3 h-3" />
+                              <span className="font-medium">{msg.toAgent}</span>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${cfg.color}`}>
+                    {cfg.label}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed">{msg.content}</p>
+                {msg.timestamp && (
+                  <div className="text-xs text-gray-600 mt-1.5">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ExecutionConsole() {
   const { id } = useParams<{ id: string }>();
@@ -122,6 +195,8 @@ export default function ExecutionConsole() {
               addLog(`✓ Execution completed. Confidence: ${getConfidencePct(exec.confidenceScore || 0)}%`);
               addLog(`Risk level: ${exec.riskLevel || "low"}`);
               if (exec.tokenCount) addLog(`Tokens used: ${exec.tokenCount}`);
+              const msgs = exec.metadata?.agentMessages || [];
+              if (msgs.length > 0) addLog(`${msgs.length} agent communication(s) recorded`);
             } else if (exec.status === "escalated") {
               addLog(`⚠ Escalated for human review (confidence: ${getConfidencePct(exec.confidenceScore || 0)}%)`);
             } else {
@@ -397,6 +472,13 @@ export default function ExecutionConsole() {
               </div>
             </div>
           )}
+
+          {/* Agent Communications Panel */}
+          {(() => {
+            const msgs: any[] = execution.metadata?.agentMessages || [];
+            if (msgs.length === 0) return null;
+            return <AgentCommunicationsPanel messages={msgs} />;
+          })()}
 
           {/* Escalation Notice */}
           {execution.status === "escalated" && (

@@ -3,9 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Users, Bot, Plus, X, Loader2, ArrowDown, Save, ChevronRight,
   ChevronLeft, Zap, GitBranch, Layers, ArrowRight, GripVertical,
-  AlertTriangle, CheckCircle2, Info, Trash2
+  AlertTriangle, CheckCircle2, Info, Trash2, Play, FileText,
+  TrendingUp, Activity
 } from "lucide-react";
-import { agentsApi, teamsApi } from "../lib/api";
+import { agentsApi, teamsApi, executionsApi } from "../lib/api";
 
 type ExecutionMode = "sequential" | "parallel" | "conditional";
 
@@ -172,10 +173,55 @@ export default function TeamBuilder() {
     setSaving(false);
   };
 
+   const [testInput, setTestInput] = useState("");
+  const [testRunning, setTestRunning] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
+  const [showTestModal, setShowTestModal] = useState(false);
+
+  const SAMPLE_INPUTS: Record<ExecutionMode, string> = {
+    sequential: "Review the following invoice and flag any amounts over $10,000 for approval. Invoice #INV-2024-0042: Vendor: Acme Corp, Amount: $14,500, Date: 2024-03-01, Category: Software Licenses, Approver: pending.",
+    parallel: "Analyse the following contract clause for legal, financial, and risk implications: 'The vendor shall not be liable for any indirect, incidental, or consequential damages exceeding the total contract value of $50,000.'",
+    conditional: "Triage the following support ticket and route to the appropriate team: Customer reports complete data loss after system update. 500 users affected. Production environment down for 3 hours. Revenue impact estimated at $200,000.",
+  };
+
+  const handleTestRun = async () => {
+    if (!testInput.trim() || form.memberAgentIds.length < 2) return;
+    setTestRunning(true);
+    setTestResult(null);
+    try {
+      // Run against the first agent in the team as a quick preview
+      const firstAgentId = form.executionOrder[0] || form.memberAgentIds[0];
+      if (!firstAgentId) return;
+      const res = await executionsApi.create({
+        agentId: firstAgentId,
+        input: testInput,
+        outputFormat: "bullet point summary",
+      });
+      const execId = res.data?.execution?.id || res.data?.executionId;
+      // Poll for result
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        if (attempts > 30) { clearInterval(poll); setTestRunning(false); return; }
+        try {
+          const statusRes = await executionsApi.get(execId);
+          const exec = statusRes.data?.execution || statusRes.data;
+          if (["success", "completed", "failed", "escalated"].includes(exec.status)) {
+            clearInterval(poll);
+            setTestResult(exec);
+            setTestRunning(false);
+          }
+        } catch (_) {}
+      }, 2000);
+    } catch (err: any) {
+      setTestResult({ status: "failed", output: err.response?.data?.error || "Test failed" });
+      setTestRunning(false);
+    }
+  };
+
   const orderedAgents = form.executionOrder
     .map((id) => agents.find((a) => a.id === id))
     .filter(Boolean);
-
   const selectedMode = EXECUTION_MODES.find((m) => m.id === form.executionMode)!;
   const ModeIcon = selectedMode.icon;
 
@@ -346,9 +392,29 @@ export default function TeamBuilder() {
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium text-white truncate">{agent.name}</div>
                         <div className="text-xs text-gray-500 truncate">{agent.role}</div>
-                        {agent.avgConfidence && (
-                          <div className="text-xs text-gray-600 mt-0.5">Avg confidence: {(agent.avgConfidence * 100).toFixed(0)}%</div>
-                        )}
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          {agent.totalExecutions > 0 && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded">
+                              <Activity className="w-2.5 h-2.5" />
+                              {agent.totalExecutions} run{agent.totalExecutions !== 1 ? "s" : ""}
+                            </span>
+                          )}
+                          {agent.avgConfidence != null && agent.avgConfidence > 0 && (
+                            <span className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded ${
+                              agent.avgConfidence >= 0.8 ? "bg-green-900/40 text-green-400" :
+                              agent.avgConfidence >= 0.6 ? "bg-yellow-900/40 text-yellow-400" :
+                              "bg-red-900/40 text-red-400"
+                            }`}>
+                              <TrendingUp className="w-2.5 h-2.5" />
+                              {(agent.avgConfidence * 100).toFixed(0)}% avg
+                            </span>
+                          )}
+                          {(!agent.totalExecutions || agent.totalExecutions === 0) && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-gray-700/50 text-gray-500 px-1.5 py-0.5 rounded">
+                              New
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {selected && (
                         <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -625,6 +691,70 @@ export default function TeamBuilder() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Test with sample data */}
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Play className="w-4 h-4 text-green-400" /> Test with Sample Data
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">Run a quick test against the first agent before saving — verify the pipeline behaves as expected</p>
+              </div>
+              <button
+                onClick={() => { setTestInput(SAMPLE_INPUTS[form.executionMode]); setShowTestModal(true); }}
+                className="flex items-center gap-1.5 bg-green-600/10 hover:bg-green-600/20 text-green-400 text-xs font-medium px-3 py-1.5 rounded-lg border border-green-600/20 transition-colors"
+              >
+                <FileText className="w-3 h-3" /> Load Sample
+              </button>
+            </div>
+            {showTestModal && (
+              <div className="space-y-3">
+                <textarea
+                  value={testInput}
+                  onChange={(e) => setTestInput(e.target.value)}
+                  rows={3}
+                  disabled={testRunning}
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500 resize-none disabled:opacity-50"
+                  placeholder="Enter a test task to run against the first agent in this team..."
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTestRun}
+                    disabled={testRunning || !testInput.trim() || form.memberAgentIds.length < 2}
+                    className="flex items-center gap-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {testRunning ? <><Loader2 className="w-3 h-3 animate-spin" /> Running...</> : <><Play className="w-3 h-3" /> Run Test</>}
+                  </button>
+                  <button
+                    onClick={() => { setShowTestModal(false); setTestResult(null); setTestInput(""); }}
+                    className="text-xs text-gray-500 hover:text-gray-300 px-3 py-2 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {testResult && (
+                  <div className={`rounded-lg p-3 border text-xs ${
+                    testResult.status === "completed" || testResult.status === "success"
+                      ? "bg-green-950/20 border-green-800/50"
+                      : testResult.status === "escalated"
+                      ? "bg-orange-950/20 border-orange-800/50"
+                      : "bg-red-950/20 border-red-800/50"
+                  }`}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      {(testResult.status === "completed" || testResult.status === "success") && <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />}
+                      {testResult.status === "escalated" && <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />}
+                      {testResult.status === "failed" && <X className="w-3.5 h-3.5 text-red-400" />}
+                      <span className="font-medium text-gray-200">Test {testResult.status} — Confidence: {Math.round((testResult.confidenceScore || 0) * 100)}%</span>
+                    </div>
+                    <div className="text-gray-300 whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">
+                      {typeof testResult.output === "string" ? testResult.output : JSON.stringify(testResult.output, null, 2)}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
