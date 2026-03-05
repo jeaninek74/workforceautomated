@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Zap, TrendingUp, Shield, Building2, ClipboardList, Rocket, Database, Plug, Mail, FileText, Globe, Webhook, Target, AlertTriangle, FileCheck, Lock, KeyRound, Building, BadgeCheck, Ban, MapPin, Bot } from "lucide-react";
 
 const DEMO_STEPS = [
   {
@@ -25,12 +26,12 @@ const DEMO_STEPS = [
 ];
 
 const FEATURES = [
-  { icon: "[Fast]", title: "Works Without Hiring Anyone", desc: "Your AI agent handles repetitive tasks 24/7. No sick days, no overtime, no training time." },
-  { icon: "[Revenue]", title: "Turns Slow Work Into Fast Revenue", desc: "Processes that used to take days now finish in minutes. Faster work means faster revenue." },
-  { icon: "[Control]", title: "Humans Stay in Charge", desc: "The agent only acts when it's confident. Anything uncertain gets sent to a real person first." },
-  { icon: "[Dept]", title: "Works for Any Department", desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it." },
-  { icon: "[Log]", title: "Every Action is Recorded", desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance." },
-  { icon: "[Speed]", title: "Ready in Minutes, Not Months", desc: "Paste your process document. A team of AI agents is configured and ready to run in under 5 minutes." }
+  { icon: Zap, title: "Works Without Hiring Anyone", desc: "Your AI agent handles repetitive tasks 24/7. No sick days, no overtime, no training time." },
+  { icon: TrendingUp, title: "Turns Slow Work Into Fast Revenue", desc: "Processes that used to take days now finish in minutes. Faster work means faster revenue." },
+  { icon: Shield, title: "Humans Stay in Charge", desc: "The agent only acts when it's confident. Anything uncertain gets sent to a real person first." },
+  { icon: Building2, title: "Works for Any Department", desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it." },
+  { icon: ClipboardList, title: "Every Action is Recorded", desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance." },
+  { icon: Rocket, title: "Ready in Minutes, Not Months", desc: "Paste your process document. A team of AI agents is configured and ready to run in under 5 minutes." }
 ];
 
 const USE_CASES = [
@@ -65,32 +66,32 @@ const TESTIMONIALS = [
 
 const EXECUTION_TOOLS = [
   {
-    icon: "[DB]",
+    icon: Database,
     title: "Databases & Spreadsheets",
     desc: "Agents read from and write to your databases, spreadsheets, and data warehouses. They can query records, update fields, and generate reports — just like a human analyst would."
   },
   {
-    icon: "[API]",
+    icon: Plug,
     title: "APIs & Web Services",
     desc: "Agents connect to any REST API or web service you authorize. Salesforce, HubSpot, QuickBooks, Slack, Jira, ServiceNow — if it has an API, the agent can use it."
   },
   {
-    icon: "[Email]",
+    icon: Mail,
     title: "Email & Messaging",
     desc: "Agents can read incoming emails, send notifications, post to Slack channels, and trigger alerts — all within the permission boundaries you define."
   },
   {
-    icon: "[Files]",
+    icon: FileText,
     title: "Files & Documents",
     desc: "Agents read PDFs, Word docs, CSVs, and other files from your connected storage (Google Drive, SharePoint, S3). They extract data, summarize content, and generate new documents."
   },
   {
-    icon: "[Web]",
+    icon: Globe,
     title: "Web & Public Data",
     desc: "Agents can retrieve publicly available information — pricing data, regulatory updates, news feeds — and incorporate it into their analysis and reports."
   },
   {
-    icon: "[Hook]",
+    icon: Webhook,
     title: "Webhooks & Triggers",
     desc: "Agents can be triggered by external events — a new form submission, a calendar event, a payment received — and respond automatically according to your defined rules."
   }
@@ -110,7 +111,7 @@ export default function Landing() {
       {/* Nav */}
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 40px", borderBottom: "1px solid #1e1e2e", position: "sticky", top: 38, background: "#0a0a0f", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>WA</div>
+          <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}><Bot size={18} color="#fff" /></div>
           <span style={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>WorkforceAutomated</span>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
@@ -182,7 +183,7 @@ export default function Landing() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24, marginBottom: 48 }}>
           <div style={{ background: "#0f0f1a", border: "1px solid #2a2a3e", borderRadius: 14, padding: 32 }}>
-            <div style={{ fontSize: 36, marginBottom: 16 }}>WA</div>
+            <div style={{ marginBottom: 16 }}><Bot size={36} color="#6366f1" /></div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Single AI Agent</h3>
             <p style={{ fontSize: 15, color: "#8080a0", lineHeight: 1.7, marginBottom: 20 }}>
               Deploy one dedicated agent to own a specific process end-to-end. Ideal for focused, repeatable tasks that belong to a single domain — invoice review, lead scoring, ticket triage, or contract checking.
@@ -203,7 +204,7 @@ export default function Landing() {
 
           <div style={{ background: "linear-gradient(135deg, #1a1a3e, #2a1a4e)", border: "2px solid #6366f1", borderRadius: 14, padding: 32, position: "relative" }}>
             <div style={{ position: "absolute", top: -12, left: 24, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 12, padding: "4px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>Most Powerful</div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#a78bfa", marginBottom: 16 }}>WA</div>
+            <div style={{ marginBottom: 16 }}><Bot size={36} color="#a78bfa" /></div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Team of AI Agents</h3>
             <p style={{ fontSize: 15, color: "#8080a0", lineHeight: 1.7, marginBottom: 20 }}>
               Deploy a coordinated team of specialized agents that work together on a complex workflow. Each agent handles its own domain — one reads data, one analyzes it, one writes the report, one sends the alert.
@@ -305,7 +306,7 @@ export default function Landing() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {EXECUTION_TOOLS.map((tool) => (
               <div key={tool.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 22 }}>
-                <div style={{ fontSize: 28, marginBottom: 10 }}>{tool.icon}</div>
+                <div style={{ marginBottom: 10 }}><tool.icon size={28} color="#6366f1" /></div>
                 <h4 style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{tool.title}</h4>
                 <p style={{ fontSize: 13, color: "#6060a0", lineHeight: 1.7, margin: 0 }}>{tool.desc}</p>
               </div>
@@ -352,7 +353,7 @@ export default function Landing() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
             {FEATURES.map((f) => (
               <div key={f.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 12, padding: 24 }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
+                <div style={{ marginBottom: 12 }}><f.icon size={28} color="#6366f1" /></div>
                 <h3 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{f.title}</h3>
                 <p style={{ fontSize: 14, color: "#7070a0", lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
               </div>
@@ -382,13 +383,13 @@ export default function Landing() {
           <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>The AI never acts alone on anything important. Here is how we keep humans in charge.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
             {[
-              { icon: "[Score]", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI is not sure enough, it stops and asks you." },
-              { icon: "[Alert]", title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
-              { icon: "[Audit]", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
-              { icon: "[Perms]", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." }
+              { icon: Target, title: "Confidence Score", desc: "Every action gets a confidence score. If the AI is not sure enough, it stops and asks you." },
+              { icon: AlertTriangle, title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
+              { icon: FileCheck, title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
+              { icon: Lock, title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." }
             ].map((g) => (
               <div key={g.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20 }}>
-                <div style={{ fontSize: 24, marginBottom: 10 }}>{g.icon}</div>
+                <div style={{ marginBottom: 10 }}><g.icon size={24} color="#6366f1" /></div>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{g.title}</h3>
                 <p style={{ fontSize: 13, color: "#6060a0", margin: 0, lineHeight: 1.6 }}>{g.desc}</p>
               </div>
@@ -422,15 +423,15 @@ export default function Landing() {
           <p style={{ color: "#6060a0", marginBottom: 40, fontSize: 16 }}>We take security seriously. Here is exactly what we do to protect your data.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, textAlign: "left" }}>
             {[
-              { icon: "[Enc]", title: "Encrypted Everywhere", desc: "All data is encrypted when stored and when moving between systems." },
-              { icon: "[Data]", title: "Your Data Stays Yours", desc: "We never sell or share your data with third parties. Ever." },
-              { icon: "[SOC2]", title: "SOC 2 Compliant", desc: "We meet the security standards required by enterprise companies." },
-              { icon: "[GDPR]", title: "GDPR & HIPAA Ready", desc: "Built to meet the strictest global privacy and healthcare regulations." },
-              { icon: "[Zero]", title: "Zero Trust Access", desc: "Every access request is verified. No one gets in without permission." },
-              { icon: "[Loc]", title: "Data Residency Options", desc: "Choose where your data is stored to meet local regulations." }
+              { icon: KeyRound, title: "Encrypted Everywhere", desc: "All data is encrypted when stored and when moving between systems." },
+              { icon: Building, title: "Your Data Stays Yours", desc: "We never sell or share your data with third parties. Ever." },
+              { icon: BadgeCheck, title: "SOC 2 Compliant", desc: "We meet the security standards required by enterprise companies." },
+              { icon: Globe, title: "GDPR & HIPAA Ready", desc: "Built to meet the strictest global privacy and healthcare regulations." },
+              { icon: Ban, title: "Zero Trust Access", desc: "Every access request is verified. No one gets in without permission." },
+              { icon: MapPin, title: "Data Residency Options", desc: "Choose where your data is stored to meet local regulations." }
             ].map((s) => (
               <div key={s.title} style={{ background: "#0a0a0f", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20 }}>
-                <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
+                <div style={{ marginBottom: 8 }}><s.icon size={22} color="#6366f1" /></div>
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{s.title}</h3>
                 <p style={{ fontSize: 13, color: "#6060a0", margin: 0, lineHeight: 1.6 }}>{s.desc}</p>
               </div>
@@ -526,7 +527,7 @@ export default function Landing() {
       {/* Footer */}
       <footer style={{ background: "#050508", padding: "32px 40px", textAlign: "center", borderTop: "1px solid #1e1e2e" }}>
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>WA</div>
+          <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}><Bot size={16} color="#fff" /></div>
           <span style={{ fontWeight: 700, color: "#fff" }}>WorkforceAutomated</span>
         </div>
         <p style={{ color: "#404060", fontSize: 13, margin: 0 }}>© 2026 WorkforceAutomated. All rights reserved.</p>
