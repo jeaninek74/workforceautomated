@@ -23,6 +23,7 @@ import { stripeWebhookRouter } from "./api/stripeWebhook.js";
 import { integrationsRouter } from "./api/integrations.js";
 import { notificationsRouter } from "./api/notifications.js";
 import reviewsRouter from "./api/reviews.js";
+import agentTemplatesRouter from "./api/agentTemplates.js";
 import schedulesRouter from "./api/schedules.js";
 import reportsRouter from "./api/reports.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -78,6 +79,7 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/schedules", schedulesRouter);
 app.use("/api/reports", reportsRouter);
+app.use("/api/agent-templates", agentTemplatesRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), version: "1.0.0" });

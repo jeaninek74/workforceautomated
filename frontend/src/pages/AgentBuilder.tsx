@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, Wand2, Loader2, Plus, X, ChevronDown, ChevronUp, Save, Link2, CheckCircle2, Zap, Globe, Slack } from "lucide-react";
+import { Bot, Wand2, Loader2, Plus, X, ChevronDown, ChevronUp, Save, Link2, CheckCircle2, Zap, Globe, Slack, LayoutTemplate, ChevronRight } from "lucide-react";
 import { agentsApi, integrationsApi } from "../lib/api";
 
 const CAPABILITY_OPTIONS = [
@@ -18,7 +18,11 @@ const INTEGRATION_ICONS: Record<string, any> = {
 
 export default function AgentBuilder() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"jd" | "manual">("jd");
+  const [mode, setMode] = useState<"jd" | "manual" | "template">("jd");
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [templateCategories, setTemplateCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,6 +42,33 @@ export default function AgentBuilder() {
     escalationEnabled: true,
     systemPrompt: "",
   });
+
+  useEffect(() => {
+    if (mode === "template" && templates.length === 0) {
+      setLoadingTemplates(true);
+      fetch("/api/agent-templates")
+        .then((r) => r.json())
+        .then((data) => {
+          setTemplates(data.templates || []);
+          setTemplateCategories(["All", ...(data.categories || [])]);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingTemplates(false));
+    }
+  }, [mode]);
+
+  const applyTemplate = (template: any) => {
+    setForm((prev) => ({
+      ...prev,
+      name: template.name,
+      role: template.role,
+      description: template.description,
+      systemPrompt: template.systemPrompt,
+      capabilities: template.capabilities || [],
+      confidenceThreshold: Math.round((template.suggestedConfidenceThreshold || 0.8) * 100),
+    }));
+    setMode("manual");
+  };
 
   useEffect(() => {
     integrationsApi.list().then((r) => {
@@ -120,19 +151,83 @@ export default function AgentBuilder() {
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === "jd" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
         >
           <Wand2 className="w-4 h-4" />
-          From Job Description (AI)
+          From Job Description
+        </button>
+        <button
+          onClick={() => setMode("template")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === "template" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          Use a Template
         </button>
         <button
           onClick={() => setMode("manual")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === "manual" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
         >
           <Bot className="w-4 h-4" />
-          Manual Configuration
+          Manual
         </button>
       </div>
 
       {error && (
         <div className="bg-red-950/50 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3">{error}</div>
+      )}
+
+      {/* Template Mode */}
+      {mode === "template" && (
+        <div className="space-y-4">
+          {/* Category filter */}
+          <div className="flex gap-2 flex-wrap">
+            {templateCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  selectedCategory === cat ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          {loadingTemplates ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              <span className="ml-2 text-gray-400">Loading templates...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {templates
+                .filter((t) => selectedCategory === "All" || t.category === selectedCategory)
+                .map((template) => (
+                  <div
+                    key={template.id}
+                    className="bg-gray-900 border border-gray-800 hover:border-blue-600 rounded-xl p-4 cursor-pointer transition-all group"
+                    onClick={() => applyTemplate(template)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800">
+                            {template.category}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-white text-sm group-hover:text-blue-300 transition-colors">{template.name}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">{template.role}</p>
+                        <p className="text-xs text-gray-400 mt-2 line-clamp-2">{template.description}</p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {(template.tags || []).slice(0, 3).map((tag: string) => (
+                            <span key={tag} className="text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">#{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors ml-2 mt-1 shrink-0" />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* JD Mode */}
