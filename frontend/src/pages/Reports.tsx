@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import {
   Download, FileText, BarChart3, AlertTriangle, CheckCircle,
-  Clock, TrendingUp, Filter
+  Clock, TrendingUp, Filter, Mail, Calendar, Plus, X
 } from "lucide-react";
 
 interface SummaryStats {
@@ -41,10 +41,17 @@ const riskColors: Record<string, string> = {
 };
 
 export default function Reports() {
+  const queryClient = useQueryClient();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [agentFilter, setAgentFilter] = useState("");
   const [teamFilter, setTeamFilter] = useState("");
+  const [scheduleEmails, setScheduleEmails] = useState<string[]>([]);
+  const [scheduleEmailInput, setScheduleEmailInput] = useState("");
+  const [scheduleFrequency, setScheduleFrequency] = useState("weekly");
+  const [scheduleIncludeEscalations, setScheduleIncludeEscalations] = useState(true);
+  const [scheduleIncludeAudit, setScheduleIncludeAudit] = useState(false);
+  const [scheduleSuccess, setScheduleSuccess] = useState("");
 
   const buildParams = () => {
     const params = new URLSearchParams();
@@ -73,6 +80,33 @@ export default function Reports() {
   const { data: teamsData } = useQuery({
     queryKey: ["teams-list"],
     queryFn: () => api.get("/api/teams").then((r) => r.data),
+  });
+
+  const { data: scheduleData } = useQuery({
+    queryKey: ["report-schedule"],
+    queryFn: () => api.get("/api/reports/schedule-delivery").then((r) => r.data),
+    onSuccess: (d: any) => {
+      if (d?.schedule) {
+        setScheduleEmails(d.schedule.emails || []);
+        setScheduleFrequency(d.schedule.frequency || "weekly");
+        setScheduleIncludeEscalations(d.schedule.includeEscalations ?? true);
+        setScheduleIncludeAudit(d.schedule.includeAuditLog ?? false);
+      }
+    },
+  } as any);
+
+  const saveScheduleMutation = useMutation({
+    mutationFn: () => api.post("/api/reports/schedule-delivery", {
+      emails: scheduleEmails,
+      frequency: scheduleFrequency,
+      includeEscalations: scheduleIncludeEscalations,
+      includeAuditLog: scheduleIncludeAudit,
+    }),
+    onSuccess: (res: any) => {
+      setScheduleSuccess(res.data?.message || "Schedule saved");
+      queryClient.invalidateQueries({ queryKey: ["report-schedule"] });
+      setTimeout(() => setScheduleSuccess(""), 4000);
+    },
   });
 
   const summary: SummaryStats | null = summaryData || null;
@@ -334,6 +368,120 @@ export default function Reports() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Scheduled Report Delivery */}
+      <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Mail className="w-4 h-4 text-violet-400" />
+          <h3 className="text-white font-medium text-sm">Scheduled Report Delivery</h3>
+          <span className="ml-auto text-gray-500 text-xs">Automatically email reports to stakeholders</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-5">
+          {/* Recipients */}
+          <div>
+            <label className="text-gray-400 text-xs font-medium block mb-2">Recipients</label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="email"
+                value={scheduleEmailInput}
+                onChange={(e) => setScheduleEmailInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && scheduleEmailInput.trim()) {
+                    setScheduleEmails((prev) => [...prev, scheduleEmailInput.trim()]);
+                    setScheduleEmailInput("");
+                  }
+                }}
+                placeholder="email@company.com"
+                className="flex-1 bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500"
+              />
+              <button
+                onClick={() => {
+                  if (scheduleEmailInput.trim()) {
+                    setScheduleEmails((prev) => [...prev, scheduleEmailInput.trim()]);
+                    setScheduleEmailInput("");
+                  }
+                }}
+                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {scheduleEmails.map((email, i) => (
+                <span key={i} className="flex items-center gap-1 bg-violet-900/40 text-violet-300 text-xs px-2 py-1 rounded-full">
+                  {email}
+                  <button onClick={() => setScheduleEmails((prev) => prev.filter((_, idx) => idx !== i))}>
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+              {scheduleEmails.length === 0 && (
+                <span className="text-gray-500 text-xs">No recipients added yet. Press Enter to add.</span>
+              )}
+            </div>
+          </div>
+
+          {/* Schedule settings */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-gray-400 text-xs font-medium block mb-1">Frequency</label>
+              <select
+                value={scheduleFrequency}
+                onChange={(e) => setScheduleFrequency(e.target.value)}
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly (Monday)</option>
+                <option value="monthly">Monthly (1st of month)</option>
+              </select>
+            </div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={scheduleIncludeEscalations}
+                  onChange={(e) => setScheduleIncludeEscalations(e.target.checked)}
+                  className="accent-violet-500"
+                />
+                <span className="text-gray-300 text-xs">Include escalation report</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={scheduleIncludeAudit}
+                  onChange={(e) => setScheduleIncludeAudit(e.target.checked)}
+                  className="accent-violet-500"
+                />
+                <span className="text-gray-300 text-xs">Include audit log</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            onClick={() => saveScheduleMutation.mutate()}
+            disabled={saveScheduleMutation.isPending || scheduleEmails.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            <Calendar className="w-4 h-4" />
+            {saveScheduleMutation.isPending ? "Saving..." : "Save Schedule"}
+          </button>
+          {scheduleSuccess && (
+            <span className="flex items-center gap-1 text-green-400 text-sm">
+              <CheckCircle className="w-4 h-4" /> {scheduleSuccess}
+            </span>
+          )}
+          {scheduleEmails.length === 0 && (
+            <span className="text-gray-500 text-xs">Add at least one recipient to save the schedule</span>
+          )}
+        </div>
+
+        <p className="text-gray-500 text-xs mt-3">
+          Reports are sent via the SMTP server configured in Settings → Notifications. Make sure your SMTP credentials are saved before enabling scheduled delivery.
+        </p>
       </div>
     </div>
   );

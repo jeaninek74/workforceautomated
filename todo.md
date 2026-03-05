@@ -86,3 +86,10 @@
 - [ ] Sidebar: pending review count badge on Review Queue nav item
 - [ ] Reports: PDF download with summary stats and risk breakdown chart
 - [ ] Settings Notifications: SMTP credential fields (host, user, pass, from) with test connection button
+
+## Phase 11: Workflow Features + Landing Page Redesign + Agent Skills
+- [ ] Review Queue: Mark All Reviewed button to clear badge in one click
+- [ ] Reports: Scheduled report delivery — weekly PDF emailed to stakeholders via SMTP
+- [ ] Review Queue: Role-based access — restrict approve/reject to reviewer/admin roles only
+- [ ] Landing page: Full premium redesign inspired by mbusa.com — custom typography, real visual hierarchy, no AI-generated look
+- [ ] Agent skill library: Add web developer, design critique, and code review system prompt templates

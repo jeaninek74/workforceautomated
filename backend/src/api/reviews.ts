@@ -1,13 +1,20 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import { escalationReviews, executions, agents, teams } from "../db/schema.js";
+import { escalationReviews, executions, agents, teams, users } from "../db/schema.js";
 import { eq, desc, and } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 
 const router = Router();
 router.use(authenticate);
 
-// GET /api/reviews — list pending escalation reviews for this user
+// Helper: check if user has reviewer/admin/manager role
+async function canReview(userId: number): Promise<boolean> {
+  const [user] = await db.select({ role: users.role }).from(users).where(eq(users.id, userId));
+  const role = user?.role || "user";
+  return role === "admin" || role === "manager";
+}
+
+// GET /api/reviews — list escalation reviews for this user
 router.get("/", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
@@ -60,7 +67,9 @@ router.get("/", async (req: AuthRequest, res) => {
       })
     );
 
-    res.json({ reviews: enriched, total: enriched.length });
+    // Also return whether user can review (for UI gating)
+    const reviewerAccess = await canReview(req.user!.id);
+    res.json({ reviews: enriched, total: enriched.length, canReview: reviewerAccess });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -77,7 +86,52 @@ router.get("/count", async (req: AuthRequest, res) => {
       .where(and(eq(executions.userId, userId), eq(executions.escalated, true)));
 
     const pending = allEscalated.filter((r) => !r.reviewStatus || r.reviewStatus === "pending").length;
-    res.json({ pending });
+    const reviewerAccess = await canReview(userId);
+    res.json({ pending, canReview: reviewerAccess });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/reviews/mark-all-reviewed — bulk approve all pending (admin/manager only)
+router.post("/mark-all-reviewed", async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const hasAccess = await canReview(userId);
+    if (!hasAccess) {
+      return res.status(403).json({ error: "Only admins and managers can mark all as reviewed" });
+    }
+
+    const allEscalated = await db
+      .select({ execId: executions.id, reviewStatus: escalationReviews.status })
+      .from(executions)
+      .leftJoin(escalationReviews, eq(escalationReviews.executionId, executions.id))
+      .where(and(eq(executions.userId, userId), eq(executions.escalated, true)));
+
+    const pending = allEscalated.filter((r) => !r.reviewStatus || r.reviewStatus === "pending");
+
+    for (const row of pending) {
+      const existing = await db.select().from(escalationReviews).where(eq(escalationReviews.executionId, row.execId));
+      if (existing.length > 0) {
+        await db.update(escalationReviews).set({
+          status: "approved",
+          reviewerId: userId,
+          decisionComment: "Bulk approved — marked all as reviewed",
+          reviewedAt: new Date(),
+          updatedAt: new Date(),
+        }).where(eq(escalationReviews.executionId, row.execId));
+      } else {
+        await db.insert(escalationReviews).values({
+          executionId: row.execId,
+          reviewerId: userId,
+          status: "approved",
+          decisionComment: "Bulk approved — marked all as reviewed",
+          reviewedAt: new Date(),
+        });
+      }
+    }
+
+    res.json({ success: true, marked: pending.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -87,6 +141,10 @@ router.get("/count", async (req: AuthRequest, res) => {
 router.post("/:executionId/approve", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const hasAccess = await canReview(userId);
+    if (!hasAccess) {
+      return res.status(403).json({ error: "Only admins and managers can approve reviews" });
+    }
     const executionId = parseInt(req.params.executionId);
     const { comment } = req.body;
 
@@ -122,6 +180,10 @@ router.post("/:executionId/approve", async (req: AuthRequest, res) => {
 router.post("/:executionId/reject", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const hasAccess = await canReview(userId);
+    if (!hasAccess) {
+      return res.status(403).json({ error: "Only admins and managers can reject reviews" });
+    }
     const executionId = parseInt(req.params.executionId);
     const { comment } = req.body;
 
