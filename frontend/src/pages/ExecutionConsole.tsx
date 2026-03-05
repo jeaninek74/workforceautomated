@@ -192,15 +192,15 @@ export default function ExecutionConsole() {
             setExecution(exec);
             setRunning(false);
             if (exec.status === "success" || exec.status === "completed") {
-              addLog(`✓ Execution completed. Confidence: ${getConfidencePct(exec.confidenceScore || 0)}%`);
+              addLog(`Execution completed. Confidence: ${getConfidencePct(exec.confidenceScore || 0)}%`);
               addLog(`Risk level: ${exec.riskLevel || "low"}`);
               if (exec.tokenCount) addLog(`Tokens used: ${exec.tokenCount}`);
               const msgs = exec.metadata?.agentMessages || [];
               if (msgs.length > 0) addLog(`${msgs.length} agent communication(s) recorded`);
             } else if (exec.status === "escalated") {
-              addLog(`⚠ Escalated for human review (confidence: ${getConfidencePct(exec.confidenceScore || 0)}%)`);
+              addLog(`Escalated for human review (confidence: ${getConfidencePct(exec.confidenceScore || 0)}%)`);
             } else {
-              addLog(`✗ Execution failed: ${exec.output || "Unknown error"}`);
+              addLog(`Execution failed: ${exec.output || "Unknown error"}`);
             }
           } else {
             addLog(`Status: ${exec.status}...`);
@@ -218,7 +218,7 @@ export default function ExecutionConsole() {
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to start execution");
       setRunning(false);
-      addLog("✗ Failed to start execution");
+      addLog("Failed to start execution");
     }
   };
 
@@ -230,11 +230,11 @@ export default function ExecutionConsole() {
   };
 
   const integrationIcon: Record<string, string> = {
-    google_drive: "📁",
-    slack: "💬",
-    rest_api: "🔌",
-    webhook: "🪝",
-    database: "🗄️",
+    google_drive: "Drive",
+    slack: "Slack",
+    rest_api: "API",
+    webhook: "Webhook",
+    database: "DB",
   };
 
   const riskBadge: Record<string, string> = {
@@ -295,7 +295,7 @@ export default function ExecutionConsole() {
                     : "bg-red-950/20 border-red-800/50 text-red-400"
                 }`}
               >
-                <span>{integrationIcon[a.integrationType] || "🔗"}</span>
+                <span>{integrationIcon[a.integrationType] || a.integrationType}</span>
                 <span>{a.integrationName}</span>
               </div>
             ))}
