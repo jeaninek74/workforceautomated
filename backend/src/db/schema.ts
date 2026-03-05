@@ -53,6 +53,10 @@ export const teams = pgTable("teams", {
   description: text("description"),
   memberAgentIds: jsonb("member_agent_ids").$type<number[]>(),
   executionOrder: jsonb("execution_order").$type<number[]>(),
+  // 'sequential' | 'parallel' | 'conditional'
+  executionMode: varchar("execution_mode", { length: 32 }).default("sequential").notNull(),
+  // Array of branching rules: { condition: string, fromAgentId: number, toAgentId: number, elseAgentId?: number }
+  branchingRules: jsonb("branching_rules").$type<Array<{ condition: string; fromAgentId: number; toAgentId: number; elseAgentId?: number }>>(),
   governanceRules: jsonb("governance_rules").$type<Record<string, unknown>>(),
   confidenceThreshold: real("confidence_threshold").default(0.7).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
