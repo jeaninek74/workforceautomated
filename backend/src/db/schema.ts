@@ -206,6 +206,38 @@ export const notificationSettings = pgTable("notification_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Escalation reviews
+export const reviewStatusEnum = pgEnum("review_status", ["pending", "approved", "rejected"]);
+export const escalationReviews = pgTable("escalation_reviews", {
+  id: serial("id").primaryKey(),
+  executionId: integer("execution_id").notNull().references(() => executions.id, { onDelete: "cascade" }),
+  reviewerId: integer("reviewer_id").references(() => users.id, { onDelete: "set null" }),
+  status: reviewStatusEnum("status").default("pending").notNull(),
+  decisionComment: text("decision_comment"),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Execution schedules
+export const schedules = pgTable("schedules", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  agentId: integer("agent_id").references(() => agents.id, { onDelete: "set null" }),
+  teamId: integer("team_id").references(() => teams.id, { onDelete: "set null" }),
+  cronExpression: varchar("cron_expression", { length: 100 }).notNull(),
+  inputText: text("input_text"),
+  outputFormat: varchar("output_format", { length: 50 }).default("bullet_points"),
+  enabled: boolean("enabled").default(true).notNull(),
+  lastRunAt: timestamp("last_run_at"),
+  nextRunAt: timestamp("next_run_at"),
+  totalRuns: integer("total_runs").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Agent = typeof agents.$inferSelect;

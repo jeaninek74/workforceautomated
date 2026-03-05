@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Bot, Users, Play, BarChart3, Shield, FileText,
   CreditCard, Settings, LogOut, Menu, X, ChevronRight, Zap,
-  Target, Bell, Link2
+  Target, Bell, Link2, ClipboardCheck, Calendar, DownloadCloud
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -17,6 +17,9 @@ const navItems = [
   { label: "Confidence & Risk", icon: BarChart3, path: "/confidence" },
   { label: "Governance", icon: Shield, path: "/governance" },
   { label: "Integrations", icon: Link2, path: "/integrations" },
+  { label: "Review Queue", icon: ClipboardCheck, path: "/reviews" },
+  { label: "Schedules", icon: Calendar, path: "/schedules" },
+  { label: "Reports", icon: DownloadCloud, path: "/reports" },
   { label: "Audit Log", icon: FileText, path: "/audit" },
   { label: "KPI Builder", icon: Target, path: "/kpi" },
   { label: "Billing", icon: CreditCard, path: "/billing" },
