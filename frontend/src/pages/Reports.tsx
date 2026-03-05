@@ -80,16 +80,25 @@ export default function Reports() {
   const agentsList = agentsData?.agents || [];
   const teamsList = teamsData?.teams || [];
 
-  const downloadCsv = (type: "executions" | "audit" | "escalations") => {
-    const params = buildParams();
-    const url = `/api/reports/${type}.csv${params ? "?" + params : ""}`;
-    // Create a temporary link and trigger download
+  const downloadFile = (url: string, filename: string) => {
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${type}-${Date.now()}.csv`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const downloadCsv = (type: "executions" | "audit" | "escalations") => {
+    const params = buildParams();
+    const url = `/api/reports/${type}.csv${params ? "?" + params : ""}`;
+    downloadFile(url, `${type}-${Date.now()}.csv`);
+  };
+
+  const downloadPdf = () => {
+    const params = buildParams();
+    const url = `/api/reports/summary.pdf${params ? "?" + params : ""}`;
+    downloadFile(url, `workforce-report-${Date.now()}.pdf`);
   };
 
   const statCard = (icon: React.ReactNode, label: string, value: string, sub?: string, color?: string) => (
@@ -110,7 +119,13 @@ export default function Reports() {
           <h1 className="text-2xl font-bold text-white">Reports & Analytics</h1>
           <p className="text-gray-400 text-sm mt-1">Export execution data, audit logs, and escalation reports</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={downloadPdf}
+            className="flex items-center gap-2 px-3 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <FileText className="w-4 h-4" /> Download PDF Report
+          </button>
           <button
             onClick={() => downloadCsv("executions")}
             className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm font-medium transition-colors"
