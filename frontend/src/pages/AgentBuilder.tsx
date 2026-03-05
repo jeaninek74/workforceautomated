@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, Wand2, Loader2, Plus, X, ChevronDown, ChevronUp, Save } from "lucide-react";
-import { agentsApi } from "../lib/api";
+import { Bot, Wand2, Loader2, Plus, X, ChevronDown, ChevronUp, Save, Link2, CheckCircle2, Zap, Globe, Slack } from "lucide-react";
+import { agentsApi, integrationsApi } from "../lib/api";
 
 const CAPABILITY_OPTIONS = [
   "data_analysis", "web_search", "document_processing", "email_management",
   "calendar_management", "code_generation", "report_writing", "customer_support",
   "financial_analysis", "hr_processing", "compliance_checking", "scheduling",
 ];
+
+const INTEGRATION_ICONS: Record<string, any> = {
+  slack: Slack,
+  google_drive: Globe,
+  rest_api: Zap,
+  webhook: Link2,
+};
 
 export default function AgentBuilder() {
   const navigate = useNavigate();
@@ -17,6 +24,9 @@ export default function AgentBuilder() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState(false);
+  const [availableIntegrations, setAvailableIntegrations] = useState<any[]>([]);
+  const [selectedIntegrationIds, setSelectedIntegrationIds] = useState<number[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -28,6 +38,13 @@ export default function AgentBuilder() {
     escalationEnabled: true,
     systemPrompt: "",
   });
+
+  useEffect(() => {
+    integrationsApi.list().then((r) => {
+      const list = r.data?.integrations || [];
+      setAvailableIntegrations(list.filter((i: any) => i.status === "active"));
+    }).catch(() => {});
+  }, []);
 
   const handleGenerate = async () => {
     if (!jobDescription.trim()) return;
@@ -61,12 +78,27 @@ export default function AgentBuilder() {
     }));
   };
 
+  const toggleIntegration = (id: number) => {
+    setSelectedIntegrationIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.role) { setError("Name and role are required"); return; }
     setSaving(true);
     setError("");
     try {
-      await agentsApi.create(form);
+      const res = await agentsApi.create(form);
+      const agentId = res.data?.agent?.id;
+      // Assign selected integrations to the new agent
+      if (agentId && selectedIntegrationIds.length > 0) {
+        await Promise.all(
+          selectedIntegrationIds.map((integrationId) =>
+            integrationsApi.assignToAgent(agentId, { integrationId, permissions: ["read"] })
+          )
+        );
+      }
       navigate("/agents");
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to save agent");
@@ -239,6 +271,68 @@ export default function AgentBuilder() {
                 <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.escalationEnabled ? "translate-x-5" : "translate-x-0"}`} />
               </button>
             </div>
+          </div>
+
+          {/* Connect Systems */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowIntegrations(!showIntegrations)}
+              className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-blue-400" />
+                Connect Systems
+                {selectedIntegrationIds.length > 0 && (
+                  <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">{selectedIntegrationIds.length}</span>
+                )}
+              </span>
+              {showIntegrations ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {showIntegrations && (
+              <div className="px-6 pb-6 space-y-3">
+                <p className="text-xs text-gray-500">
+                  Select which integrations this agent can access when executing tasks. The agent will pull live data from connected systems automatically — no manual uploads needed.
+                </p>
+                {availableIntegrations.length === 0 ? (
+                  <div className="text-center py-6">
+                    <Link2 className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+                    <p className="text-xs text-gray-500">No active integrations found.</p>
+                    <a href="/integrations" className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block">
+                      Set up integrations →
+                    </a>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {availableIntegrations.map((integration) => {
+                      const selected = selectedIntegrationIds.includes(integration.id);
+                      const IconComp = INTEGRATION_ICONS[integration.type] || Link2;
+                      return (
+                        <button
+                          key={integration.id}
+                          onClick={() => toggleIntegration(integration.id)}
+                          className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                            selected
+                              ? "bg-blue-600/10 border-blue-500/50"
+                              : "bg-gray-800 border-gray-700 hover:border-gray-600"
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            selected ? "bg-blue-500/20" : "bg-gray-700"
+                          }`}>
+                            <IconComp className={`w-4 h-4 ${selected ? "text-blue-400" : "text-gray-400"}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-medium text-white truncate">{integration.name}</div>
+                            <div className="text-xs text-gray-500 capitalize">{integration.type.replace(/_/g, " ")}</div>
+                          </div>
+                          {selected && <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Advanced */}

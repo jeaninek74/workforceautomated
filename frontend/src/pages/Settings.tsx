@@ -1,11 +1,47 @@
-import { useState } from "react";
-import { User, Lock, Bell, Loader2, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { authApi } from "../lib/api";
+import axios from "axios";
+
+const API = import.meta.env.VITE_API_URL || "";
 
 export default function Settings() {
   const { user, refreshUser } = useAuth();
-  const [tab, setTab] = useState<"profile" | "security">("profile");
+  const [tab, setTab] = useState<"profile" | "security" | "notifications">("profile");
+
+  // Notification settings state
+  const [notifSettings, setNotifSettings] = useState({
+    escalationEmailEnabled: false,
+    escalationEmail: "",
+    slackWebhookEnabled: false,
+    slackWebhookUrl: "",
+    notifyOnHighRisk: true,
+    notifyOnCriticalRisk: true,
+    notifyOnLowConfidence: true,
+  });
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testingSlack, setTestingSlack] = useState(false);
+
+  useEffect(() => {
+    if (tab === "notifications") {
+      axios.get(`${API}/api/notifications/settings`, { withCredentials: true })
+        .then((r) => {
+          const s = r.data.settings;
+          setNotifSettings({
+            escalationEmailEnabled: s.escalationEmailEnabled ?? false,
+            escalationEmail: s.escalationEmail ?? "",
+            slackWebhookEnabled: s.slackWebhookEnabled ?? false,
+            slackWebhookUrl: s.slackWebhookUrl ?? "",
+            notifyOnHighRisk: s.notifyOnHighRisk ?? true,
+            notifyOnCriticalRisk: s.notifyOnCriticalRisk ?? true,
+            notifyOnLowConfidence: s.notifyOnLowConfidence ?? true,
+          });
+        })
+        .catch(() => {});
+    }
+  }, [tab]);
   const [profile, setProfile] = useState({ name: user?.name || "", email: user?.email || "" });
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
   const [saving, setSaving] = useState(false);
@@ -56,6 +92,7 @@ export default function Settings() {
         {([
           { id: "profile", label: "Profile", icon: User },
           { id: "security", label: "Security", icon: Lock },
+          { id: "notifications", label: "Notifications", icon: Bell },
         ] as const).map((t) => (
           <button
             key={t.id}
@@ -143,6 +180,154 @@ export default function Settings() {
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Change Password
+          </button>
+        </form>
+      )}
+      {/* Notifications Tab */}
+      {tab === "notifications" && (
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          setNotifLoading(true); setError(""); setSuccess("");
+          try {
+            await axios.put(`${API}/api/notifications/settings`, notifSettings, { withCredentials: true });
+            setSuccess("Notification settings saved");
+          } catch (err: any) {
+            setError(err.response?.data?.error || "Failed to save notification settings");
+          }
+          setNotifLoading(false);
+        }} className="space-y-5">
+          {/* Trigger conditions */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+            <h2 className="font-semibold text-white">When to Notify</h2>
+            <p className="text-gray-400 text-sm">Receive alerts when an agent escalates a task based on these conditions.</p>
+            {[
+              { key: "notifyOnCriticalRisk", label: "Critical risk level", description: "Agent flags the task as critical — immediate human review required" },
+              { key: "notifyOnHighRisk", label: "High risk level", description: "Agent flags the task as high risk" },
+              { key: "notifyOnLowConfidence", label: "Low confidence score", description: "Agent confidence falls below the escalation threshold" },
+            ].map((item) => (
+              <label key={item.key} className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(notifSettings as any)[item.key]}
+                  onChange={(e) => setNotifSettings({ ...notifSettings, [item.key]: e.target.checked })}
+                  className="mt-1 w-4 h-4 accent-blue-500"
+                />
+                <div>
+                  <div className="text-sm font-medium text-white">{item.label}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{item.description}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          {/* Email notifications */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-400" />
+                <h2 className="font-semibold text-white">Email Notifications</h2>
+              </div>
+              <div
+                onClick={() => setNotifSettings({ ...notifSettings, escalationEmailEnabled: !notifSettings.escalationEmailEnabled })}
+                className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${notifSettings.escalationEmailEnabled ? "bg-blue-600" : "bg-gray-700"} relative`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${notifSettings.escalationEmailEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
+              </div>
+            </div>
+            {notifSettings.escalationEmailEnabled && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Escalation Email Address</label>
+                  <input
+                    type="email"
+                    value={notifSettings.escalationEmail}
+                    onChange={(e) => setNotifSettings({ ...notifSettings, escalationEmail: e.target.value })}
+                    placeholder="reviewer@yourcompany.com"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Requires SMTP configuration via environment variables (SMTP_HOST, SMTP_USER, SMTP_PASS).</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setTestingEmail(true); setError(""); setSuccess("");
+                    try {
+                      await axios.post(`${API}/api/notifications/test-email`, {}, { withCredentials: true });
+                      setSuccess("Test email sent — check your inbox");
+                    } catch (err: any) {
+                      setError(err.response?.data?.error || "Email test failed — check SMTP configuration");
+                    }
+                    setTestingEmail(false);
+                  }}
+                  disabled={testingEmail || !notifSettings.escalationEmail}
+                  className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  {testingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Send Test Email
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Slack notifications */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-purple-400" />
+                <h2 className="font-semibold text-white">Slack Notifications</h2>
+              </div>
+              <div
+                onClick={() => setNotifSettings({ ...notifSettings, slackWebhookEnabled: !notifSettings.slackWebhookEnabled })}
+                className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${notifSettings.slackWebhookEnabled ? "bg-purple-600" : "bg-gray-700"} relative`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${notifSettings.slackWebhookEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
+              </div>
+            </div>
+            {notifSettings.slackWebhookEnabled && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Slack Incoming Webhook URL</label>
+                  <input
+                    type="url"
+                    value={notifSettings.slackWebhookUrl}
+                    onChange={(e) => setNotifSettings({ ...notifSettings, slackWebhookUrl: e.target.value })}
+                    placeholder="https://hooks.slack.com/services/..."
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 placeholder-gray-500 font-mono"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Create an Incoming Webhook in your Slack workspace at{" "}
+                    <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">api.slack.com/apps</a>.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setTestingSlack(true); setError(""); setSuccess("");
+                    try {
+                      await axios.post(`${API}/api/notifications/test-slack`, {}, { withCredentials: true });
+                      setSuccess("Test Slack message sent — check your channel");
+                    } catch (err: any) {
+                      setError(err.response?.data?.error || "Slack test failed — check your webhook URL");
+                    }
+                    setTestingSlack(false);
+                  }}
+                  disabled={testingSlack || !notifSettings.slackWebhookUrl}
+                  className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  {testingSlack ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Send Test Message
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={notifLoading}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+          >
+            {notifLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Save Notification Settings
           </button>
         </form>
       )}

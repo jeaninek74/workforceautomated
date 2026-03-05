@@ -65,3 +65,10 @@
 - [x] Execution Console: Agent Communications panel showing handoff notes and branch decisions
 - [x] Team Builder: "Test with sample data" button in wizard to run a quick test execution
 - [x] Team Builder: Agent performance badges (avg confidence, total runs) in agent selection step
+
+## Phase 8: Integration Assignment, Team History & Escalation Notifications
+- [ ] Agent Builder: integration assignment step — connect integrations to agents from the creation form
+- [ ] Backend: store agent-integration assignments in DB, pass to executor at runtime
+- [ ] Team execution history page: per-agent breakdowns, confidence scores, branch paths taken
+- [ ] Escalation notifications: email (SendGrid) + Slack webhook when agent escalates a task
+- [ ] Notification settings page: configure email and Slack webhook per user

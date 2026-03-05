@@ -22,6 +22,7 @@ import KPIBuilder from "@/pages/KPIBuilder";
 import Billing from "@/pages/Billing";
 import Settings from "@/pages/Settings";
 import Integrations from "@/pages/Integrations";
+import TeamExecutionHistory from "@/pages/TeamExecutionHistory";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -58,6 +59,7 @@ function AppRoutes() {
       <Route path="/teams" element={<ProtectedRoute><Teams /></ProtectedRoute>} />
       <Route path="/teams/new" element={<ProtectedRoute><TeamBuilder /></ProtectedRoute>} />
       <Route path="/teams/:id/edit" element={<ProtectedRoute><TeamBuilder /></ProtectedRoute>} />
+      <Route path="/teams/:id/history" element={<ProtectedRoute><TeamExecutionHistory /></ProtectedRoute>} />
       <Route path="/executions" element={<ProtectedRoute><Executions /></ProtectedRoute>} />
       <Route path="/executions/:id" element={<ProtectedRoute><ExecutionConsole /></ProtectedRoute>} />
       <Route path="/confidence" element={<ProtectedRoute><ConfidenceMonitor /></ProtectedRoute>} />

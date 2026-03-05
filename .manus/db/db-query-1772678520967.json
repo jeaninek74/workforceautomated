@@ -1,0 +1,9 @@
+{
+  "query": "\nCREATE TABLE IF NOT EXISTS notification_settings (\n  id SERIAL PRIMARY KEY,\n  user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,\n  escalation_email_enabled BOOLEAN NOT NULL DEFAULT false,\n  escalation_email TEXT,\n  slack_webhook_enabled BOOLEAN NOT NULL DEFAULT false,\n  slack_webhook_url TEXT,\n  notify_on_high_risk BOOLEAN NOT NULL DEFAULT true,\n  notify_on_critical_risk BOOLEAN NOT NULL DEFAULT true,\n  notify_on_low_confidence BOOLEAN NOT NULL DEFAULT true,\n  created_at TIMESTAMP NOT NULL DEFAULT NOW(),\n  updated_at TIMESTAMP NOT NULL DEFAULT NOW()\n);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4TCdEkG57UNdEiY.e3cb3ba9095f --database DGioqiaheNVbM7PKjQHUKu --execute \nCREATE TABLE IF NOT EXISTS notification_settings (\n  id SERIAL PRIMARY KEY,\n  user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,\n  escalation_email_enabled BOOLEAN NOT NULL DEFAULT false,\n  escalation_email TEXT,\n  slack_webhook_enabled BOOLEAN NOT NULL DEFAULT false,\n  slack_webhook_url TEXT,\n  notify_on_high_risk BOOLEAN NOT NULL DEFAULT true,\n  notify_on_critical_risk BOOLEAN NOT NULL DEFAULT true,\n  notify_on_low_confidence BOOLEAN NOT NULL DEFAULT true,\n  created_at TIMESTAMP NOT NULL DEFAULT NOW(),\n  updated_at TIMESTAMP NOT NULL DEFAULT NOW()\n);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1176
+}
