@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send } from "lucide-react";
+import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send, Server, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { authApi } from "../lib/api";
 import axios from "axios";
@@ -20,27 +20,52 @@ export default function Settings() {
     notifyOnCriticalRisk: true,
     notifyOnLowConfidence: true,
   });
+  const [smtpConfig, setSmtpConfig] = useState({
+    host: "",
+    port: "587",
+    user: "",
+    pass: "",
+    from: "",
+    secure: false,
+  });
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [savingSmtp, setSavingSmtp] = useState(false);
+  const [testingSmtp, setTestingSmtp] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
   const [testingSlack, setTestingSlack] = useState(false);
 
   useEffect(() => {
-    if (tab === "notifications") {
-      axios.get(`${API}/api/notifications/settings`, { withCredentials: true })
-        .then((r) => {
-          const s = r.data.settings;
-          setNotifSettings({
-            escalationEmailEnabled: s.escalationEmailEnabled ?? false,
-            escalationEmail: s.escalationEmail ?? "",
-            slackWebhookEnabled: s.slackWebhookEnabled ?? false,
-            slackWebhookUrl: s.slackWebhookUrl ?? "",
-            notifyOnHighRisk: s.notifyOnHighRisk ?? true,
-            notifyOnCriticalRisk: s.notifyOnCriticalRisk ?? true,
-            notifyOnLowConfidence: s.notifyOnLowConfidence ?? true,
-          });
-        })
-        .catch(() => {});
-    }
+      if (tab === "notifications") {
+        axios.get(`${API}/api/notifications/settings`, { withCredentials: true })
+          .then((r) => {
+            const s = r.data.settings;
+            setNotifSettings({
+              escalationEmailEnabled: s.escalationEmailEnabled ?? false,
+              escalationEmail: s.escalationEmail ?? "",
+              slackWebhookEnabled: s.slackWebhookEnabled ?? false,
+              slackWebhookUrl: s.slackWebhookUrl ?? "",
+              notifyOnHighRisk: s.notifyOnHighRisk ?? true,
+              notifyOnCriticalRisk: s.notifyOnCriticalRisk ?? true,
+              notifyOnLowConfidence: s.notifyOnLowConfidence ?? true,
+            });
+          })
+          .catch(() => {});
+        // Load SMTP config (masked)
+        axios.get(`${API}/api/notifications/smtp`, { withCredentials: true })
+          .then((r) => {
+            const s = r.data.smtp || {};
+            setSmtpConfig({
+              host: s.host || "",
+              port: s.port || "587",
+              user: s.user || "",
+              pass: s.configured ? "••••••••" : "",
+              from: s.from || "",
+              secure: s.secure ?? false,
+            });
+          })
+          .catch(() => {});
+      }
   }, [tab]);
   const [profile, setProfile] = useState({ name: user?.name || "", email: user?.email || "" });
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
@@ -218,6 +243,130 @@ export default function Settings() {
                 </div>
               </label>
             ))}
+          </div>
+
+          {/* SMTP Configuration */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-green-400" />
+              <h2 className="font-semibold text-white">SMTP Server Configuration</h2>
+            </div>
+            <p className="text-gray-400 text-sm">Configure your outbound email server to enable email escalation alerts. These credentials are stored securely and never exposed to the browser.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">SMTP Host</label>
+                <input
+                  type="text"
+                  value={smtpConfig.host}
+                  onChange={(e) => setSmtpConfig({ ...smtpConfig, host: e.target.value })}
+                  placeholder="smtp.gmail.com"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500 font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Port</label>
+                <input
+                  type="number"
+                  value={smtpConfig.port}
+                  onChange={(e) => setSmtpConfig({ ...smtpConfig, port: e.target.value })}
+                  placeholder="587"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500 font-mono"
+                />
+              </div>
+              <div className="flex items-end pb-0.5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={smtpConfig.secure}
+                    onChange={(e) => setSmtpConfig({ ...smtpConfig, secure: e.target.checked })}
+                    className="w-4 h-4 accent-green-500"
+                  />
+                  <span className="text-sm text-gray-300">Use SSL/TLS (port 465)</span>
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
+                <input
+                  type="text"
+                  value={smtpConfig.user}
+                  onChange={(e) => setSmtpConfig({ ...smtpConfig, user: e.target.value })}
+                  placeholder="you@gmail.com"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Password / App Password</label>
+                <div className="relative">
+                  <input
+                    type={showSmtpPass ? "text" : "password"}
+                    value={smtpConfig.pass}
+                    onChange={(e) => setSmtpConfig({ ...smtpConfig, pass: e.target.value })}
+                    placeholder="App password or SMTP password"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSmtpPass(!showSmtpPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  >
+                    {showSmtpPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">From Address</label>
+                <input
+                  type="email"
+                  value={smtpConfig.from}
+                  onChange={(e) => setSmtpConfig({ ...smtpConfig, from: e.target.value })}
+                  placeholder="WorkforceAutomated <noreply@yourcompany.com>"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 placeholder-gray-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  setSavingSmtp(true); setError(""); setSuccess("");
+                  try {
+                    await axios.put(`${API}/api/notifications/smtp`, smtpConfig, { withCredentials: true });
+                    setSuccess("SMTP configuration saved");
+                  } catch (err: any) {
+                    setError(err.response?.data?.error || "Failed to save SMTP configuration");
+                  }
+                  setSavingSmtp(false);
+                }}
+                disabled={savingSmtp || !smtpConfig.host || !smtpConfig.user}
+                className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                {savingSmtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Server className="w-3.5 h-3.5" />}
+                Save SMTP Config
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setTestingSmtp(true); setError(""); setSuccess("");
+                  try {
+                    await axios.post(`${API}/api/notifications/test-smtp`, smtpConfig, { withCredentials: true });
+                    setSuccess("SMTP connection test passed — server is reachable");
+                  } catch (err: any) {
+                    setError(err.response?.data?.error || "SMTP connection test failed — check host, port, and credentials");
+                  }
+                  setTestingSmtp(false);
+                }}
+                disabled={testingSmtp || !smtpConfig.host || !smtpConfig.user}
+                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                {testingSmtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                Test Connection
+              </button>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg px-4 py-3 text-xs text-gray-500 space-y-1">
+              <p><strong className="text-gray-400">Gmail:</strong> Use smtp.gmail.com, port 587, and generate an App Password at myaccount.google.com/apppasswords (requires 2FA).</p>
+              <p><strong className="text-gray-400">Outlook/Office 365:</strong> Use smtp.office365.com, port 587, STARTTLS.</p>
+              <p><strong className="text-gray-400">SendGrid:</strong> Use smtp.sendgrid.net, port 587, username: apikey, password: your SendGrid API key.</p>
+            </div>
           </div>
 
           {/* Email notifications */}

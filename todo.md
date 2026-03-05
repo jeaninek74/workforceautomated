@@ -81,3 +81,8 @@
 - [ ] Scheduled runs management page
 - [ ] Report generation: PDF and CSV export of executions, team history, audit logs
 - [ ] Reports page in dashboard with date range filters and download buttons
+
+## Phase 10: Badge, PDF Report, SMTP Setup
+- [ ] Sidebar: pending review count badge on Review Queue nav item
+- [ ] Reports: PDF download with summary stats and risk breakdown chart
+- [ ] Settings Notifications: SMTP credential fields (host, user, pass, from) with test connection button

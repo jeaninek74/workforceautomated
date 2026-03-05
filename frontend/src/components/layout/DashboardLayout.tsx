@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -7,6 +7,7 @@ import {
   Target, Bell, Link2, ClipboardCheck, Calendar, DownloadCloud
 } from "lucide-react";
 import clsx from "clsx";
+import { api } from "@/lib/api";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -17,7 +18,7 @@ const navItems = [
   { label: "Confidence & Risk", icon: BarChart3, path: "/confidence" },
   { label: "Governance", icon: Shield, path: "/governance" },
   { label: "Integrations", icon: Link2, path: "/integrations" },
-  { label: "Review Queue", icon: ClipboardCheck, path: "/reviews" },
+  { label: "Review Queue", icon: ClipboardCheck, path: "/reviews", badge: "reviews" },
   { label: "Schedules", icon: Calendar, path: "/schedules" },
   { label: "Reports", icon: DownloadCloud, path: "/reports" },
   { label: "Audit Log", icon: FileText, path: "/audit" },
@@ -28,9 +29,25 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingReviews, setPendingReviews] = useState(0);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Poll for pending review count every 60 seconds
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await api.get("/api/reviews?status=pending&limit=1");
+        setPendingReviews(res.data?.total ?? 0);
+      } catch {
+        // silently ignore — badge is non-critical
+      }
+    };
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const planColors: Record<string, string> = {
     starter: "text-gray-400",
@@ -77,6 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {navItems.map((item) => {
             const active = location.pathname === item.path ||
               (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
+            const showBadge = item.badge === "reviews" && pendingReviews > 0;
             return (
               <Link
                 key={item.path}
@@ -85,8 +103,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={() => setSidebarOpen(false)}
               >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
-                <span>{item.label}</span>
-                {active && <ChevronRight className="w-3 h-3 ml-auto" />}
+                <span className="flex-1">{item.label}</span>
+                {showBadge && (
+                  <span className="ml-auto min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {pendingReviews > 99 ? "99+" : pendingReviews}
+                  </span>
+                )}
+                {active && !showBadge && <ChevronRight className="w-3 h-3 ml-auto" />}
               </Link>
             );
           })}
@@ -126,8 +149,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
-          <button className="btn-ghost p-2">
+          {/* Bell with pending review indicator */}
+          <button className="btn-ghost p-2 relative" onClick={() => navigate("/reviews")}>
             <Bell className="w-4 h-4" />
+            {pendingReviews > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            )}
           </button>
           <button
             className="btn-primary text-sm"
