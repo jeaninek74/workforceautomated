@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Zap, TrendingUp, Shield, Building2, ClipboardList, Rocket, Database, Plug, Mail, FileText, Globe, Webhook, Target, AlertTriangle, FileCheck, Lock, KeyRound, Building, BadgeCheck, Ban, MapPin, Bot } from "lucide-react";
+import { Zap, TrendingUp, Shield, Building2, ClipboardList, Rocket, Database, Plug, Mail, FileText, Globe, Webhook, Target, AlertTriangle, FileCheck, Lock, KeyRound, Building, BadgeCheck, Ban, MapPin, Bot, BarChart3, Settings2, CheckSquare, Calendar, Download, Activity, Link2, CreditCard, BookOpen, LayoutTemplate } from "lucide-react";
 
 const DEMO_STEPS = [
   {
@@ -32,6 +32,19 @@ const FEATURES = [
   { icon: Building2, title: "Works for Any Department", desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it." },
   { icon: ClipboardList, title: "Every Action is Recorded", desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance." },
   { icon: Rocket, title: "Ready in Minutes, Not Months", desc: "Paste your process document. A team of AI agents is configured and ready to run in under 5 minutes." }
+];
+
+const PLATFORM_FEATURES = [
+  { icon: LayoutTemplate, title: "Agent Skill Templates", desc: "Start instantly with 9 pre-built agent templates: Invoice Reviewer, Contract Analyst, Support Ticket Classifier, Lead Scorer, HR Application Screener, Compliance Checker, Code Reviewer, and more. Customize or build from scratch." },
+  { icon: BarChart3, title: "KPI Builder", desc: "Define custom KPIs with formulas, data sources, target values, and warning/critical thresholds. Track agent performance against your actual business metrics." },
+  { icon: Settings2, title: "Governance Controls", desc: "Set organization-wide confidence thresholds, escalation policies, and approval rules. Define exactly how much autonomy each agent has — and where humans must stay in the loop." },
+  { icon: CheckSquare, title: "Review Queue", desc: "Role-based approval workflow for manager and admin review. Approve or reject agent actions individually or in bulk with Mark All Reviewed. Full audit trail of every decision." },
+  { icon: Calendar, title: "Scheduled Executions", desc: "Set any agent or team to run automatically on a schedule — daily, weekly, or custom. Agents execute on time without any manual trigger." },
+  { icon: Download, title: "Reports & Exports", desc: "Generate PDF execution reports, export audit logs and escalation records as CSV, and schedule automatic report delivery to any email address via SMTP." },
+  { icon: Activity, title: "Confidence Monitor", desc: "Real-time visibility into every agent's confidence score across all executions. Spot underperforming agents before they cause problems." },
+  { icon: Link2, title: "Integrations Manager", desc: "Connect external systems — APIs, databases, webhooks, SaaS tools — and assign specific integrations to specific agents. Agents only access what you authorize." },
+  { icon: BookOpen, title: "Immutable Audit Log", desc: "Every agent action is recorded permanently. Filter, search, and export the full history of what every agent did, when, and why. Built for compliance and enterprise audits." },
+  { icon: CreditCard, title: "Billing & Subscription", desc: "Stripe-powered plan management. Upgrade, downgrade, or cancel at any time. Full billing history available in your account dashboard." },
 ];
 
 const USE_CASES = [
@@ -359,6 +372,21 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Platform Features */}
+      <section id="features" style={{ padding: "60px 40px", maxWidth: 1100, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Everything the Platform Can Do</h2>
+        <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 40, fontSize: 16 }}>Every feature you need to run, govern, and scale an AI workforce — included in every plan.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
+          {PLATFORM_FEATURES.map((f) => (
+            <div key={f.title} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 12 }}><f.icon size={26} color="#6366f1" /></div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{f.title}</h3>
+              <p style={{ fontSize: 13, color: "#7070a0", lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
