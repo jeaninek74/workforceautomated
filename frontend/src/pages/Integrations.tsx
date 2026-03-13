@@ -9,7 +9,7 @@ const INTEGRATION_TYPES = [
   {
     value: "google_drive",
     label: "Google Drive",
-    icon: "📁",
+    icon: "Drive",
     description: "Read files and folders from Google Drive",
     credentialFields: [
       { key: "access_token", label: "Access Token", placeholder: "ya29.xxx...", secret: true },
@@ -22,7 +22,7 @@ const INTEGRATION_TYPES = [
   {
     value: "slack",
     label: "Slack",
-    icon: "💬",
+    icon: "Slack",
     description: "Read messages and post notifications to Slack channels",
     credentialFields: [
       { key: "bot_token", label: "Bot Token", placeholder: "xoxb-xxx...", secret: true },
@@ -34,7 +34,7 @@ const INTEGRATION_TYPES = [
   {
     value: "rest_api",
     label: "REST API",
-    icon: "🔌",
+    icon: "API",
     description: "Connect to any REST API endpoint",
     credentialFields: [
       { key: "bearer_token", label: "Bearer Token (optional)", placeholder: "eyJhbGci...", secret: true },
@@ -51,7 +51,7 @@ const INTEGRATION_TYPES = [
   {
     value: "webhook",
     label: "Webhook",
-    icon: "🪝",
+    icon: "Hook",
     description: "Receive real-time data pushed from external systems",
     credentialFields: [],
     configFields: [
@@ -151,7 +151,7 @@ export default function Integrations() {
   };
 
   const typeInfo = (type: string) =>
-    INTEGRATION_TYPES.find((t) => t.value === type) || { icon: "🔗", label: type };
+    INTEGRATION_TYPES.find((t) => t.value === type) || { icon: type, label: type };
 
   const statusBadge = (status: string) => {
     if (status === "active") return "bg-green-950/40 text-green-400 border-green-800/50";

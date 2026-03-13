@@ -108,3 +108,32 @@
 - [ ] E2E test: schedule creation and run-now
 - [ ] E2E test: integration add and test connection
 - [ ] E2E test: notification settings save and test
+
+## Phase 13: Under Construction + Production Deployment Fix
+- [ ] Landing page: add "Under Construction — Not For Use" banner at top
+- [ ] Identify correct GitHub repo connected to Railway web service
+- [ ] Push all built features to the correct GitHub repo for Railway deployment
+- [ ] Run E2E tests against production after correct deployment
+
+
+## Phase 14: Landing Page Redesign + Data Security + DRASS System
+- [ ] Redesign landing page with clean minimal style (inspired by Intradiem but with custom professional color scheme)
+- [ ] Replace dark theme with light/airy background
+- [ ] Simplify layout (remove excessive cards and grids)
+- [ ] Add real person images to hero section
+- [ ] Reduce icon usage and use them sparingly
+- [ ] Simplify CTA buttons (remove gradients)
+- [ ] Implement zero-knowledge end-to-end encryption for user data
+- [ ] Encrypt data on client side before sending to server
+- [ ] Ensure server cannot access or decrypt user data
+- [ ] Add encryption key management UI for users
+- [ ] Implement DRASS system with encrypted backups stored separately from main database
+- [ ] Generate recovery keys for users
+- [ ] Create secondary access method for compromised scenarios
+- [ ] Build recovery key management UI
+- [ ] Implement backup restoration process
+- [ ] Create documentation for recovery procedures
+- [ ] Test all new security features end-to-end
+- [ ] Verify encryption works correctly
+- [ ] Test recovery key generation and usage
+- [ ] Test backup restoration

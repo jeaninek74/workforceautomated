@@ -26,6 +26,8 @@ import reviewsRouter from "./api/reviews.js";
 import agentTemplatesRouter from "./api/agentTemplates.js";
 import schedulesRouter from "./api/schedules.js";
 import reportsRouter from "./api/reports.js";
+import securityRouter from "./api/security.js";
+import { startReportScheduler } from "./services/reportScheduler.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -80,6 +82,7 @@ app.use("/api/reviews", reviewsRouter);
 app.use("/api/schedules", schedulesRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/agent-templates", agentTemplatesRouter);
+app.use("/api/security", securityRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), version: "1.0.0" });
@@ -96,6 +99,9 @@ if (process.env.NODE_ENV === "production") {
 }
 
 app.use(errorHandler);
+
+// Start scheduled report delivery cron job
+startReportScheduler();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`WorkforceAutomated API running on port ${PORT}`);

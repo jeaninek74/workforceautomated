@@ -93,7 +93,7 @@ export default function Schedules() {
 
   const runNowMutation = useMutation({
     mutationFn: (id: number) => api.post(`/api/schedules/${id}/run-now`, {}),
-    onSuccess: (_, id) => {
+    onSuccess: (_: unknown, _id: number) => {
       alert(`Schedule triggered! Check Executions for results.`);
     },
   });

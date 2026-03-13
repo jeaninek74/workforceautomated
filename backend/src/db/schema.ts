@@ -220,6 +220,44 @@ export const escalationReviews = pgTable("escalation_reviews", {
 });
 
 // Execution schedules
+// Encryption keys and recovery
+export const encryptionKeys = pgTable("encryption_keys", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  publicKey: text("public_key").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Recovery keys for secondary access
+export const recoveryKeys = pgTable("recovery_keys", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  keyHash: text("key_hash").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastUsedAt: timestamp("last_used_at"),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+// Backup metadata for DRASS system
+export const backupMetadata = pgTable("backup_metadata", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dataType: varchar("data_type", { length: 50 }).notNull(),
+  backupDate: timestamp("backup_date").defaultNow().notNull(),
+  encryptedSize: integer("encrypted_size").notNull(),
+  checksum: varchar("checksum", { length: 64 }).notNull(),
+  storageLocation: text("storage_location").notNull(),
+  isVerified: boolean("is_verified").default(true).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+// Encrypted backup data
+export const encryptedBackups = pgTable("encrypted_backups", {
+  backupId: varchar("backup_id", { length: 36 }).primaryKey().references(() => backupMetadata.id, { onDelete: "cascade" }),
+  encryptedData: text("encrypted_data").notNull(),
+  nonce: varchar("nonce", { length: 255 }).notNull(),
+});
+
 export const schedules = pgTable("schedules", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
