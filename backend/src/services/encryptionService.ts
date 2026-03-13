@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import nacl from 'tweetnacl';
-import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
+import util from 'tweetnacl-util';
+
+const { encodeBase64, decodeBase64 } = util;
 
 /**
  * Zero-Knowledge End-to-End Encryption Service

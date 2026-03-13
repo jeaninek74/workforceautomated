@@ -8,7 +8,12 @@ const API = import.meta.env.VITE_API_URL || "";
 
 export default function Settings() {
   const { user, refreshUser } = useAuth();
-  const [tab, setTab] = useState<"profile" | "security" | "notifications">("profile");
+  const [tab, setTab] = useState<"profile" | "security" | "encryption" | "backups" | "notifications">("profile");
+  const [encryptionKey, setEncryptionKey] = useState<{ publicKey: string; recoveryKey: string } | null>(null);
+  const [recoveryKeys, setRecoveryKeys] = useState<any[]>([]);
+  const [backups, setBackups] = useState<any[]>([]);
+  const [loadingEncryption, setLoadingEncryption] = useState(false);
+  const [loadingBackups, setLoadingBackups] = useState(false);
 
   // Notification settings state
   const [notifSettings, setNotifSettings] = useState({
@@ -113,10 +118,12 @@ export default function Settings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1">
+      <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 overflow-x-auto">
         {([
           { id: "profile", label: "Profile", icon: User },
           { id: "security", label: "Security", icon: Lock },
+          { id: "encryption", label: "Encryption", icon: Lock },
+          { id: "backups", label: "Backups", icon: Lock },
           { id: "notifications", label: "Notifications", icon: Bell },
         ] as const).map((t) => (
           <button
@@ -177,6 +184,148 @@ export default function Settings() {
             Save Changes
           </button>
         </form>
+      )}
+
+      {tab === "encryption" && (
+        <div className="space-y-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
+            <div>
+              <h2 className="font-semibold text-white mb-2">Zero-Knowledge Encryption</h2>
+              <p className="text-gray-400 text-sm mb-4">Your data is encrypted on the client side before being sent to our servers. Only you can decrypt it with your encryption key.</p>
+            </div>
+            <button
+              onClick={async () => {
+                setLoadingEncryption(true);
+                try {
+                  const res = await axios.get(`${API}/api/security/encryption-key`, { withCredentials: true });
+                  setEncryptionKey(res.data);
+                  setSuccess("Encryption key generated. Save your recovery key in a secure location!");
+                } catch (err: any) {
+                  setError(err.response?.data?.error || "Failed to get encryption key");
+                }
+                setLoadingEncryption(false);
+              }}
+              disabled={loadingEncryption}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            >
+              {loadingEncryption && <Loader2 className="w-4 h-4 animate-spin" />}
+              Generate Encryption Key
+            </button>
+            {encryptionKey && (
+              <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Public Key (Safe to share)</label>
+                  <div className="bg-gray-900 border border-gray-700 rounded p-2 text-xs text-gray-300 font-mono break-all max-h-24 overflow-y-auto">{encryptionKey.publicKey}</div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Recovery Key (Save offline - required for account recovery)</label>
+                  <div className="bg-gray-900 border border-gray-700 rounded p-2 text-xs text-yellow-300 font-mono break-all max-h-24 overflow-y-auto">{encryptionKey.recoveryKey}</div>
+                  <p className="text-xs text-yellow-600 mt-2">⚠️ Store this key in a secure location. You will need it to recover your account if you lose access.</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
+            <h2 className="font-semibold text-white">Recovery Keys</h2>
+            <p className="text-gray-400 text-sm">Recovery keys allow you to regain access to your account if it's ever compromised. You can create multiple recovery keys.</p>
+            <button
+              onClick={async () => {
+                setLoadingEncryption(true);
+                try {
+                  const res = await axios.post(`${API}/api/security/recovery-keys/generate`, {}, { withCredentials: true });
+                  setSuccess("Recovery key generated. Save it in a secure location!");
+                  setEncryptionKey({ publicKey: "", recoveryKey: res.data.recoveryKey });
+                  // Reload recovery keys
+                  const keysRes = await axios.get(`${API}/api/security/recovery-keys`, { withCredentials: true });
+                  setRecoveryKeys(keysRes.data.recoveryKeys);
+                } catch (err: any) {
+                  setError(err.response?.data?.error || "Failed to generate recovery key");
+                }
+                setLoadingEncryption(false);
+              }}
+              disabled={loadingEncryption}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            >
+              {loadingEncryption && <Loader2 className="w-4 h-4 animate-spin" />}
+              Generate New Recovery Key
+            </button>
+            {recoveryKeys.length > 0 && (
+              <div className="space-y-2">
+                {recoveryKeys.map((key) => (
+                  <div key={key.id} className="bg-gray-800 border border-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div className="text-sm">
+                      <div className="text-white font-medium">Recovery Key {key.id.substring(0, 8)}...</div>
+                      <div className="text-xs text-gray-400">Created: {new Date(key.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await axios.delete(`${API}/api/security/recovery-keys/${key.id}`, { withCredentials: true });
+                          setRecoveryKeys(recoveryKeys.filter((k) => k.id !== key.id));
+                          setSuccess("Recovery key revoked");
+                        } catch (err: any) {
+                          setError(err.response?.data?.error || "Failed to revoke recovery key");
+                        }
+                      }}
+                      className="text-xs bg-red-600/20 hover:bg-red-600/30 text-red-400 px-3 py-1.5 rounded transition-colors"
+                    >
+                      Revoke
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "backups" && (
+        <div className="space-y-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
+            <div>
+              <h2 className="font-semibold text-white mb-2">Encrypted Backups (DRASS)</h2>
+              <p className="text-gray-400 text-sm mb-4">Your data is automatically backed up and encrypted separately from the main database. You can restore from backups if needed.</p>
+            </div>
+            <button
+              onClick={async () => {
+                setLoadingBackups(true);
+                try {
+                  const res = await axios.get(`${API}/api/security/backups`, { withCredentials: true });
+                  setBackups(res.data.backups);
+                  setSuccess("Backups loaded");
+                } catch (err: any) {
+                  setError(err.response?.data?.error || "Failed to load backups");
+                }
+                setLoadingBackups(false);
+              }}
+              disabled={loadingBackups}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            >
+              {loadingBackups && <Loader2 className="w-4 h-4 animate-spin" />}
+              Load Backups
+            </button>
+            {backups.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-white">Available Backups</h3>
+                {backups.map((backup) => (
+                  <div key={backup.id} className="bg-gray-800 border border-gray-700 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-white">{backup.dataType.replace("_", " ").toUpperCase()}</div>
+                        <div className="text-xs text-gray-400">Created: {new Date(backup.backupDate).toLocaleDateString()}</div>
+                      </div>
+                      <div className="text-xs text-gray-400">{(backup.encryptedSize / 1024).toFixed(2)} KB</div>
+                    </div>
+                    <div className="text-xs text-gray-500">Expires: {new Date(backup.expiresAt).toLocaleDateString()}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {backups.length === 0 && !loadingBackups && (
+              <div className="text-sm text-gray-400">No backups available yet. Backups are created automatically.</div>
+            )}
+          </div>
+        </div>
       )}
 
       {tab === "security" && (
