@@ -110,8 +110,77 @@ const EXECUTION_TOOLS = [
   }
 ];
 
+const SECURITY_TABS = [
+  { id: "simple", label: "🔐 Security Made Simple" },
+  { id: "technical", label: "🛡️ Technical Details" },
+];
+
+const SIMPLE_SECURITY = [
+  {
+    emoji: "🔐",
+    title: "Your Data is Like a Secret in a Locked Box",
+    subtitle: "Zero-Knowledge Encryption",
+    desc: "Imagine writing your diary and locking it with a key only you have. Even if someone found the box, they could not read it. That is exactly what we do with your data — we lock it with your personal key before it ever leaves your device. Not even our team can read it.",
+    color: "#6366f1",
+    border: "#6366f1",
+    bg: "linear-gradient(135deg, #1a1a3e, #2a1a4e)"
+  },
+  {
+    emoji: "💾",
+    title: "We Always Have a Backup Plan",
+    subtitle: "DRASS Disaster Recovery",
+    desc: "Remember saving your homework in two places — on your computer AND on a USB drive — just in case? We do the same with your data. Every day, we make an encrypted copy and store it somewhere completely separate. If anything ever goes wrong, we can restore everything.",
+    color: "#10b981",
+    border: "#10b981",
+    bg: "linear-gradient(135deg, #1a3e1a, #2a4e2a)"
+  },
+  {
+    emoji: "✅",
+    title: "We Follow All the Rules",
+    subtitle: "Enterprise Compliance",
+    desc: "Just like how schools follow rules to keep students safe, we follow the strictest security rules in the world — GDPR, HIPAA, and SOC 2. These are not just checkboxes. They are promises that your data is handled with the highest level of care and responsibility.",
+    color: "#f59e0b",
+    border: "#f59e0b",
+    bg: "linear-gradient(135deg, #3e1a1a, #4e2a2a)"
+  },
+];
+
+const SIMPLE_ICONS = [
+  {
+    emoji: "🔒",
+    title: "Secret Message in a Locked Box",
+    desc: "Your data is scrambled into unreadable code (encryption) before storage. Only your key can unscramble it."
+  },
+  {
+    emoji: "📚",
+    title: "Homework Saved in Two Places",
+    desc: "Daily encrypted backups stored separately. If one copy is lost, we restore from the other — automatically."
+  },
+  {
+    emoji: "🗝️",
+    title: "Spare House Key Under the Mat",
+    desc: "Recovery keys let you regain access to your account even if you forget your password. Stored securely, only by you."
+  },
+  {
+    emoji: "🚪",
+    title: "Proving Who You Are at the Door",
+    desc: "Every login is verified with GitHub OAuth and JWT tokens. No one gets in without proving they are really you."
+  },
+  {
+    emoji: "📋",
+    title: "A Permanent Record Book",
+    desc: "Every action in the system is written down forever in our audit log — like a school attendance record that cannot be erased."
+  },
+  {
+    emoji: "🏰",
+    title: "A Castle With Many Gates",
+    desc: "Zero-trust security means every request is checked at every door — even inside our own systems. Nothing is assumed safe."
+  },
+];
+
 export default function Landing() {
   const [activeStep, setActiveStep] = useState(0);
+  const [activeSecurityTab, setActiveSecurityTab] = useState("simple");
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#0a0a0f", color: "#e8e8f0", minHeight: "100vh" }}>
@@ -457,75 +526,129 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Enterprise Security & Data Protection */}
+      {/* Security Explained — Tabbed Section */}
       <section style={{ background: "#0f0f1a", padding: "60px 40px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>Enterprise-Grade Security & Disaster Recovery</h2>
-          <p style={{ color: "#6060a0", marginBottom: 48, fontSize: 16, textAlign: "center" }}>Your data is protected by multiple layers of encryption, automated backups, and recovery mechanisms designed for enterprise compliance.</p>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 48 }}>
-            {/* Zero-Knowledge Encryption Card */}
-            <div style={{ background: "linear-gradient(135deg, #1a1a3e, #2a1a4e)", border: "1px solid #6366f1", borderRadius: 12, padding: 28 }}>
-              <div style={{ marginBottom: 16 }}><Lock size={32} color="#6366f1" /></div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Zero-Knowledge Encryption</h3>
-              <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Your sensitive data is encrypted on the client side before it ever reaches our servers. Even our team cannot decrypt your data — only you can with your encryption key.</p>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                {["Client-side AES-256-GCM encryption", "NaCl (libsodium) authenticated encryption", "Server stores only encrypted data", "Your key, your control"].map((item) => (
-                  <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
-                    <span style={{ color: "#6366f1", flexShrink: 0 }}>✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>How We Keep Your Data Safe</h2>
+          <p style={{ color: "#6060a0", marginBottom: 32, fontSize: 16, textAlign: "center" }}>Choose how you want to understand our security — plain English or full technical details.</p>
 
-            {/* DRASS System Card */}
-            <div style={{ background: "linear-gradient(135deg, #1a3e1a, #2a4e2a)", border: "1px solid #10b981", borderRadius: 12, padding: 28 }}>
-              <div style={{ marginBottom: 16 }}><Shield size={32} color="#10b981" /></div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>DRASS: Disaster Recovery & System Security</h3>
-              <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Automated encrypted backups stored separately from your main database. Recovery keys enable secondary access if your account is ever compromised.</p>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                {["Encrypted backups with 90-day retention", "Recovery keys for account recovery", "Separate backup storage location", "Integrity verification & checksums"].map((item) => (
-                  <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
-                    <span style={{ color: "#10b981", flexShrink: 0 }}>✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Trust & Compliance Card */}
-            <div style={{ background: "linear-gradient(135deg, #3e1a1a, #4e2a2a)", border: "1px solid #f59e0b", borderRadius: 12, padding: 28 }}>
-              <div style={{ marginBottom: 16 }}><BadgeCheck size={32} color="#f59e0b" /></div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Enterprise Compliance</h3>
-              <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Built to meet the strictest security and privacy standards. Your data stays under your control, always.</p>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                {["SOC 2 Type II ready", "GDPR & HIPAA compliant", "Immutable audit logs", "Zero-trust access model"].map((item) => (
-                  <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
-                    <span style={{ color: "#f59e0b", flexShrink: 0 }}>✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Tab Buttons */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40 }}>
+            {SECURITY_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSecurityTab(tab.id)}
+                style={{
+                  padding: "12px 28px",
+                  borderRadius: 10,
+                  border: activeSecurityTab === tab.id ? "2px solid #6366f1" : "1px solid #2a2a3e",
+                  background: activeSecurityTab === tab.id ? "linear-gradient(135deg, #1a1a3e, #2a1a4e)" : "#0a0a0f",
+                  color: activeSecurityTab === tab.id ? "#a5b4fc" : "#6060a0",
+                  cursor: "pointer",
+                  fontSize: 15,
+                  fontWeight: activeSecurityTab === tab.id ? 700 : 500,
+                  transition: "all 0.2s"
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <div style={{ background: "#0a0a0f", border: "1px solid #2a2a3e", borderRadius: 12, padding: 28, marginBottom: 40 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 16, textAlign: "center" }}>How Your Data is Protected</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
-              {[
-                { num: "1", title: "Encryption at Rest", desc: "All stored data encrypted with AES-256" },
-                { num: "2", title: "Encryption in Transit", desc: "TLS 1.3 for all data transmission" },
-                { num: "3", title: "Encrypted Backups", desc: "Separate backup storage with encryption" },
-                { num: "4", title: "Recovery Keys", desc: "Secondary access via recovery keys" },
-                { num: "5", title: "Audit Logging", desc: "Immutable logs of all access" },
-                { num: "6", title: "Zero Trust", desc: "Every access verified and authorized" }
-              ].map((item) => (
-                <div key={item.num} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 16 }}>
-                  <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>{item.num}</div>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.title}</h4>
-                  <p style={{ fontSize: 12, color: "#6060a0", margin: 0 }}>{item.desc}</p>
+          {/* Simple Tab */}
+          {activeSecurityTab === "simple" && (
+            <div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, marginBottom: 40 }}>
+                {SIMPLE_SECURITY.map((item) => (
+                  <div key={item.title} style={{ background: item.bg, border: `1px solid ${item.border}`, borderRadius: 12, padding: 28 }}>
+                    <div style={{ fontSize: 36, marginBottom: 16 }}>{item.emoji}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: item.color, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{item.subtitle}</div>
+                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 12, lineHeight: 1.4 }}>{item.title}</h3>
+                    <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.8, margin: 0 }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* 6 Icon Grid */}
+              <div style={{ background: "#0a0a0f", border: "1px solid #2a2a3e", borderRadius: 12, padding: 32 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>6 Ways We Protect You</h3>
+                <p style={{ color: "#6060a0", textAlign: "center", marginBottom: 28, fontSize: 14 }}>Every protection method explained simply.</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
+                  {SIMPLE_ICONS.map((icon) => (
+                    <div key={icon.title} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 20, textAlign: "center" }}>
+                      <div style={{ fontSize: 32, marginBottom: 12 }}>{icon.emoji}</div>
+                      <h4 style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 8, lineHeight: 1.4 }}>{icon.title}</h4>
+                      <p style={{ fontSize: 12, color: "#6060a0", margin: 0, lineHeight: 1.6 }}>{icon.desc}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Technical Tab */}
+          {activeSecurityTab === "technical" && (
+            <div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 40 }}>
+                <div style={{ background: "linear-gradient(135deg, #1a1a3e, #2a1a4e)", border: "1px solid #6366f1", borderRadius: 12, padding: 28 }}>
+                  <div style={{ marginBottom: 16 }}><Lock size={32} color="#6366f1" /></div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Zero-Knowledge Encryption</h3>
+                  <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Your sensitive data is encrypted on the client side before it ever reaches our servers. Even our team cannot decrypt your data — only you can with your encryption key.</p>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {["Client-side AES-256-GCM encryption", "NaCl (libsodium) authenticated encryption", "Server stores only encrypted data", "Your key, your control"].map((item) => (
+                      <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                        <span style={{ color: "#6366f1", flexShrink: 0 }}>✓</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div style={{ background: "linear-gradient(135deg, #1a3e1a, #2a4e2a)", border: "1px solid #10b981", borderRadius: 12, padding: 28 }}>
+                  <div style={{ marginBottom: 16 }}><Shield size={32} color="#10b981" /></div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>DRASS: Disaster Recovery & System Security</h3>
+                  <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Automated encrypted backups stored separately from your main database. Recovery keys enable secondary access if your account is ever compromised.</p>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {["Encrypted backups with 90-day retention", "Recovery keys for account recovery", "Separate backup storage location", "Integrity verification & checksums"].map((item) => (
+                      <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                        <span style={{ color: "#10b981", flexShrink: 0 }}>✓</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div style={{ background: "linear-gradient(135deg, #3e1a1a, #4e2a2a)", border: "1px solid #f59e0b", borderRadius: 12, padding: 28 }}>
+                  <div style={{ marginBottom: 16 }}><BadgeCheck size={32} color="#f59e0b" /></div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Enterprise Compliance</h3>
+                  <p style={{ fontSize: 14, color: "#9090b0", lineHeight: 1.7, marginBottom: 16 }}>Built to meet the strictest security and privacy standards. Your data stays under your control, always.</p>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {["SOC 2 Type II ready", "GDPR & HIPAA compliant", "Immutable audit logs", "Zero-trust access model"].map((item) => (
+                      <li key={item} style={{ fontSize: 13, color: "#8080a0", padding: "6px 0", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                        <span style={{ color: "#f59e0b", flexShrink: 0 }}>✓</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div style={{ background: "#0a0a0f", border: "1px solid #2a2a3e", borderRadius: 12, padding: 28 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 16, textAlign: "center" }}>How Your Data is Protected</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
+                  {[
+                    { num: "1", title: "Encryption at Rest", desc: "All stored data encrypted with AES-256" },
+                    { num: "2", title: "Encryption in Transit", desc: "TLS 1.3 for all data transmission" },
+                    { num: "3", title: "Encrypted Backups", desc: "Separate backup storage with encryption" },
+                    { num: "4", title: "Recovery Keys", desc: "Secondary access via recovery keys" },
+                    { num: "5", title: "Audit Logging", desc: "Immutable logs of all access" },
+                    { num: "6", title: "Zero Trust", desc: "Every access verified and authorized" }
+                  ].map((item) => (
+                    <div key={item.num} style={{ background: "#0f0f1a", border: "1px solid #1e1e2e", borderRadius: 10, padding: 16 }}>
+                      <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>{item.num}</div>
+                      <h4 style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.title}</h4>
+                      <p style={{ fontSize: 12, color: "#6060a0", margin: 0 }}>{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 
