@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
@@ -262,12 +262,12 @@ function CTAVisual() {
       <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>You've seen what's possible.</h3>
       <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Set up your first agent in under 5 minutes. No credit card required.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 280, margin: "0 auto" }}>
-        <Link href="/register">
+        <Link to="/register">
           <a style={{ display: "block", padding: "12px 0", background: "#0d9488", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
             Start Free Trial
           </a>
         </Link>
-        <Link href="/custom-build">
+        <Link to="/custom-build">
           <a style={{ display: "block", padding: "12px 0", border: "1px solid #0d9488", color: "#0d9488", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
             Build Your Custom Plan
           </a>
@@ -295,10 +295,10 @@ export default function Demo() {
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#f9fafb", minHeight: "100vh" }}>
       {/* Nav */}
       <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link href="/"><a style={{ fontSize: 18, fontWeight: 800, color: "#0f766e", textDecoration: "none" }}>WorkforceAutomated</a></Link>
+        <Link to="/"><a style={{ fontSize: 18, fontWeight: 800, color: "#0f766e", textDecoration: "none" }}>WorkforceAutomated</a></Link>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link href="/watch"><a style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Watch Demo Video</a></Link>
-          <Link href="/register"><a style={{ fontSize: 13, background: "#0d9488", color: "#fff", padding: "8px 16px", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>Get Started Free</a></Link>
+          <Link to="/watch"><a style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Watch Demo Video</a></Link>
+          <Link to="/register"><a style={{ fontSize: 13, background: "#0d9488", color: "#fff", padding: "8px 16px", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>Get Started Free</a></Link>
         </div>
       </nav>
 
@@ -390,7 +390,7 @@ export default function Demo() {
                 Next →
               </button>
             ) : (
-              <Link href="/register">
+              <Link to="/register">
                 <a style={{ fontSize: 13, padding: "8px 16px", background: "#0d9488", color: "#fff", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>
                   Start Free Trial →
                 </a>
