@@ -29,7 +29,7 @@ const WHY_IT_WORKS = [
   {
     emoji: "🏢",
     title: "Works for Any Department",
-    desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it.",
+    desc: "Finance, HR, Legal, Sales, Support, IT, Cybersecurity, Payroll, Healthcare, Manufacturing, Real Estate, Consulting, C-Level Executive — if there is a process, we automate it.",
   },
   {
     emoji: "📋",
@@ -512,9 +512,10 @@ export default function Landing() {
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Works for any industry or department</h2>
-            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>
-              Supply Chain, Contracts, Analytics, Marketing, Project Management, Program Management, Finance, HR, Sales, Support, IT — if there is a process, WorkforceAutomated can automate it.
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 700, margin: "0 auto 8px" }}>
+              Finance, Supply Chain, Contracts, Analytics, Marketing, Project Management, Program Management, HR, Sales, Customer Support, IT, Cybersecurity, Networking, Payroll, Healthcare, Real Estate, Manufacturing, Procurement, Education, Insurance, Consulting, and C-Level Executive work.
             </p>
+            <p style={{ fontSize: 14, color: "#0d9488", fontWeight: 600, margin: "0 auto" }}>If there is a process, WorkforceAutomated can automate it.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {USE_CASES.map((u) => (
