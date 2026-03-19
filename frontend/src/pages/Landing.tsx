@@ -97,12 +97,72 @@ const PLATFORM_FEATURES = [
 ];
 
 const USE_CASES = [
-  { dept: "Finance", emoji: "💰", task: "Review invoices, flag overdue payments, generate variance reports" },
-  { dept: "HR", emoji: "👥", task: "Screen job applications, track onboarding tasks, monitor policy compliance" },
-  { dept: "Legal", emoji: "⚖️", task: "Review contracts for missing clauses, track regulatory deadlines" },
-  { dept: "Customer Support", emoji: "🎧", task: "Classify tickets, draft responses, escalate urgent issues" },
-  { dept: "Sales", emoji: "📣", task: "Score leads, flag at-risk deals, update CRM records" },
-  { dept: "IT & Security", emoji: "🖥️", task: "Monitor systems, detect anomalies, generate incident reports" },
+  {
+    dept: "Finance & Accounting",
+    emoji: "💰",
+    task: "Review invoices, flag overdue payments, generate variance reports, reconcile accounts, and produce executive financial summaries — automatically.",
+    agents: ["Invoice Reviewer", "Variance Analyst", "AP/AR Monitor"],
+  },
+  {
+    dept: "Supply Chain",
+    emoji: "🚚",
+    task: "Monitor supplier performance, track inventory levels, flag delivery delays, analyze procurement costs, and generate supply chain risk reports in real time.",
+    agents: ["Supplier Monitor", "Inventory Tracker", "Risk Analyst"],
+  },
+  {
+    dept: "Contracts & Legal",
+    emoji: "⚖️",
+    task: "Review contracts for missing clauses, flag non-standard terms, track regulatory deadlines, manage NDAs, and generate compliance summaries — powered by Claude 3.5 Sonnet.",
+    agents: ["Contract Analyst", "Compliance Checker", "NDA Reviewer"],
+  },
+  {
+    dept: "Analytics & Data",
+    emoji: "📊",
+    task: "Ingest raw data, generate executive dashboards, produce trend analyses, build KPI reports, and surface actionable insights across any business unit.",
+    agents: ["KPI Reporter", "Trend Analyst", "Data Summarizer"],
+  },
+  {
+    dept: "Marketing",
+    emoji: "📣",
+    task: "Draft campaign briefs, analyze performance metrics, generate SEO content, score leads, monitor brand mentions, and produce competitive intelligence reports.",
+    agents: ["Campaign Analyst", "Content Generator", "Lead Scorer"],
+  },
+  {
+    dept: "Project Management",
+    emoji: "📋",
+    task: "Track milestones, flag at-risk tasks, generate status reports, manage resource allocation, and produce stakeholder updates — automatically, on schedule.",
+    agents: ["Status Reporter", "Risk Monitor", "Resource Tracker"],
+  },
+  {
+    dept: "Program Management",
+    emoji: "🗂️",
+    task: "Coordinate cross-functional programs, track dependencies, produce executive program health reports, manage escalations, and maintain program governance documentation.",
+    agents: ["Program Health Monitor", "Dependency Tracker", "Governance Reporter"],
+  },
+  {
+    dept: "Human Resources",
+    emoji: "👥",
+    task: "Screen job applications, track onboarding tasks, monitor policy compliance, generate headcount reports, and flag employee engagement risks.",
+    agents: ["Application Screener", "Onboarding Tracker", "Compliance Monitor"],
+  },
+  {
+    dept: "Sales & Revenue",
+    emoji: "📈",
+    task: "Score leads, flag at-risk deals, update CRM records, generate pipeline reports, and produce win/loss analyses with recommended next actions.",
+    agents: ["Lead Scorer", "Deal Monitor", "Pipeline Reporter"],
+  },
+  {
+    dept: "Customer Support",
+    emoji: "🎧",
+    task: "Classify tickets, draft responses, escalate urgent issues, track SLA compliance, and generate CSAT trend reports with root-cause analysis.",
+    agents: ["Ticket Classifier", "Response Drafter", "SLA Monitor"],
+  },
+  {
+    dept: "IT & Security",
+    emoji: "🖥️",
+    task: "Monitor systems, detect anomalies, generate incident reports, track vulnerability remediation, and produce security audit logs — all in real time.",
+    agents: ["Anomaly Detector", "Incident Reporter", "Audit Log Generator"],
+  },
 ];
 
 const EXECUTION_STEPS = [
@@ -384,19 +444,24 @@ export default function Landing() {
       <section style={{ background: "#fff", padding: "80px 40px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Works for any department</h2>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Works for any industry or department</h2>
             <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>
-              Finance, HR, Legal, Sales, Support, IT — if there is a process, WorkforceAutomated can automate it.
+              Supply Chain, Contracts, Analytics, Marketing, Project Management, Program Management, Finance, HR, Sales, Support, IT — if there is a process, WorkforceAutomated can automate it.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {USE_CASES.map((u) => (
-              <div key={u.dept} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 20 }}>
+              <div key={u.dept} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 22 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <span style={{ fontSize: 22 }}>{u.emoji}</span>
+                  <span style={{ fontSize: 24 }}>{u.emoji}</span>
                   <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{u.dept}</span>
                 </div>
-                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>{u.task}</p>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, margin: "0 0 12px" }}>{u.task}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {(u as any).agents?.map((a: string) => (
+                    <span key={a} style={{ background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, border: "1px solid #99f6e4" }}>{a}</span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
