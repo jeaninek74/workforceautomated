@@ -1,39 +1,110 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+// ─── Data ────────────────────────────────────────────────────────────────────
+
 const NAV_LINKS = ["Product", "Security", "Pricing", "Docs"];
 
-const FEATURES = [
+const WHY_IT_WORKS = [
   {
-    icon: "🤖",
-    title: "AI Agent Orchestration",
-    desc: "Build and deploy intelligent agents that handle complex workflows — from data processing to customer interactions — without writing a single line of code.",
+    emoji: "⚡",
+    title: "Works Without Hiring Anyone",
+    desc: "Your AI agent handles repetitive tasks 24/7. No sick days, no overtime, no training time.",
   },
   {
-    icon: "🔐",
-    title: "Zero-Knowledge Encryption",
-    desc: "Your data is encrypted on your device before it ever reaches our servers. AES-256-GCM encryption means only you can read your data — not even us.",
+    emoji: "📈",
+    title: "Turns Slow Work Into Fast Revenue",
+    desc: "Processes that used to take days now finish in minutes. Faster work means faster revenue.",
   },
   {
-    icon: "🛡️",
-    title: "DRASS Disaster Recovery",
-    desc: "Automated encrypted backups with 90-day retention. Recovery keys give you a secondary access method if your primary credentials are ever compromised.",
+    emoji: "🧑‍💼",
+    title: "Humans Stay in Charge",
+    desc: "The agent only acts when it's confident. Anything uncertain gets sent to a real person first.",
   },
   {
-    icon: "⚡",
-    title: "Real-Time Execution",
-    desc: "Watch your agents work in real time. Full execution logs, confidence monitoring, and audit trails give you complete visibility into every automated action.",
+    emoji: "🏢",
+    title: "Works for Any Department",
+    desc: "Finance, HR, legal, sales, customer support, IT — if there's a process, we can automate it.",
   },
   {
-    icon: "🔗",
-    title: "50+ Integrations",
-    desc: "Connect to Slack, Salesforce, HubSpot, Jira, GitHub, and more. Trigger agents from any event — a new form submission, a payment, a calendar invite.",
+    emoji: "📋",
+    title: "Every Action is Recorded",
+    desc: "A permanent, tamper-proof log of everything the agent did. Perfect for audits and compliance.",
   },
   {
-    icon: "📊",
-    title: "Security Audit Dashboard",
-    desc: "Immutable audit logs, encryption key rotation history, and backup restoration records — everything you need for SOC 2, HIPAA, and GDPR compliance.",
+    emoji: "🚀",
+    title: "Ready in Minutes, Not Months",
+    desc: "Paste your process document. A team of AI agents is configured and ready to run in under 5 minutes.",
   },
+];
+
+const PLATFORM_FEATURES = [
+  {
+    emoji: "📐",
+    title: "Agent Skill Templates",
+    desc: "Start instantly with pre-built agent templates: Invoice Reviewer, Contract Analyst, Support Ticket Classifier, Lead Scorer, HR Application Screener, Compliance Checker, Code Reviewer, and more. Customize or build from scratch.",
+  },
+  {
+    emoji: "📊",
+    title: "KPI Builder",
+    desc: "Define custom KPIs with formulas, data sources, target values, and warning/critical thresholds. Track agent performance against your actual business metrics.",
+  },
+  {
+    emoji: "🛡️",
+    title: "Governance Controls",
+    desc: "Set organization-wide confidence thresholds, escalation policies, and approval rules. Define exactly how much autonomy each agent has — and where humans must stay in the loop.",
+  },
+  {
+    emoji: "✅",
+    title: "Review Queue",
+    desc: "Role-based approval workflow for manager and admin review. Approve or reject agent actions individually or in bulk. Full audit trail of every decision.",
+  },
+  {
+    emoji: "🗓️",
+    title: "Scheduled Executions",
+    desc: "Set any agent or team to run automatically on a schedule — daily, weekly, or custom. Agents execute on time without any manual trigger.",
+  },
+  {
+    emoji: "📄",
+    title: "Reports & Exports",
+    desc: "Generate PDF execution reports, export audit logs and escalation records as CSV, and schedule automatic report delivery to any email address.",
+  },
+  {
+    emoji: "📡",
+    title: "Confidence Monitor",
+    desc: "Real-time visibility into every agent's confidence score across all executions. Spot underperforming agents before they cause problems.",
+  },
+  {
+    emoji: "🔗",
+    title: "Integrations Manager",
+    desc: "Connect external systems — APIs, databases, webhooks, SaaS tools — and assign specific integrations to specific agents. Agents only access what you authorize.",
+  },
+  {
+    emoji: "📚",
+    title: "Immutable Audit Log",
+    desc: "Every agent action is recorded permanently. Filter, search, and export the full history of what every agent did, when, and why. Built for compliance and enterprise audits.",
+  },
+  {
+    emoji: "💳",
+    title: "Billing & Subscription",
+    desc: "Stripe-powered plan management. Upgrade, downgrade, or cancel at any time. Full billing history available in your account dashboard.",
+  },
+];
+
+const USE_CASES = [
+  { dept: "Finance", emoji: "💰", task: "Review invoices, flag overdue payments, generate variance reports" },
+  { dept: "HR", emoji: "👥", task: "Screen job applications, track onboarding tasks, monitor policy compliance" },
+  { dept: "Legal", emoji: "⚖️", task: "Review contracts for missing clauses, track regulatory deadlines" },
+  { dept: "Customer Support", emoji: "🎧", task: "Classify tickets, draft responses, escalate urgent issues" },
+  { dept: "Sales", emoji: "📣", task: "Score leads, flag at-risk deals, update CRM records" },
+  { dept: "IT & Security", emoji: "🖥️", task: "Monitor systems, detect anomalies, generate incident reports" },
+];
+
+const EXECUTION_STEPS = [
+  { num: "1", title: "You Define the Process", desc: "Paste a job description, process document, or configure manually. The platform converts it into a structured agent with defined inputs, outputs, and rules." },
+  { num: "2", title: "The Agent Connects to Your Systems", desc: "Assign integrations — APIs, databases, SaaS tools. The agent reads and writes only what you authorize. No credentials stored in GitHub. Least-privilege by default." },
+  { num: "3", title: "It Executes and Scores Every Action", desc: "Every action gets a confidence score. High-confidence actions are completed automatically. Low-confidence or high-risk actions are escalated to a human reviewer." },
+  { num: "4", title: "You Review, Approve, or Override", desc: "The Review Queue shows every escalated action. Approve or reject individually or in bulk. Every decision is logged permanently in the audit trail." },
 ];
 
 const SECURITY_SIMPLE = [
@@ -71,19 +142,16 @@ const SECURITY_TECHNICAL = [
     title: "Zero-Knowledge Encryption",
     subtitle: "AES-256-GCM + NaCl libsodium",
     points: ["Client-side AES-256-GCM encryption", "NaCl authenticated encryption", "Server stores only encrypted data", "Your key, your control"],
-    color: "#0d9488",
   },
   {
     title: "DRASS: Disaster Recovery",
     subtitle: "Encrypted backups + Recovery keys",
     points: ["Encrypted backups with 90-day retention", "Recovery keys for account recovery", "Separate backup storage location", "Integrity verification via checksums"],
-    color: "#0d9488",
   },
   {
     title: "Enterprise Compliance",
     subtitle: "SOC 2 · GDPR · HIPAA",
     points: ["SOC 2 Type II ready", "GDPR & HIPAA compliant", "Immutable audit logs", "Zero-trust access model"],
-    color: "#0d9488",
   },
 ];
 
@@ -102,7 +170,7 @@ const PLANS = [
     price: "$149",
     period: "/mo",
     tagline: "For growing organizations",
-    features: ["Up to 25 active AI agents", "5 agent teams", "100,000 executions/month", "All integrations", "Priority support", "Advanced analytics"],
+    features: ["Up to 25 active AI agents", "Unlimited agent teams", "100,000 executions/month", "All integrations", "Priority support", "Advanced analytics"],
     cta: "Start Free Trial",
     highlight: true,
   },
@@ -117,13 +185,15 @@ const PLANS = [
   },
 ];
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function Landing() {
   const [securityTab, setSecurityTab] = useState<"simple" | "technical">("simple");
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#f9fafb", color: "#111827", minHeight: "100vh" }}>
 
-      {/* Nav */}
+      {/* ── Nav ── */}
       <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 32, height: 32, background: "#0d9488", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -142,19 +212,19 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* ── Hero ── */}
       <section style={{ background: "#fff", padding: "80px 40px 60px", maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center" }}>
         <div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#f0fdfa", border: "1px solid #99f6e4", borderRadius: 20, padding: "6px 14px", marginBottom: 24 }}>
             <span style={{ width: 8, height: 8, background: "#0d9488", borderRadius: "50%", display: "inline-block" }}></span>
-            <span style={{ fontSize: 13, color: "#0d9488", fontWeight: 600 }}>Enterprise-grade AI automation</span>
+            <span style={{ fontSize: 13, color: "#0d9488", fontWeight: 600 }}>Enterprise AI Workforce Operating System</span>
           </div>
           <h1 style={{ fontSize: 48, fontWeight: 800, lineHeight: 1.15, color: "#111827", margin: "0 0 20px" }}>
             Automate your workforce.<br />
             <span style={{ color: "#0d9488" }}>Securely.</span>
           </h1>
           <p style={{ fontSize: 18, color: "#6b7280", lineHeight: 1.7, margin: "0 0 32px", maxWidth: 480 }}>
-            Build AI agents that handle complex business workflows — with zero-knowledge encryption, automated disaster recovery, and full audit trails built in from day one.
+            Convert job descriptions into governed AI agents that execute work independently or in structured teams — with full audit trails, confidence scoring, and human escalation built in.
           </p>
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <Link to="/register" style={{ background: "#0d9488", color: "#fff", fontWeight: 700, fontSize: 16, padding: "14px 28px", borderRadius: 10, textDecoration: "none" }}>
@@ -165,14 +235,10 @@ export default function Landing() {
             </a>
           </div>
           <div style={{ display: "flex", gap: 24, marginTop: 32 }}>
-            {[
-              { label: "AES-256-GCM Encrypted" },
-              { label: "SOC 2 Ready" },
-              { label: "GDPR Compliant" },
-            ].map((b) => (
-              <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {["AES-256-GCM Encrypted", "SOC 2 Ready", "GDPR Compliant"].map((b) => (
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ color: "#0d9488", fontSize: 14 }}>✓</span>
-                <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 500 }}>{b.label}</span>
+                <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 500 }}>{b}</span>
               </div>
             ))}
           </div>
@@ -201,30 +267,135 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="product" style={{ padding: "80px 40px", maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Everything you need to automate at scale</h2>
-          <p style={{ fontSize: 17, color: "#6b7280", maxWidth: 560, margin: "0 auto" }}>From AI agent orchestration to enterprise-grade security — all in one platform.</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
-          {FEATURES.map((f) => (
-            <div key={f.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 28 }}>
-              <div style={{ fontSize: 28, marginBottom: 14 }}>{f.icon}</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: "0 0 8px" }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+      {/* ── Stats Bar ── */}
+      <section style={{ background: "#0d9488", padding: "28px 40px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, textAlign: "center" }}>
+          {[
+            { stat: "3 days → 20 min", label: "Invoice processing" },
+            { stat: "4×", label: "Scale without new hires" },
+            { stat: "100%", label: "Audit coverage" },
+            { stat: "< 5 min", label: "Agent setup time" },
+          ].map(({ stat, label }) => (
+            <div key={label}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>{stat}</div>
+              <div style={{ fontSize: 13, color: "#ccfbf1", marginTop: 2 }}>{label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Security Section */}
-      <section id="security" style={{ background: "#fff", padding: "80px 40px" }}>
+      {/* ── Why It Works ── */}
+      <section id="product" style={{ padding: "80px 40px", maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Why it works</h2>
+          <p style={{ fontSize: 17, color: "#6b7280", maxWidth: 560, margin: "0 auto" }}>
+            WorkforceAutomated is not a chatbot. It is an enterprise AI Workforce Operating System — built for real business processes, real compliance requirements, and real human oversight.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
+          {WHY_IT_WORKS.map((f) => (
+            <div key={f.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24, display: "flex", gap: 16 }}>
+              <div style={{ fontSize: 28, flexShrink: 0 }}>{f.emoji}</div>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 6px" }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── How Agents Execute Work ── */}
+      <section style={{ background: "#fff", padding: "80px 40px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>How agents actually do the work</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 600, margin: "0 auto" }}>
+              An agent is not just a chatbot. It is an active worker that connects to your real systems, reads and writes real data, and takes real actions — all within the boundaries you set.
+            </p>
+            <p style={{ fontSize: 14, color: "#9ca3af", maxWidth: 600, margin: "12px auto 0" }}>
+              You grant access once. The agent uses only what you have authorized. Every action is logged.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
+            {EXECUTION_STEPS.map((s) => (
+              <div key={s.num} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24 }}>
+                <div style={{ width: 36, height: 36, background: "#0d9488", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 14 }}>{s.num}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 8px" }}>{s.title}</h3>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 24, background: "#f0fdfa", border: "1px solid #99f6e4", borderRadius: 12, padding: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16 }}>
+            {[
+              { emoji: "🎯", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI is not sure enough, it stops and asks you." },
+              { emoji: "🚨", title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
+              { emoji: "📋", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
+              { emoji: "🔒", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." },
+            ].map((g) => (
+              <div key={g.title} style={{ textAlign: "center", padding: "8px 0" }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>{g.emoji}</div>
+                <h4 style={{ fontSize: 13, fontWeight: 700, color: "#0d9488", margin: "0 0 4px" }}>{g.title}</h4>
+                <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.6 }}>{g.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Platform Features ── */}
+      <section style={{ padding: "80px 40px", maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Everything included in the platform</h2>
+          <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 560, margin: "0 auto" }}>
+            Every feature you need to deploy, govern, monitor, and scale AI agents across your organization.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+          {PLATFORM_FEATURES.map((f) => (
+            <div key={f.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 22, display: "flex", gap: 14 }}>
+              <div style={{ fontSize: 24, flexShrink: 0 }}>{f.emoji}</div>
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: "0 0 5px" }}>{f.title}</h3>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Use Cases by Department ── */}
+      <section style={{ background: "#fff", padding: "80px 40px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Works for any department</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>
+              Finance, HR, Legal, Sales, Support, IT — if there is a process, WorkforceAutomated can automate it.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+            {USE_CASES.map((u) => (
+              <div key={u.dept} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <span style={{ fontSize: 22 }}>{u.emoji}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{u.dept}</span>
+                </div>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>{u.task}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Security ── */}
+      <section id="security" style={{ background: "#f9fafb", padding: "80px 40px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>How we keep your data safe</h2>
-            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto 28px" }}>Choose how you want to understand our security — plain English or full technical details.</p>
-            <div style={{ display: "inline-flex", background: "#f3f4f6", borderRadius: 10, padding: 4, gap: 4 }}>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto 28px" }}>
+              Choose how you want to understand our security — plain English or full technical details.
+            </p>
+            <div style={{ display: "inline-flex", background: "#e5e7eb", borderRadius: 10, padding: 4, gap: 4 }}>
               {[
                 { id: "simple", label: "🔐 Security Made Simple" },
                 { id: "technical", label: "🛡️ Technical Details" },
@@ -233,14 +404,11 @@ export default function Landing() {
                   key={t.id}
                   onClick={() => setSecurityTab(t.id as "simple" | "technical")}
                   style={{
-                    padding: "10px 22px",
-                    borderRadius: 8,
-                    border: "none",
+                    padding: "10px 22px", borderRadius: 8, border: "none",
                     background: securityTab === t.id ? "#fff" : "transparent",
                     color: securityTab === t.id ? "#0d9488" : "#6b7280",
                     fontWeight: securityTab === t.id ? 700 : 500,
-                    fontSize: 14,
-                    cursor: "pointer",
+                    fontSize: 14, cursor: "pointer",
                     boxShadow: securityTab === t.id ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
                     transition: "all 0.15s",
                   }}
@@ -253,9 +421,9 @@ export default function Landing() {
 
           {securityTab === "simple" && (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 32 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 24 }}>
                 {SECURITY_SIMPLE.map((s) => (
-                  <div key={s.title} style={{ background: "#f0fdfa", border: "1px solid #99f6e4", borderRadius: 12, padding: 24 }}>
+                  <div key={s.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24 }}>
                     <div style={{ fontSize: 32, marginBottom: 12 }}>{s.emoji}</div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{s.subtitle}</div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: "0 0 10px", lineHeight: 1.4 }}>{s.title}</h3>
@@ -263,12 +431,12 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 28 }}>
+              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 28 }}>
                 <h3 style={{ fontSize: 17, fontWeight: 700, color: "#111827", margin: "0 0 6px", textAlign: "center" }}>6 Ways We Protect You</h3>
                 <p style={{ fontSize: 14, color: "#9ca3af", textAlign: "center", margin: "0 0 24px" }}>Every protection method explained simply.</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
                   {SECURITY_ICONS.map((ic) => (
-                    <div key={ic.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: 18, textAlign: "center" }}>
+                    <div key={ic.title} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 18, textAlign: "center" }}>
                       <div style={{ fontSize: 28, marginBottom: 10 }}>{ic.emoji}</div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: "0 0 6px", lineHeight: 1.4 }}>{ic.title}</h4>
                       <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.6 }}>{ic.desc}</p>
@@ -281,7 +449,7 @@ export default function Landing() {
 
           {securityTab === "technical" && (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 24 }}>
                 {SECURITY_TECHNICAL.map((s) => (
                   <div key={s.title} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24 }}>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: "0 0 4px" }}>{s.title}</h3>
@@ -296,7 +464,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24 }}>
+              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 24 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: "0 0 16px", textAlign: "center" }}>Data Protection Layers</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
                   {[
@@ -307,7 +475,7 @@ export default function Landing() {
                     { n: "5", t: "Audit Logging", d: "Immutable access logs" },
                     { n: "6", t: "Zero Trust", d: "Every access verified" },
                   ].map((item) => (
-                    <div key={item.n} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: 14 }}>
+                    <div key={item.n} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: 14 }}>
                       <div style={{ width: 28, height: 28, background: "#0d9488", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>{item.n}</div>
                       <h4 style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: "0 0 4px" }}>{item.t}</h4>
                       <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>{item.d}</p>
@@ -320,7 +488,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* ── Pricing ── */}
       <section id="pricing" style={{ padding: "80px 40px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontSize: 36, fontWeight: 800, color: "#111827", margin: "0 0 12px" }}>Simple, transparent pricing</h2>
@@ -350,16 +518,18 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* ── CTA ── */}
       <section style={{ background: "#0d9488", padding: "80px 40px", textAlign: "center" }}>
         <h2 style={{ fontSize: 36, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>Ready to automate your workforce?</h2>
-        <p style={{ fontSize: 17, color: "#ccfbf1", margin: "0 0 32px" }}>Join hundreds of teams using WorkforceAutomated to save time, reduce errors, and scale operations.</p>
+        <p style={{ fontSize: 17, color: "#ccfbf1", margin: "0 0 32px" }}>
+          Join hundreds of teams using WorkforceAutomated to save time, reduce errors, and scale operations.
+        </p>
         <Link to="/register" style={{ background: "#fff", color: "#0d9488", fontWeight: 700, fontSize: 16, padding: "14px 32px", borderRadius: 10, textDecoration: "none", display: "inline-block" }}>
           Get started for free
         </Link>
       </section>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <footer style={{ background: "#111827", padding: "40px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 28, height: 28, background: "#0d9488", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
