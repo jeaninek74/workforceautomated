@@ -28,6 +28,9 @@ import Schedules from "@/pages/Schedules";
 import Reports from "@/pages/Reports";
 import AccountRecovery from "@/pages/AccountRecovery";
 import SecurityAudit from "@/pages/SecurityAudit";
+import Demo from "@/pages/Demo";
+import CustomBuild from "@/pages/CustomBuild";
+import VideoDemo from "@/pages/VideoDemo";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -79,6 +82,9 @@ function AppRoutes() {
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/security/audit" element={<ProtectedRoute><SecurityAudit /></ProtectedRoute>} />
       <Route path="/recover" element={<AccountRecovery />} />
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/build" element={<CustomBuild />} />
+      <Route path="/video" element={<VideoDemo />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

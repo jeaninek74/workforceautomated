@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const NAV_LINKS = ["Product", "Security", "Pricing", "Docs"];
+const NAV_LINKS = ["Product", "Security", "Pricing"];
 
 const WHY_IT_WORKS = [
   {
@@ -201,10 +201,16 @@ export default function Landing() {
           </div>
           <span style={{ fontWeight: 700, fontSize: 16, color: "#111827" }}>WorkforceAutomated</span>
         </div>
-        <div style={{ display: "flex", gap: 32 }}>
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
           {NAV_LINKS.map((l) => (
             <a key={l} href={`#${l.toLowerCase()}`} style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l}</a>
           ))}
+          <Link to="/demo" style={{ color: "#0d9488", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 7, height: 7, background: "#0d9488", borderRadius: "50%", display: "inline-block" }}></span>
+            Live Demo
+          </Link>
+          <Link to="/build" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Custom Build</Link>
+          <Link to="/video" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Watch Demo</Link>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <Link to="/login" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none", padding: "8px 16px" }}>Sign in</Link>
@@ -230,9 +236,15 @@ export default function Landing() {
             <Link to="/register" style={{ background: "#0d9488", color: "#fff", fontWeight: 700, fontSize: 16, padding: "14px 28px", borderRadius: 10, textDecoration: "none" }}>
               Start free trial
             </Link>
-            <a href="#product" style={{ color: "#374151", fontWeight: 600, fontSize: 15, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
-              See how it works →
-            </a>
+            <Link to="/demo" style={{ background: "#f0fdfa", color: "#0d9488", fontWeight: 700, fontSize: 15, padding: "14px 24px", borderRadius: 10, textDecoration: "none", border: "1px solid #99f6e4", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 7, height: 7, background: "#0d9488", borderRadius: "50%", display: "inline-block" }}></span>
+              Try live demo
+            </Link>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <Link to="/build" style={{ color: "#6b7280", fontWeight: 500, fontSize: 14, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}>
+              Not sure which plan? Build a custom one →
+            </Link>
           </div>
           <div style={{ display: "flex", gap: 24, marginTop: 32 }}>
             {["AES-256-GCM Encrypted", "SOC 2 Ready", "GDPR Compliant"].map((b) => (

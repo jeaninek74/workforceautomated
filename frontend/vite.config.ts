@@ -8,13 +8,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // Force immediate activation — new SW takes over without waiting
+      injectRegister: "auto",
       includeAssets: ["favicon.svg", "icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
         name: "WorkforceAutomated",
         short_name: "WorkforceAI",
         description: "Enterprise AI Workforce Operating System — automate any business process, governed by you.",
-        theme_color: "#0a0a0a",
-        background_color: "#0a0a0a",
+        theme_color: "#0d9488",
+        background_color: "#f9fafb",
         display: "standalone",
         orientation: "portrait-primary",
         scope: "/",
@@ -35,7 +37,13 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // skipWaiting + clientsClaim = new SW activates immediately on all tabs
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Use NetworkFirst for HTML so users always get the latest page
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^\/api\/.*/i,
@@ -71,7 +79,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+          vendor: ["react", "react-dom", "react-router-dom"],
         },
       },
     },
