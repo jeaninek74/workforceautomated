@@ -76,8 +76,12 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
+    // Add timestamp to asset filenames to bust CDN/Cloudflare cache on every deploy
     rollupOptions: {
       output: {
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
         },
