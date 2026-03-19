@@ -94,8 +94,24 @@ app.get("/api/health", (_req, res) => {
 if (process.env.NODE_ENV === "production") {
   // nixpacks copies frontend/dist -> backend/dist/public during build
   const frontendPath = path.join(__dirname, "public");
-  app.use(express.static(frontendPath));
+  // Serve static assets with long cache (they have content-hashed filenames)
+  app.use(express.static(frontendPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".html")) {
+        // HTML files must never be cached — forces browser/CDN to always fetch fresh
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
+      } else {
+        // JS/CSS/images with hashed names can be cached for 1 year
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    },
+  }));
   app.get("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
