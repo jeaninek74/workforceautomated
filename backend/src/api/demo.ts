@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
-import { INDUSTRY_INTELLIGENCE, buildAgentSystemPrompt, getAllIndustriesSummary } from "../data/industryIntelligence";
+import { INDUSTRY_INTELLIGENCE, buildAgentSystemPrompt, getAllIndustriesSummary } from "../data/industryIntelligence.js";
 
 const router = Router();
 
