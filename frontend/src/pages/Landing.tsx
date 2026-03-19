@@ -97,6 +97,7 @@ const PLATFORM_FEATURES = [
 ];
 
 const USE_CASES = [
+  // ─── Original Core Industries ───────────────────────────────────────────────
   {
     dept: "Finance & Accounting",
     emoji: "💰",
@@ -158,10 +159,76 @@ const USE_CASES = [
     agents: ["Ticket Classifier", "Response Drafter", "SLA Monitor"],
   },
   {
-    dept: "IT & Security",
+    dept: "IT Tasks & Helpdesk",
     emoji: "🖥️",
-    task: "Monitor systems, detect anomalies, generate incident reports, track vulnerability remediation, and produce security audit logs — all in real time.",
-    agents: ["Anomaly Detector", "Incident Reporter", "Audit Log Generator"],
+    task: "Triage IT tickets, automate user provisioning, manage asset inventories, generate SLA reports, write runbooks, and execute routine IT operations — freeing your IT staff for high-value work.",
+    agents: ["Helpdesk Tier 1 Agent", "IT Operations Specialist", "IT Documentation Writer"],
+  },
+  {
+    dept: "Cybersecurity",
+    emoji: "🔐",
+    task: "Triage SIEM alerts, analyze vulnerabilities, produce SOC 2 gap assessments, write incident response playbooks, review cloud IAM policies, and generate board-level security reports.",
+    agents: ["SOC Analyst", "Vulnerability Analyst", "Compliance Specialist"],
+  },
+  {
+    dept: "Networking & Infrastructure",
+    emoji: "🌐",
+    task: "Monitor network performance, analyze firewall rules, generate capacity reports, produce change request documentation, troubleshoot connectivity, and document network topology.",
+    agents: ["NOC Analyst", "Network Engineer Advisor", "Cloud Network Architect"],
+  },
+  {
+    dept: "Payroll & Compensation",
+    emoji: "💵",
+    task: "Audit payroll registers, generate labor cost reports, produce pay equity analyses, create tax compliance checklists, analyze overtime trends, and build total compensation benchmarks.",
+    agents: ["Payroll Processor", "Payroll Compliance Specialist", "Compensation Analyst"],
+  },
+  {
+    dept: "Healthcare & Clinical",
+    emoji: "🏥",
+    task: "Generate clinical quality reports, analyze denial patterns, produce HIPAA risk assessments, create patient communications, analyze readmission rates, and manage revenue cycle performance.",
+    agents: ["Clinical Documentation Specialist", "Revenue Cycle Analyst", "Healthcare Compliance Officer"],
+  },
+  {
+    dept: "Real Estate",
+    emoji: "🏢",
+    task: "Build DCF models, abstract commercial leases, generate market research reports, produce investor reports, create due diligence checklists, and analyze portfolio performance.",
+    agents: ["Investment Analyst", "Lease Administrator", "Market Research Analyst"],
+  },
+  {
+    dept: "Manufacturing & Operations",
+    emoji: "🏭",
+    task: "Calculate OEE, conduct FMEAs, generate quality performance reports, create value stream maps, produce predictive maintenance schedules, and analyze production variance.",
+    agents: ["Production Analyst", "Quality Engineer", "Lean/CI Specialist"],
+  },
+  {
+    dept: "Procurement & Sourcing",
+    emoji: "📦",
+    task: "Analyze category spend, create RFPs, evaluate supplier bids, review contracts for non-standard terms, generate supplier risk assessments, and produce procurement savings reports.",
+    agents: ["Strategic Sourcing Analyst", "Spend Analyst", "Contract Analyst"],
+  },
+  {
+    dept: "Education & Training",
+    emoji: "🎓",
+    task: "Design onboarding curricula, create compliance training programs, analyze LMS completion data, develop leadership frameworks, write learning objectives, and measure training ROI.",
+    agents: ["Instructional Designer", "L&D Program Manager", "Learning Analyst"],
+  },
+  {
+    dept: "Insurance",
+    emoji: "🛡️",
+    task: "Review underwriting submissions, analyze claims data for fraud, generate loss development reports, create compliance checklists, produce renewal analyses, and draft policyholder communications.",
+    agents: ["Underwriting Analyst", "Claims Specialist", "Compliance Analyst"],
+  },
+  {
+    dept: "Consulting & Professional Services",
+    emoji: "💼",
+    task: "Build strategic options analyses, create business cases, design operating models, produce stakeholder plans, develop 100-day plans, and generate client-ready executive presentations.",
+    agents: ["Strategy Consultant", "Operations Consultant", "Financial Modeler"],
+  },
+  {
+    dept: "C-Level & Executive",
+    emoji: "🏆",
+    task: "Produce board presentations, build investor reports, create OKR frameworks, generate competitive analyses, draft executive communications, and build digital transformation roadmaps — at McKinsey quality.",
+    agents: ["Chief of Staff Agent", "Board Reporting Specialist", "Strategic Intelligence Advisor"],
   },
 ];
 
