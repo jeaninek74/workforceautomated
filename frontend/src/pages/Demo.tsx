@@ -1,376 +1,401 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { Link } from "wouter";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string;
-  role: "user" | "agent" | "system";
-  content: string;
-  timestamp: Date;
-  agentName?: string;
-  confidence?: number;
-  escalated?: boolean;
-}
-
-interface DemoAgent {
-  id: string;
-  name: string;
-  emoji: string;
-  dept: string;
-  description: string;
-  systemPrompt: string;
-  sampleQuestions: string[];
-}
-
-// ─── Demo Agents ─────────────────────────────────────────────────────────────
-
-const DEMO_AGENTS: DemoAgent[] = [
+// ─── Step definitions ─────────────────────────────────────────────────────────
+const STEPS = [
   {
-    id: "invoice",
-    name: "Invoice Reviewer",
-    emoji: "💰",
-    dept: "Finance",
-    description: "Reviews invoices, flags discrepancies, and generates variance reports.",
-    systemPrompt: "You are an AI Invoice Reviewer for a Finance department. You review invoices, flag overdue payments, identify discrepancies, and generate variance reports. Be concise, professional, and always mention a confidence score (e.g., 'Confidence: 94%') for your assessments. If something is unclear or high-risk, say you are escalating to a human reviewer.",
-    sampleQuestions: [
-      "Review this invoice: Vendor ACME Corp, amount $12,450, due date was 30 days ago.",
-      "Flag all invoices over $50,000 that are missing a PO number.",
-      "Generate a variance report for Q1 vs Q2 spending.",
-    ],
+    id: 1,
+    title: "Dashboard Overview",
+    subtitle: "Your command center for all workforce automation",
+    description:
+      "The Dashboard gives you a real-time view of every agent running across your organization. See active executions, pending reviews, KPI performance, and audit events — all in one place.",
+    visual: "dashboard",
   },
   {
-    id: "hr",
-    name: "HR Application Screener",
-    emoji: "👥",
-    dept: "Human Resources",
-    description: "Screens job applications, tracks onboarding, monitors policy compliance.",
-    systemPrompt: "You are an AI HR Application Screener. You screen job applications, track onboarding tasks, and monitor policy compliance. Be professional, fair, and always provide a confidence score for your assessments. Flag anything that requires human review.",
-    sampleQuestions: [
-      "Screen this candidate: 5 years Python experience, no degree, strong GitHub portfolio.",
-      "What onboarding tasks are outstanding for a new hire starting Monday?",
-      "Check if our remote work policy is compliant with current labor laws.",
-    ],
+    id: 2,
+    title: "Build an Agent in 3 Minutes",
+    subtitle: "No code. No engineers. Just describe the task.",
+    description:
+      "Select a department, choose a skill template (Invoice Review, Contract Analysis, HR Screening, etc.), connect your data source, and set the confidence threshold. Your agent is live.",
+    visual: "builder",
   },
   {
-    id: "legal",
-    name: "Contract Analyst",
-    emoji: "⚖️",
-    dept: "Legal",
-    description: "Reviews contracts for missing clauses and tracks regulatory deadlines.",
-    systemPrompt: "You are an AI Contract Analyst. You review contracts for missing or problematic clauses, track regulatory deadlines, and flag high-risk terms. Always provide a confidence score and escalate anything above a risk threshold of 70%.",
-    sampleQuestions: [
-      "Review this SaaS contract — does it have a data processing agreement?",
-      "What regulatory deadlines are coming up in the next 30 days?",
-      "Flag any non-standard indemnification clauses in vendor contracts.",
-    ],
+    id: 3,
+    title: "Agents Execute Work",
+    subtitle: "Watch automation happen in real time",
+    description:
+      "Agents process tasks continuously. Every action is scored for confidence. High-confidence tasks complete automatically. Low-confidence tasks are routed to your Review Queue for human sign-off.",
+    visual: "execution",
   },
   {
-    id: "support",
-    name: "Support Ticket Classifier",
-    emoji: "🎧",
-    dept: "Customer Support",
-    description: "Classifies tickets, drafts responses, escalates urgent issues.",
-    systemPrompt: "You are an AI Support Ticket Classifier. You classify incoming support tickets by priority and category, draft initial responses, and escalate urgent or complex issues to human agents. Always provide a confidence score and estimated resolution time.",
-    sampleQuestions: [
-      "Classify this ticket: 'I can't log in and I have a board presentation in 2 hours!'",
-      "Draft a response for a billing dispute where the customer was charged twice.",
-      "What tickets should be escalated to Tier 2 support today?",
-    ],
+    id: 4,
+    title: "Review Queue",
+    subtitle: "Humans stay in control — always",
+    description:
+      "Any task below your confidence threshold lands here. Your team reviews, approves, or overrides. Every decision is logged permanently to the immutable audit trail.",
+    visual: "review",
   },
   {
-    id: "sales",
-    name: "Lead Scorer",
-    emoji: "📣",
-    dept: "Sales",
-    description: "Scores leads, flags at-risk deals, updates CRM records.",
-    systemPrompt: "You are an AI Lead Scorer for a Sales department. You score inbound leads based on fit, intent, and engagement signals. You flag at-risk deals and recommend next actions. Always provide a lead score (0-100) and confidence percentage.",
-    sampleQuestions: [
-      "Score this lead: VP of Engineering at a 500-person SaaS company, downloaded our whitepaper twice.",
-      "Which deals in our pipeline are at risk of going cold this week?",
-      "Recommend the next best action for a lead who hasn't responded in 14 days.",
-    ],
+    id: 5,
+    title: "Security & Audit Log",
+    subtitle: "Zero-knowledge encryption. Full compliance.",
+    description:
+      "Every agent action, every human override, every data access is recorded with AES-256-GCM encryption. Export audit logs for SOC2, HIPAA, or GDPR compliance reviews in one click.",
+    visual: "audit",
   },
   {
-    id: "it",
-    name: "IT Security Monitor",
-    emoji: "🖥️",
-    dept: "IT & Security",
-    description: "Monitors systems, detects anomalies, generates incident reports.",
-    systemPrompt: "You are an AI IT Security Monitor. You monitor system logs, detect anomalies and potential security incidents, and generate incident reports. Always provide a severity level (Low/Medium/High/Critical) and confidence score. Escalate Critical incidents immediately.",
-    sampleQuestions: [
-      "Analyze this log: 47 failed login attempts from IP 192.168.1.105 in the last 10 minutes.",
-      "Generate an incident report for a suspected phishing attack on the finance department.",
-      "What security anomalies should I be aware of from last night's system logs?",
-    ],
+    id: 6,
+    title: "Ready to Automate?",
+    subtitle: "Set up your first agent in under 5 minutes",
+    description:
+      "Start with one department. Connect your data. Let your agents handle the repetitive work while your team focuses on decisions that matter.",
+    visual: "cta",
   },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Mock visuals ─────────────────────────────────────────────────────────────
+function DashboardVisual() {
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <span style={{ fontWeight: 700, color: "#111827", fontSize: 16 }}>WorkforceAutomated</span>
+        <span style={{ fontSize: 11, background: "#f0fdfa", color: "#0d9488", padding: "3px 10px", borderRadius: 20, fontWeight: 600 }}>● Live</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Active Agents", value: "12", delta: "+3 today", color: "#0d9488" },
+          { label: "Tasks Completed", value: "1,847", delta: "this week", color: "#2563eb" },
+          { label: "Pending Review", value: "4", delta: "needs attention", color: "#d97706" },
+          { label: "Audit Coverage", value: "100%", delta: "fully compliant", color: "#16a34a" },
+        ].map((stat) => (
+          <div key={stat.label} style={{ background: "#f9fafb", borderRadius: 8, padding: 14 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#111827" }}>{stat.value}</div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{stat.label}</div>
+            <div style={{ fontSize: 11, color: stat.color, fontWeight: 600, marginTop: 2 }}>{stat.delta}</div>
+          </div>
+        ))}
+      </div>
+      <div>
+        {[
+          { agent: "Invoice Reviewer", dept: "Finance", status: "Running", tasks: 23 },
+          { agent: "Contract Analyst", dept: "Legal", status: "Running", tasks: 8 },
+          { agent: "HR Screener", dept: "Human Resources", status: "Review", tasks: 2 },
+        ].map((row) => (
+          <div key={row.agent} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{row.agent}</div>
+              <div style={{ fontSize: 11, color: "#9ca3af" }}>{row.dept}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>{row.tasks} tasks</span>
+              <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, fontWeight: 600, background: row.status === "Running" ? "#f0fdfa" : "#fffbeb", color: row.status === "Running" ? "#0d9488" : "#d97706" }}>{row.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
+function BuilderVisual() {
+  const [step, setStep] = useState(0);
+  const steps = ["Choose Department", "Select Template", "Set Threshold", "Agent Live ✓"];
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      <div style={{ fontWeight: 700, color: "#111827", fontSize: 15, marginBottom: 16 }}>New Agent Setup</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 20 }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+            <div onClick={() => setStep(i)} style={{ width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer", background: i <= step ? "#0d9488" : "#e5e7eb", color: i <= step ? "#fff" : "#9ca3af", flexShrink: 0 }}>
+              {i < step ? "✓" : i + 1}
+            </div>
+            {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: i < step ? "#0d9488" : "#e5e7eb", margin: "0 4px" }} />}
+          </div>
+        ))}
+      </div>
+      {step === 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+          {["Finance", "Legal", "HR", "Sales", "IT", "Support"].map((dept) => (
+            <button key={dept} onClick={() => setStep(1)} style={{ padding: "10px 8px", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#374151", background: "#fff", cursor: "pointer" }}>{dept}</button>
+          ))}
+        </div>
+      )}
+      {step === 1 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {["Invoice Reviewer", "AP Reconciliation", "Expense Auditor", "Budget Variance Analyzer"].map((tmpl) => (
+            <button key={tmpl} onClick={() => setStep(2)} style={{ padding: "10px 14px", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 13, fontWeight: 500, color: "#374151", background: "#fff", cursor: "pointer", textAlign: "left" }}>{tmpl}</button>
+          ))}
+        </div>
+      )}
+      {step === 2 && (
+        <div>
+          <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>Auto-complete tasks above this confidence score:</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[70, 80, 90, 95].map((val) => (
+              <button key={val} onClick={() => setStep(3)} style={{ flex: 1, padding: "12px 8px", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 14, fontWeight: 700, color: "#374151", background: "#fff", cursor: "pointer" }}>{val}%</button>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 8 }}>Tasks below threshold go to Review Queue for human approval.</p>
+        </div>
+      )}
+      {step === 3 && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ width: 56, height: 56, background: "#f0fdfa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 24 }}>✓</div>
+          <div style={{ fontWeight: 700, color: "#111827", fontSize: 16, marginBottom: 4 }}>Invoice Reviewer is Live</div>
+          <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>Your agent is processing invoices now.</div>
+          <button onClick={() => setStep(0)} style={{ fontSize: 12, color: "#0d9488", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Start over</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExecutionVisual() {
+  const tasks = [
+    { id: "INV-2041", desc: "ACME Corp invoice $12,450", confidence: 94, status: "auto-approved" },
+    { id: "INV-2042", desc: "GlobalTech invoice $8,200", confidence: 88, status: "auto-approved" },
+    { id: "INV-2043", desc: "Vendor X invoice $67,000 — missing PO", confidence: 42, status: "review-queue" },
+    { id: "INV-2044", desc: "Office Supplies $340", confidence: 97, status: "auto-approved" },
+  ];
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>Invoice Reviewer — Live Execution</span>
+        <span style={{ fontSize: 12, color: "#0d9488", fontWeight: 600 }}>● Processing</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {tasks.map((task) => (
+          <div key={task.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#f9fafb", borderRadius: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontFamily: "monospace", color: "#9ca3af" }}>{task.id}</div>
+              <div style={{ fontSize: 13, color: "#374151" }}>{task.desc}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: 12 }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: task.confidence >= 80 ? "#0d9488" : "#d97706" }}>{task.confidence}%</div>
+                <div style={{ fontSize: 10, color: "#9ca3af" }}>confidence</div>
+              </div>
+              <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 12, fontWeight: 600, whiteSpace: "nowrap", background: task.status === "auto-approved" ? "#f0fdfa" : "#fffbeb", color: task.status === "auto-approved" ? "#0d9488" : "#d97706" }}>
+                {task.status === "auto-approved" ? "Auto-approved" : "→ Review Queue"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReviewVisual() {
+  const [approved, setApproved] = useState<string[]>([]);
+  const items = [
+    { id: "INV-2043", desc: "Vendor X invoice $67,000 — missing PO number", agent: "Invoice Reviewer", reason: "Amount exceeds $50K threshold + missing PO" },
+    { id: "CTR-0891", desc: "Software license renewal — auto-renew clause", agent: "Contract Analyst", reason: "Auto-renew clause detected, requires human sign-off" },
+  ];
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>Review Queue</span>
+        <span style={{ fontSize: 11, background: "#fffbeb", color: "#d97706", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>{items.length - approved.length} pending</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {items.map((item) => (
+          <div key={item.id} style={{ padding: 14, border: `1px solid ${approved.includes(item.id) ? "#a7f3d0" : "#fde68a"}`, borderRadius: 10, background: approved.includes(item.id) ? "#f0fdf4" : "#fffbeb", opacity: approved.includes(item.id) ? 0.7 : 1 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontFamily: "monospace", color: "#9ca3af", marginBottom: 4 }}>{item.id} · {item.agent}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 4 }}>{item.desc}</div>
+                <div style={{ fontSize: 11, color: "#6b7280" }}>⚠ {item.reason}</div>
+              </div>
+              {!approved.includes(item.id) ? (
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => setApproved([...approved, item.id])} style={{ fontSize: 12, padding: "6px 12px", background: "#0d9488", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>Approve</button>
+                  <button style={{ fontSize: 12, padding: "6px 12px", background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>Override</button>
+                </div>
+              ) : (
+                <span style={{ fontSize: 12, color: "#0d9488", fontWeight: 600, flexShrink: 0 }}>✓ Approved</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AuditVisual() {
+  const events = [
+    { time: "14:32:01", event: "Invoice INV-2041 auto-approved", actor: "Invoice Reviewer", hash: "a3f9c2..." },
+    { time: "14:32:04", event: "Invoice INV-2043 sent to Review Queue", actor: "Invoice Reviewer", hash: "b7d1e8..." },
+    { time: "14:33:17", event: "Human approved INV-2043", actor: "Sarah M.", hash: "c2a4f1..." },
+    { time: "14:35:02", event: "Contract CTR-0891 flagged for review", actor: "Contract Analyst", hash: "d9b3c7..." },
+  ];
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>Immutable Audit Log</span>
+        <span style={{ fontSize: 11, background: "#f0fdf4", color: "#16a34a", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>🔒 Encrypted</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {events.map((ev, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "#f9fafb", borderRadius: 6, fontFamily: "monospace", fontSize: 11 }}>
+            <span style={{ color: "#9ca3af", flexShrink: 0 }}>{ev.time}</span>
+            <span style={{ color: "#374151", flex: 1 }}>{ev.event}</span>
+            <span style={{ color: "#0d9488", flexShrink: 0 }}>{ev.actor}</span>
+            <span style={{ color: "#d1d5db", flexShrink: 0 }}>{ev.hash}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+        <button style={{ fontSize: 12, padding: "6px 12px", border: "1px solid #e5e7eb", borderRadius: 6, color: "#374151", background: "#fff", cursor: "pointer" }}>Export CSV</button>
+        <button style={{ fontSize: 12, padding: "6px 12px", border: "1px solid #e5e7eb", borderRadius: 6, color: "#374151", background: "#fff", cursor: "pointer" }}>Export PDF</button>
+        <span style={{ fontSize: 11, color: "#9ca3af", marginLeft: "auto", alignSelf: "center" }}>SOC2 · HIPAA · GDPR ready</span>
+      </div>
+    </div>
+  );
+}
+
+function CTAVisual() {
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 40, width: "100%", textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
+      <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>You've seen what's possible.</h3>
+      <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Set up your first agent in under 5 minutes. No credit card required.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 280, margin: "0 auto" }}>
+        <Link href="/register">
+          <a style={{ display: "block", padding: "12px 0", background: "#0d9488", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+            Start Free Trial
+          </a>
+        </Link>
+        <Link href="/custom-build">
+          <a style={{ display: "block", padding: "12px 0", border: "1px solid #0d9488", color: "#0d9488", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+            Build Your Custom Plan
+          </a>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+const VISUALS: Record<string, JSX.Element> = {
+  dashboard: <DashboardVisual />,
+  builder: <BuilderVisual />,
+  execution: <ExecutionVisual />,
+  review: <ReviewVisual />,
+  audit: <AuditVisual />,
+  cta: <CTAVisual />,
+};
+
+// ─── Main Demo Page ───────────────────────────────────────────────────────────
 export default function Demo() {
-  const [selectedAgent, setSelectedAgent] = useState<DemoAgent>(DEMO_AGENTS[0]);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "system",
-      content: `Welcome to the WorkforceAutomated live demo. Select an agent above and start a conversation. This is a real AI agent — ask it anything related to its role.`,
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [model, setModel] = useState<"openai" | "claude">("openai");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleAgentSelect = (agent: DemoAgent) => {
-    setSelectedAgent(agent);
-    setMessages([
-      {
-        id: `welcome-${agent.id}`,
-        role: "system",
-        content: `You are now talking to the ${agent.name} (${agent.dept} department). ${agent.description}`,
-        timestamp: new Date(),
-      },
-    ]);
-  };
-
-  const sendMessage = async (text?: string) => {
-    const userText = text || input.trim();
-    if (!userText || loading) return;
-    setInput("");
-
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: userText,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setLoading(true);
-
-    try {
-      const resp = await fetch("/api/demo/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userText,
-          agentId: selectedAgent.id,
-          systemPrompt: selectedAgent.systemPrompt,
-          model,
-          history: messages
-            .filter((m) => m.role !== "system")
-            .slice(-6)
-            .map((m) => ({ role: m.role === "agent" ? "assistant" : "user", content: m.content })),
-        }),
-      });
-
-      const data = await resp.json();
-      const confidence = Math.floor(Math.random() * 15) + 82; // 82-97%
-      const escalated = confidence < 85;
-
-      const agentMsg: Message = {
-        id: `agent-${Date.now()}`,
-        role: "agent",
-        content: data.reply || "I was unable to process that request.",
-        timestamp: new Date(),
-        agentName: selectedAgent.name,
-        confidence,
-        escalated,
-      };
-      setMessages((prev) => [...prev, agentMsg]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          role: "system",
-          content: "Connection error. Please ensure you are logged in or try again.",
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [activeStep, setActiveStep] = useState(0);
+  const step = STEPS[activeStep];
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#f9fafb", minHeight: "100vh" }}>
-      {/* Header */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "20px 40px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>Live Agent Demo</h1>
-              <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
-                Communicate directly with AI agents. Select a department agent and start a real conversation.
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 500 }}>AI Model:</span>
-              <div style={{ display: "flex", background: "#f3f4f6", borderRadius: 8, padding: 3, gap: 3 }}>
-                {(["openai", "claude"] as const).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setModel(m)}
-                    style={{
-                      padding: "6px 14px", borderRadius: 6, border: "none",
-                      background: model === m ? "#0d9488" : "transparent",
-                      color: model === m ? "#fff" : "#6b7280",
-                      fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    }}
-                  >
-                    {m === "openai" ? "OpenAI GPT" : "Claude"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+      {/* Nav */}
+      <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Link href="/"><a style={{ fontSize: 18, fontWeight: 800, color: "#0f766e", textDecoration: "none" }}>WorkforceAutomated</a></Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Link href="/watch"><a style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Watch Demo Video</a></Link>
+          <Link href="/register"><a style={{ fontSize: 13, background: "#0d9488", color: "#fff", padding: "8px 16px", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>Get Started Free</a></Link>
         </div>
+      </nav>
+
+      {/* Header */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #f3f4f6", padding: "32px 40px", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Interactive Product Tour
+        </div>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>See WorkforceAutomated in Action</h1>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Click through each step to explore the real product. No sign-up required.</p>
       </div>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 40px", display: "grid", gridTemplateColumns: "280px 1fr", gap: 20 }}>
-        {/* Agent Selector */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 40px", display: "grid", gridTemplateColumns: "260px 1fr", gap: 24 }}>
+        {/* Step sidebar */}
         <div>
-          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 12px" }}>Choose an Agent</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {DEMO_AGENTS.map((agent) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {STEPS.map((s, i) => (
               <button
-                key={agent.id}
-                onClick={() => handleAgentSelect(agent)}
+                key={s.id}
+                onClick={() => setActiveStep(i)}
                 style={{
-                  background: selectedAgent.id === agent.id ? "#f0fdfa" : "#fff",
-                  border: `1px solid ${selectedAgent.id === agent.id ? "#0d9488" : "#e5e7eb"}`,
-                  borderRadius: 10, padding: "12px 14px", cursor: "pointer", textAlign: "left",
-                  transition: "all 0.15s",
+                  width: "100%", textAlign: "left", padding: "10px 14px", borderRadius: 8, border: "none",
+                  background: i === activeStep ? "#0d9488" : "transparent",
+                  color: i === activeStep ? "#fff" : "#374151",
+                  cursor: "pointer", transition: "all 0.15s",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 20 }}>{agent.emoji}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: selectedAgent.id === agent.id ? "#0d9488" : "#111827" }}>{agent.name}</div>
-                    <div style={{ fontSize: 11, color: "#9ca3af" }}>{agent.dept}</div>
-                  </div>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, flexShrink: 0, background: i === activeStep ? "#fff" : i < activeStep ? "#f0fdfa" : "#e5e7eb", color: i === activeStep ? "#0d9488" : i < activeStep ? "#0d9488" : "#9ca3af" }}>
+                    {i < activeStep ? "✓" : i + 1}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>{s.title}</span>
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Sample Questions */}
-          <div style={{ marginTop: 20 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Try asking</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {selectedAgent.sampleQuestions.map((q, i) => (
-                <button
-                  key={i}
-                  onClick={() => sendMessage(q)}
-                  style={{
-                    background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px",
-                    fontSize: 12, color: "#374151", cursor: "pointer", textAlign: "left", lineHeight: 1.5,
-                  }}
-                >
-                  {q}
-                </button>
-              ))}
+          {/* Progress */}
+          <div style={{ marginTop: 20, padding: "0 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>
+              <span>Progress</span>
+              <span>{Math.round(((activeStep + 1) / STEPS.length) * 100)}%</span>
+            </div>
+            <div style={{ height: 4, background: "#e5e7eb", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "100%", background: "#0d9488", borderRadius: 4, transition: "width 0.4s", width: `${((activeStep + 1) / STEPS.length) * 100}%` }} />
             </div>
           </div>
         </div>
 
-        {/* Chat Window */}
-        <div style={{ display: "flex", flexDirection: "column", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 14, overflow: "hidden", height: "calc(100vh - 200px)", minHeight: 500 }}>
-          {/* Chat Header */}
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, background: "#f0fdfa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-              {selectedAgent.emoji}
+        {/* Main content */}
+        <div>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 11, color: "#0d9488", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
+              Step {step.id} of {STEPS.length}
             </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{selectedAgent.name}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 7, height: 7, background: "#10b981", borderRadius: "50%" }}></div>
-                <span style={{ fontSize: 12, color: "#6b7280" }}>Active · {selectedAgent.dept}</span>
-              </div>
-            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: "0 0 4px" }}>{step.title}</h2>
+            <p style={{ fontSize: 14, color: "#0d9488", fontWeight: 600, margin: "0 0 10px" }}>{step.subtitle}</p>
+            <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.6, margin: 0, maxWidth: 520 }}>{step.description}</p>
           </div>
 
-          {/* Messages */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-            {messages.map((msg) => (
-              <div key={msg.id} style={{ marginBottom: 16 }}>
-                {msg.role === "system" && (
-                  <div style={{ background: "#f3f4f6", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#6b7280", textAlign: "center" }}>
-                    {msg.content}
-                  </div>
-                )}
-                {msg.role === "user" && (
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <div style={{ background: "#0d9488", color: "#fff", borderRadius: "14px 14px 4px 14px", padding: "12px 16px", maxWidth: "70%", fontSize: 14, lineHeight: 1.6 }}>
-                      {msg.content}
-                    </div>
-                  </div>
-                )}
-                {msg.role === "agent" && (
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{ width: 32, height: 32, background: "#f0fdfa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-                      {selectedAgent.emoji}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "4px 14px 14px 14px", padding: "12px 16px", fontSize: 14, lineHeight: 1.7, color: "#111827", maxWidth: "85%", whiteSpace: "pre-wrap" }}>
-                        {msg.content}
-                      </div>
-                      <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "center" }}>
-                        <span style={{ fontSize: 11, color: "#9ca3af" }}>{msg.agentName}</span>
-                        {msg.confidence && (
-                          <span style={{ fontSize: 11, background: msg.confidence >= 90 ? "#f0fdfa" : "#fef9c3", color: msg.confidence >= 90 ? "#0d9488" : "#92400e", padding: "2px 8px", borderRadius: 10, fontWeight: 600 }}>
-                            Confidence: {msg.confidence}%
-                          </span>
-                        )}
-                        {msg.escalated && (
-                          <span style={{ fontSize: 11, background: "#fef2f2", color: "#dc2626", padding: "2px 8px", borderRadius: 10, fontWeight: 600 }}>
-                            ⚠ Escalated to human
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {loading && (
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ width: 32, height: 32, background: "#f0fdfa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
-                  {selectedAgent.emoji}
-                </div>
-                <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "4px 14px 14px 14px", padding: "12px 16px" }}>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {[0, 1, 2].map((i) => (
-                      <div key={i} style={{ width: 6, height: 6, background: "#0d9488", borderRadius: "50%", opacity: 0.5 + i * 0.25 }}></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+          {/* Visual */}
+          <div style={{ marginBottom: 20 }}>
+            {VISUALS[step.visual]}
           </div>
 
-          {/* Input */}
-          <div style={{ padding: "16px 20px", borderTop: "1px solid #e5e7eb", display: "flex", gap: 10 }}>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder={`Ask the ${selectedAgent.name} anything...`}
-              style={{ flex: 1, border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 16px", fontSize: 14, outline: "none", color: "#111827" }}
-            />
+          {/* Navigation */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim()}
-              style={{ background: "#0d9488", color: "#fff", border: "none", borderRadius: 10, padding: "12px 20px", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
+              onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
+              disabled={activeStep === 0}
+              style={{ fontSize: 13, padding: "8px 16px", border: "1px solid #e5e7eb", borderRadius: 8, color: "#374151", background: "#fff", cursor: activeStep === 0 ? "not-allowed" : "pointer", opacity: activeStep === 0 ? 0.4 : 1 }}
             >
-              Send
+              ← Previous
             </button>
+            <div style={{ display: "flex", gap: 6 }}>
+              {STEPS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveStep(i)}
+                  style={{ width: i === activeStep ? 20 : 8, height: 8, borderRadius: 4, border: "none", background: i === activeStep ? "#0d9488" : "#d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                />
+              ))}
+            </div>
+            {activeStep < STEPS.length - 1 ? (
+              <button
+                onClick={() => setActiveStep(activeStep + 1)}
+                style={{ fontSize: 13, padding: "8px 16px", background: "#0d9488", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, cursor: "pointer" }}
+              >
+                Next →
+              </button>
+            ) : (
+              <Link href="/register">
+                <a style={{ fontSize: 13, padding: "8px 16px", background: "#0d9488", color: "#fff", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>
+                  Start Free Trial →
+                </a>
+              </Link>
+            )}
           </div>
         </div>
       </div>

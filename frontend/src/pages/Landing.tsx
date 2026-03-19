@@ -4,6 +4,11 @@ import { Link } from "react-router-dom";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = ["Product", "Security", "Pricing"];
+const NAV_ACTIONS = [
+  { label: "Live Demo", href: "/demo" },
+  { label: "Watch Demo", href: "/watch" },
+  { label: "Custom Build", href: "/custom-build" },
+];
 
 const WHY_IT_WORKS = [
   {
@@ -205,12 +210,11 @@ export default function Landing() {
           {NAV_LINKS.map((l) => (
             <a key={l} href={`#${l.toLowerCase()}`} style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l}</a>
           ))}
-          <Link to="/demo" style={{ color: "#0d9488", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 7, height: 7, background: "#0d9488", borderRadius: "50%", display: "inline-block" }}></span>
-            Live Demo
-          </Link>
-          <Link to="/build" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Custom Build</Link>
-          <Link to="/video" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Watch Demo</Link>
+          <div style={{ width: 1, height: 20, background: "#e5e7eb" }} />
+          {NAV_ACTIONS.map((a) => (
+            <Link key={a.label} to={a.href} style={{ color: "#0d9488", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "4px 10px", borderRadius: 6, border: "1px solid #ccfbf1", background: "#f0fdfa" }}>{a.label}</Link>
+          ))}
+
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <Link to="/login" style={{ color: "#374151", fontSize: 14, fontWeight: 500, textDecoration: "none", padding: "8px 16px" }}>Sign in</Link>

@@ -84,7 +84,9 @@ function AppRoutes() {
       <Route path="/recover" element={<AccountRecovery />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/build" element={<CustomBuild />} />
+      <Route path="/custom-build" element={<CustomBuild />} />
       <Route path="/video" element={<VideoDemo />} />
+      <Route path="/watch" element={<VideoDemo />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
