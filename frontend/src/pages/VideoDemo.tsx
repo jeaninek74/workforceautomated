@@ -15,7 +15,7 @@ const HIGHLIGHTS = [
   { emoji: "⚡", stat: "< 2 min", label: "Agent setup time" },
   { emoji: "📊", stat: "100%", label: "Audit coverage" },
   { emoji: "🔐", stat: "AES-256", label: "Encryption standard" },
-  { emoji: "🚀", stat: "3 days → 20 min", label: "Invoice processing" },
+  { emoji: "🚀", stat: "22", label: "Industry configurations" },
 ];
 
 export default function VideoDemo() {
@@ -34,41 +34,26 @@ export default function VideoDemo() {
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 40px" }}>
         {/* Video Player */}
         <div style={{ background: "#111827", borderRadius: 16, overflow: "hidden", marginBottom: 24, position: "relative" }}>
-          {/* Loom embed placeholder — replace src with actual Loom share URL */}
           <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
-            <iframe
-              id="loom-video"
-              src="https://www.loom.com/embed/placeholder"
-              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-              allowFullScreen
-              title="WorkforceAutomated Product Demo"
-            />
-            {/* Fallback overlay shown when no valid Loom URL is set */}
             <div
-              id="video-placeholder"
               style={{
                 position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
               }}
             >
-              <div style={{ width: 80, height: 80, background: "#0d9488", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, cursor: "pointer" }}>
+              <div style={{ width: 80, height: 80, background: "#0d9488", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
                 <div style={{ width: 0, height: 0, borderTop: "18px solid transparent", borderBottom: "18px solid transparent", borderLeft: "30px solid #fff", marginLeft: 6 }}></div>
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
-                WorkforceAutomated — Full Product Demo
+                Product Demo — Coming Soon
               </h2>
-              <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 20px", textAlign: "center", maxWidth: 400 }}>
-                13-minute comprehensive walkthrough: agent creation, live execution, review queue, KPI builder, security audit, and custom build configurator.
+              <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 20px", textAlign: "center", maxWidth: 440 }}>
+                A full walkthrough video is being recorded. In the meantime, try the live interactive demo below — it uses real AI agents, not a recording.
               </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <span style={{ background: "rgba(13,148,136,0.2)", color: "#0d9488", fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 20, border: "1px solid rgba(13,148,136,0.4)" }}>
-                  13:00 runtime
-                </span>
-                <span style={{ background: "rgba(255,255,255,0.1)", color: "#94a3b8", fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.15)" }}>
-                  Full walkthrough
-                </span>
-              </div>
+              <a href="/demo" style={{ background: "#0d9488", color: "#fff", fontSize: 14, fontWeight: 700, padding: "10px 24px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}>
+                Try live demo instead →
+              </a>
             </div>
           </div>
         </div>

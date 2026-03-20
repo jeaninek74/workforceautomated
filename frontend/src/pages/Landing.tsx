@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
-  { label: "Why It Works", href: "#why-it-works" },
-  { label: "Platform", href: "#platform" },
-  { label: "Industries", href: "#industries" },
-  { label: "Security", href: "#security" },
+  { label: "Why It Works", href: "/why-it-works" },
+  { label: "Platform", href: "/platform" },
+  { label: "Industries", href: "/industries" },
+  { label: "Security", href: "/security-overview" },
   { label: "Pricing", href: "#pricing" },
 ];
 const NAV_ACTIONS = [
@@ -147,7 +147,9 @@ export default function Landing() {
         </div>
         <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
           {NAV_LINKS.map((l) => (
-            <a key={l.label} href={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</a>
+            l.href.startsWith("/") 
+              ? <Link key={l.label} to={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</Link>
+              : <a key={l.label} href={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</a>
           ))}
           <div style={{ width: 1, height: 18, background: "#e5e7eb" }} />
           {NAV_ACTIONS.map((a) => (
@@ -222,10 +224,10 @@ export default function Landing() {
       <div style={{ borderTop: DIVIDER, borderBottom: DIVIDER, background: "#f8fafc" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 48px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0 }}>
           {[
-            { stat: "3 days → 20 min", label: "Invoice processing" },
-            { stat: "4×", label: "Scale without new hires" },
-            { stat: "100%", label: "Audit coverage" },
             { stat: "< 5 min", label: "Agent setup time" },
+            { stat: "100%", label: "Audit log coverage" },
+            { stat: "AES-256", label: "Encryption standard" },
+            { stat: "22", label: "Industry configurations" },
           ].map(({ stat, label }, i) => (
             <div key={label} style={{ textAlign: "center", borderLeft: i > 0 ? DIVIDER : "none", padding: "4px 0" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: DARK }}>{stat}</div>
@@ -480,7 +482,7 @@ export default function Landing() {
       <section style={{ background: TEAL, padding: "72px 48px", textAlign: "center" }}>
         <h2 style={{ fontSize: 34, fontWeight: 800, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.01em" }}>Ready to automate your workforce?</h2>
         <p style={{ fontSize: 17, color: "#ccfbf1", margin: "0 0 28px" }}>
-          Join hundreds of teams using WorkforceAutomated to save time, reduce errors, and scale operations.
+          Start automating your workflows today. Your first agent is configured and running in under 5 minutes.
         </p>
         <Link to="/register" style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "13px 30px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}>
           Get started for free
@@ -496,9 +498,9 @@ export default function Landing() {
           <span style={{ color: "#9ca3af", fontSize: 13 }}>WorkforceAutomated © 2026</span>
         </div>
         <div style={{ display: "flex", gap: 24 }}>
-          {["Privacy", "Terms", "Security", "Docs"].map((l) => (
-            <a key={l} href="#" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>{l}</a>
-          ))}
+          <Link to="/privacy" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Privacy</Link>
+          <Link to="/terms" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Terms</Link>
+          <Link to="/security-overview" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Security</Link>
         </div>
       </footer>
 

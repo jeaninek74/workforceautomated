@@ -31,6 +31,12 @@ import SecurityAudit from "@/pages/SecurityAudit";
 import Demo from "@/pages/Demo";
 import CustomBuild from "@/pages/CustomBuild";
 import VideoDemo from "@/pages/VideoDemo";
+import WhyItWorks from "@/pages/WhyItWorks";
+import PlatformPage from "@/pages/PlatformPage";
+import IndustriesPage from "@/pages/IndustriesPage";
+import SecurityOverview from "@/pages/SecurityOverview";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -87,6 +93,12 @@ function AppRoutes() {
       <Route path="/custom-build" element={<CustomBuild />} />
       <Route path="/video" element={<VideoDemo />} />
       <Route path="/watch" element={<VideoDemo />} />
+      <Route path="/why-it-works" element={<WhyItWorks />} />
+      <Route path="/platform" element={<PlatformPage />} />
+      <Route path="/industries" element={<IndustriesPage />} />
+      <Route path="/security-overview" element={<SecurityOverview />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
