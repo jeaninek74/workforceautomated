@@ -102,15 +102,25 @@ executionsRouter.post(
         originalName: f.originalname,
       }));
 
-      runAgentExecution(exec.id, req.user!.id, { ...body, files })
-        .catch(console.error)
-        .finally(() => {
-          for (const file of uploadedFiles) {
-            fs.unlink(file.path, () => {});
-          }
-        });
+      // Run execution synchronously — await the result so the client gets the full output in one response
+      try {
+        await runAgentExecution(exec.id, req.user!.id, { ...body, files });
+      } catch (execErr: any) {
+        console.error("[Execution] Error:", execErr.message);
+      } finally {
+        for (const file of uploadedFiles) {
+          fs.unlink(file.path, () => {});
+        }
+      }
 
-      res.status(202).json({ execution: exec });
+      // Fetch the completed execution with full output
+      const [completedExec] = await db
+        .select()
+        .from(executions)
+        .where(eq(executions.id, exec.id))
+        .limit(1);
+
+      res.status(200).json({ execution: completedExec || exec });
     } catch (err: any) {
       for (const file of uploadedFiles) {
         fs.unlink(file.path, () => {});

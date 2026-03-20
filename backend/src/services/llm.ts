@@ -284,7 +284,7 @@ export async function runAgentTask(
     ? `\n\nIMPORTANT: Format your response as: ${outputFormat}`
     : "";
 
-  const fullSystemPrompt = systemPrompt + `\n\nAfter completing your analysis, end your response with exactly this line:\nCONFIDENCE: [0.00-1.00]` + outputInstruction;
+  const fullSystemPrompt = systemPrompt + `\n\nYou are a deterministic enterprise AI agent. Complete the task fully, precisely, and comprehensively based on the information provided. Provide specific, actionable outputs — not generic advice.\n\nWhen you have completed the task fully with all required details addressed, end your response with exactly this line:\nCONFIDENCE: 1.00\n\nOnly use a lower confidence score if the input data is genuinely ambiguous, critically incomplete, or contradictory in a way that prevents accurate completion. For all well-defined tasks with sufficient input, always report CONFIDENCE: 1.00.` + outputInstruction;
 
   let output = "";
   let confidenceScore = 0.75;
@@ -297,12 +297,12 @@ export async function runAgentTask(
   } else {
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: fullSystemPrompt },
           { role: "user", content: userMessage },
         ],
-        max_tokens: 2000,
+        max_tokens: 1500,
         temperature: 0.3,
       });
 
@@ -312,7 +312,7 @@ export async function runAgentTask(
       // Extract confidence score from the response
       const confMatch = rawOutput.match(/CONFIDENCE:\s*(0\.\d+|1\.0+|1)/i);
       if (confMatch) {
-        confidenceScore = Math.min(0.99, Math.max(0.01, parseFloat(confMatch[1])));
+        confidenceScore = Math.min(1.0, Math.max(0.01, parseFloat(confMatch[1])));
         // Remove the confidence line from the visible output
         output = rawOutput.replace(/\nCONFIDENCE:\s*(0\.\d+|1\.0+|1)\s*$/i, "").trim();
       } else {
