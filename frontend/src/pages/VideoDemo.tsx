@@ -99,7 +99,7 @@ export default function VideoDemo() {
             <div style={{ background: "#0d9488", borderRadius: 14, padding: 24, textAlign: "center" }}>
               <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>Ready to get started?</h3>
               <p style={{ fontSize: 13, color: "#ccfbf1", margin: "0 0 16px" }}>
-                Start your free trial — no credit card required. Your first agent is live in under 5 minutes.
+                Your first AI agent can be live in under 5 minutes. No coding required.
               </p>
               <Link to="/register" style={{ display: "block", background: "#fff", color: "#0d9488", fontWeight: 700, fontSize: 14, padding: "12px 0", borderRadius: 8, textDecoration: "none", textAlign: "center" }}>
                 Start Free Trial

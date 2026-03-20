@@ -251,7 +251,7 @@ export default function WhatIsAnAgent() {
       {/* CTA */}
       <section style={{ background: TEAL, padding: "72px 48px", textAlign: "center" }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>Ready to build your first agent?</h2>
-        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>It takes less than 5 minutes. No coding required. No credit card needed to start.</p>
+        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>It takes less than 5 minutes. No coding required.</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <Link to="/register" style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>Start free trial</Link>
           <Link to="/demo" style={{ background: "transparent", color: "#fff", fontWeight: 600, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none", border: "2px solid rgba(255,255,255,0.5)" }}>See a live demo first</Link>

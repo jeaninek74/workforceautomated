@@ -155,7 +155,7 @@ export default function WhyItWorks() {
       {/* CTA */}
       <section style={{ background: TEAL, padding: "72px 48px", textAlign: "center" }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>Ready to see it in action?</h2>
-        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>Start a free trial — no credit card required. Your first agent is running in under 5 minutes.</p>
+        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>Your first AI agent can be running in under 5 minutes. No coding required.</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
           <Link to="/register" style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>Start free trial</Link>
           <Link to="/demo" style={{ background: "transparent", color: "#fff", fontWeight: 600, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.4)" }}>Try live demo</Link>

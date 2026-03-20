@@ -356,7 +356,7 @@ export default function LiveDemo() {
                     to="/register"
                     style={{ background: TEAL, color: "#fff", padding: "10px 24px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 14 }}
                   >
-                    Start Free Trial — No Credit Card
+                    Start Free Trial
                   </Link>
                 </div>
               ) : (

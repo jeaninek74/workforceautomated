@@ -94,7 +94,7 @@ const FEATURES = [
     title: "Billing & Subscription",
     category: "Account",
     desc: "Stripe-powered plan management. Upgrade, downgrade, or cancel at any time. Full billing history available in your account dashboard.",
-    detail: "All billing is handled through Stripe. No credit card required for the free trial. Upgrade to Starter ($49/mo), Professional ($149/mo), or Enterprise ($499/mo) at any time from the Billing page.",
+    detail: "All billing is handled through Stripe. Upgrade to Starter ($49/mo), Professional ($149/mo), or Enterprise ($499/mo) at any time from the Billing page.",
     link: "/billing",
     linkLabel: "Open Billing →",
   },
@@ -196,7 +196,7 @@ export default function PlatformPage() {
       {/* CTA */}
       <section style={{ background: TEAL, padding: "72px 48px", textAlign: "center" }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>All 10 modules. Every plan.</h2>
-        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>Start a free trial — no credit card required. Access the full platform from day one.</p>
+        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>Access the full platform from day one. Your first AI agent is live in under 5 minutes.</p>
         <Link to="/register" style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}>Start free trial</Link>
       </section>
 

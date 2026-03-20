@@ -109,7 +109,7 @@ export default function Register() {
 
           <div className="mt-6 pt-6 border-t border-gray-800">
             <div className="space-y-2">
-              {["No credit card required", "14-day free trial", "Cancel anytime"].map((item) => (
+              {["14-day free trial", "Cancel anytime", "No coding required"].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm text-gray-400">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                   {item}
