@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const NAV_LINKS = ["Product", "Security", "Pricing"];
+const NAV_LINKS = [
+  { label: "Why It Works", href: "#why-it-works" },
+  { label: "Platform", href: "#platform" },
+  { label: "Industries", href: "#industries" },
+  { label: "Security", href: "#security" },
+  { label: "Pricing", href: "#pricing" },
+];
 const NAV_ACTIONS = [
   { label: "Live Demo", href: "/demo" },
   { label: "Watch Demo", href: "/watch" },
@@ -112,7 +118,7 @@ const SECURITY_TECHNICAL = [
 const PLANS = [
   { name: "Starter", price: "$49", period: "/mo", tagline: "For a single team or department", features: ["Up to 5 active AI agents", "1 agent team", "10,000 executions/month", "Basic integrations", "Email support"], cta: "Start Free Trial", highlight: false },
   { name: "Professional", price: "$149", period: "/mo", tagline: "For growing organizations", features: ["Up to 25 active AI agents", "Unlimited agent teams", "100,000 executions/month", "All integrations", "Priority support", "Advanced analytics"], cta: "Start Free Trial", highlight: true },
-  { name: "Enterprise", price: "Custom", period: "", tagline: "For large-scale deployments", features: ["Unlimited agents & teams", "Unlimited executions", "Custom integrations", "Dedicated support", "SLA guarantee", "On-premise option"], cta: "Contact Sales", highlight: false },
+  { name: "Enterprise", price: "$499", period: "/mo", tagline: "For large-scale deployments", features: ["Unlimited agents & teams", "Unlimited executions", "Custom integrations", "Dedicated support", "SLA guarantee", "On-premise option"], cta: "Start Free Trial", highlight: false },
 ];
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -141,7 +147,7 @@ export default function Landing() {
         </div>
         <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
           {NAV_LINKS.map((l) => (
-            <a key={l} href={`#${l.toLowerCase()}`} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l}</a>
+            <a key={l.label} href={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</a>
           ))}
           <div style={{ width: 1, height: 18, background: "#e5e7eb" }} />
           {NAV_ACTIONS.map((a) => (
@@ -230,7 +236,7 @@ export default function Landing() {
       </div>
 
       {/* ── Why It Works ── */}
-      <section id="product" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="why-it-works" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Why it works</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           Not a chatbot. An enterprise AI Workforce Operating System.
@@ -298,7 +304,7 @@ export default function Landing() {
       </section>
 
       {/* ── Platform Features ── */}
-      <section style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="platform" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Platform</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           Everything included in the platform
@@ -319,7 +325,7 @@ export default function Landing() {
       </section>
 
       {/* ── Use Cases by Industry ── */}
-      <section style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER, padding: "72px 48px" }}>
+      <section id="industries" style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER, padding: "72px 48px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Industries</h2>
           <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
@@ -413,8 +419,8 @@ export default function Landing() {
               </div>
             ))}
             <div style={{ borderTop: DIVIDER, paddingTop: 32, marginTop: 8 }}>
-              <p style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 24px" }}>Data Protection Layers</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 0 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>Data Protection Layers</p>
+              <div>
                 {[
                   { n: "1", t: "Encryption at Rest", d: "AES-256 for all stored data" },
                   { n: "2", t: "Encryption in Transit", d: "TLS 1.3 for all transmission" },
@@ -422,13 +428,14 @@ export default function Landing() {
                   { n: "4", t: "Recovery Keys", d: "Secondary account access" },
                   { n: "5", t: "Audit Logging", d: "Immutable access logs" },
                   { n: "6", t: "Zero Trust", d: "Every access verified" },
-                ].map((item, i) => (
-                  <div key={item.n} style={{ padding: "0 20px 0 0", borderRight: i < 5 ? DIVIDER : "none", paddingLeft: i > 0 ? 20 : 0 }}>
-                    <div style={{ width: 26, height: 26, background: TEAL, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{item.n}</div>
-                    <h4 style={{ fontSize: 12, fontWeight: 700, color: DARK, margin: "0 0 3px", lineHeight: 1.3 }}>{item.t}</h4>
-                    <p style={{ fontSize: 12, color: GRAY_TEXT, margin: 0, lineHeight: 1.5 }}>{item.d}</p>
+                ].map((item) => (
+                  <div key={item.n} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr", gap: 20, padding: "12px 0", borderTop: DIVIDER, alignItems: "center" }}>
+                    <div style={{ width: 24, height: 24, background: TEAL, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>{item.n}</div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: DARK }}>{item.t}</span>
+                    <span style={{ fontSize: 13, color: GRAY_TEXT }}>{item.d}</span>
                   </div>
                 ))}
+                <div style={{ borderTop: DIVIDER }} />
               </div>
             </div>
           </div>
