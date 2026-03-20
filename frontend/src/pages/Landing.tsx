@@ -170,11 +170,11 @@ export default function Landing() {
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>Enterprise AI Workforce Operating System</span>
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.12, color: DARK, margin: "0 0 18px", letterSpacing: "-0.02em" }}>
-            Automate your workforce.<br />
-            <span style={{ color: TEAL }}>Securely.</span>
+            Your work, done automatically.<br />
+            <span style={{ color: TEAL }}>Safely.</span>
           </h1>
           <p style={{ fontSize: 18, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 28px", maxWidth: 460 }}>
-            Convert job descriptions into governed AI agents that execute work independently or in structured teams — with full audit trails, confidence scoring, and human escalation built in.
+            Build AI agents that do your team's repetitive work for you — reviewing invoices, screening applicants, answering tickets, and more. They work around the clock, ask a human when unsure, and keep a record of everything they do.
           </p>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <Link to="/register" style={{ background: TEAL, color: "#fff", fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>
