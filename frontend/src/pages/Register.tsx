@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { haptic } from "@/hooks/useHaptic";
 
 export default function Register() {
   const { register } = useAuth();
@@ -81,7 +82,7 @@ export default function Register() {
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-500 pr-10"
                   placeholder="Min. 8 characters"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300">
+                <button type="button" onClick={() => { haptic("selection"); setShowPassword(!showPassword); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -100,6 +101,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
+              onClick={() => haptic("medium")}
               className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

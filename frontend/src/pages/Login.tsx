@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bot, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { haptic } from "@/hooks/useHaptic";
 
 export default function Login() {
   const { login } = useAuth();
@@ -77,7 +78,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => { haptic("selection"); setShowPassword(!showPassword); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -87,6 +88,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
+              onClick={() => haptic("medium")}
               className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

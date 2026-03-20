@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { haptic } from "@/hooks/useHaptic";
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
@@ -502,16 +503,35 @@ export default function Demo() {
   const step = STEPS[activeStep];
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: "#f9fafb", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", background: "#f9fafb", minHeight: "100vh", overflowX: "hidden" }}>
+      <style>{`
+        .demo-nav-links { display: flex; gap: 24px; align-items: center; }
+        .demo-nav-actions { display: flex; gap: 12px; align-items: center; }
+        .demo-videos { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; margin: 0 auto; }
+        .demo-tour { max-width: 1100px; margin: 0 auto; padding: 32px 40px; display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+        .demo-tour-sidebar { display: block; }
+        .demo-nav-pad { padding: 0 48px; }
+        .demo-section-pad { padding: 48px; }
+        @media (max-width: 900px) {
+          .demo-nav-links { display: none; }
+          .demo-nav-actions { display: none; }
+          .demo-videos { grid-template-columns: 1fr; }
+          .demo-tour { grid-template-columns: 1fr; padding: 20px; }
+          .demo-tour-sidebar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+          .demo-tour-sidebar button { flex: 1 1 auto; min-width: 120px; }
+          .demo-nav-pad { padding: 0 16px; }
+          .demo-section-pad { padding: 24px 16px; }
+        }
+      `}</style>
       {/* Nav */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 48px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60, position: "sticky", top: 0, zIndex: 100 }}>
+      <nav className="demo-nav-pad" style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60, position: "sticky", top: 0, zIndex: 100 }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <div style={{ width: 30, height: 30, background: "#0d9488", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>W</span>
           </div>
           <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>WorkforceAutomated</span>
         </Link>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+        <div className="demo-nav-links">
           <Link to="/what-is-an-agent" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>What is an Agent?</Link>
           <Link to="/why-it-works" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Why It Works</Link>
           <Link to="/platform" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Platform</Link>
@@ -519,14 +539,14 @@ export default function Demo() {
           <Link to="/enterprise" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Enterprise</Link>
           <Link to="/demo" style={{ color: "#0d9488", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>Demo</Link>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <Link to="/login" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Sign in</Link>
-          <Link to="/register" style={{ background: "#0d9488", color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "7px 18px", borderRadius: 7 }}>Get started</Link>
+        <div className="demo-nav-actions">
+          <Link to="/login" onClick={() => haptic("selection")} style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Sign in</Link>
+          <Link to="/register" onClick={() => haptic("medium")} style={{ background: "#0d9488", color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "7px 18px", borderRadius: 7 }}>Get started</Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "56px 48px", textAlign: "center" }}>
+      <div className="demo-section-pad" style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>
           See It in Action
         </div>
@@ -535,8 +555,8 @@ export default function Demo() {
       </div>
 
       {/* Videos */}
-      <div style={{ background: "#fff", padding: "48px", borderBottom: "1px solid #e5e7eb" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+      <div className="demo-section-pad" style={{ background: "#fff", borderBottom: "1px solid #e5e7eb" }}>
+        <div className="demo-videos">
           {LOOM_VIDEOS.map((v) => (
             <div key={v.id} style={{ border: "1px solid #e5e7eb", borderRadius: 16, overflow: "hidden" }}>
               {activeVideo === v.id ? (
@@ -585,14 +605,14 @@ export default function Demo() {
         <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Click through each step to explore the real product. No sign-up required.</p>
       </div>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 40px", display: "grid", gridTemplateColumns: "260px 1fr", gap: 24 }}>
+      <div className="demo-tour">
         {/* Step sidebar */}
         <div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div className="demo-tour-sidebar" style={{ flexDirection: "column", gap: 4 }}>
             {STEPS.map((s, i) => (
               <button
                 key={s.id}
-                onClick={() => setActiveStep(i)}
+                onClick={() => { haptic("selection"); setActiveStep(i); }}
                 style={{
                   width: "100%", textAlign: "left", padding: "10px 14px", borderRadius: 8, border: "none",
                   background: i === activeStep ? "#0d9488" : "transparent",
@@ -651,7 +671,7 @@ export default function Demo() {
               {STEPS.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setActiveStep(i)}
+                  onClick={() => { haptic("selection"); setActiveStep(i); }}
                   style={{ width: i === activeStep ? 20 : 8, height: 8, borderRadius: 4, border: "none", background: i === activeStep ? "#0d9488" : "#d1d5db", cursor: "pointer", transition: "all 0.2s" }}
                 />
               ))}

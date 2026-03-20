@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { haptic } from "@/hooks/useHaptic";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -134,38 +135,115 @@ const DIVIDER = "1px solid #e5e7eb";
 
 export default function Landing() {
   const [securityTab, setSecurityTab] = useState<"simple" | "technical">("simple");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#fff", color: DARK, minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#fff", color: DARK, minHeight: "100vh", overflowX: "hidden" }}>
+      {/* ── Responsive CSS ── */}
+      <style>{`
+        .lp-nav-links { display: flex; gap: 28px; align-items: center; }
+        .lp-nav-actions { display: flex; gap: 12px; align-items: center; }
+        .lp-mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+        .lp-mobile-nav { display: none; }
+        .lp-hero { display: grid; grid-template-columns: 1fr 420px; gap: 64px; align-items: center; }
+        .lp-stats { display: grid; grid-template-columns: repeat(4, 1fr); }
+        .lp-cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .lp-analogy { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+        .lp-row-3col { display: grid; grid-template-columns: 32px 220px 1fr; gap: 20px; }
+        .lp-row-4col { display: grid; grid-template-columns: 32px 220px 1fr auto; gap: 20px; }
+        .lp-row-2col { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+        .lp-row-step { display: grid; grid-template-columns: 48px 1fr; gap: 24px; }
+        .lp-integration-flow { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: center; }
+        .lp-integration-types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+        .lp-pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+        .lp-section-pad { padding: 72px 48px; }
+        .lp-section-inner { max-width: 1100px; margin: 0 auto; }
+        .lp-nav-pad { padding: 0 48px; }
+        .lp-stats-pad { padding: 20px 48px; }
+        .lp-footer-pad { padding: 32px 48px; }
+        .lp-arrow { display: block; }
+        @media (max-width: 900px) {
+          .lp-nav-links { display: none; }
+          .lp-nav-actions { display: none; }
+          .lp-mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+          .lp-mobile-nav { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fff; z-index: 200; padding: 20px; overflow-y: auto; flex-direction: column; gap: 0; }
+          .lp-mobile-nav.open { display: flex; }
+          .lp-hero { grid-template-columns: 1fr; gap: 32px; }
+          .lp-stats { grid-template-columns: repeat(2, 1fr); }
+          .lp-cards-3 { grid-template-columns: 1fr; }
+          .lp-analogy { grid-template-columns: 1fr; gap: 24px; }
+          .lp-row-3col { grid-template-columns: 28px 1fr; }
+          .lp-row-3col .lp-col-mid { display: none; }
+          .lp-row-4col { grid-template-columns: 28px 1fr; }
+          .lp-row-4col .lp-col-agents { display: none; }
+          .lp-row-2col { grid-template-columns: 1fr; gap: 16px; }
+          .lp-integration-flow { grid-template-columns: 1fr; }
+          .lp-arrow { display: none; }
+          .lp-integration-types { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .lp-pricing { grid-template-columns: 1fr; }
+          .lp-section-pad { padding: 48px 20px; }
+          .lp-nav-pad { padding: 0 20px; }
+          .lp-stats-pad { padding: 16px 20px; }
+          .lp-footer-pad { padding: 24px 20px; }
+        }
+        @media (max-width: 480px) {
+          .lp-stats { grid-template-columns: repeat(2, 1fr); }
+          .lp-integration-types { grid-template-columns: 1fr; }
+        }
+      `}</style>
 
       {/* ── Nav ── */}
-      <nav style={{ background: "#fff", borderBottom: DIVIDER, padding: "0 48px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60, position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 30, height: 30, background: TEAL, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <nav className="lp-nav-pad" style={{ background: "#fff", borderBottom: DIVIDER, display: "flex", alignItems: "center", justifyContent: "space-between", height: 60, position: "sticky", top: 0, zIndex: 100 }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }} onClick={() => haptic("selection")}>
+          <div style={{ width: 30, height: 30, background: TEAL, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>W</span>
           </div>
           <span style={{ fontWeight: 700, fontSize: 15, color: DARK }}>WorkforceAutomated</span>
-        </div>
-        <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
+        </Link>
+        <div className="lp-nav-links">
           {NAV_LINKS.map((l) => (
             l.href.startsWith("/") 
-              ? <Link key={l.label} to={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</Link>
-              : <a key={l.label} href={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>{l.label}</a>
+              ? <Link key={l.label} to={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }} onClick={() => haptic("selection")}>{l.label}</Link>
+              : <a key={l.label} href={l.href} style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }} onClick={() => haptic("selection")}>{l.label}</a>
           ))}
           <div style={{ width: 1, height: 18, background: "#e5e7eb" }} />
           {NAV_ACTIONS.map((a) => (
-            <Link key={a.label} to={a.href} style={{ color: TEAL, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>{a.label}</Link>
+            <Link key={a.label} to={a.href} style={{ color: TEAL, fontSize: 14, fontWeight: 600, textDecoration: "none" }} onClick={() => haptic("selection")}>{a.label}</Link>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <Link to="/login" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Sign in</Link>
-          <Link to="/register" style={{ background: TEAL, color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "7px 18px", borderRadius: 7 }}>Get started</Link>
+        <div className="lp-nav-actions">
+          <Link to="/login" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }} onClick={() => haptic("selection")}>Sign in</Link>
+          <Link to="/register" style={{ background: TEAL, color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "7px 18px", borderRadius: 7 }} onClick={() => haptic("medium")}>Get started</Link>
         </div>
+        {/* Mobile hamburger */}
+        <button className="lp-mobile-menu-btn" onClick={() => { haptic("light"); setMobileNavOpen(true); }} aria-label="Open menu" style={{ color: DARK }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </nav>
 
+      {/* ── Mobile Nav Drawer ── */}
+      <div className={`lp-mobile-nav${mobileNavOpen ? " open" : ""}`}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: DIVIDER }}>
+          <span style={{ fontWeight: 700, fontSize: 15, color: DARK }}>WorkforceAutomated</span>
+          <button onClick={() => { haptic("selection"); setMobileNavOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }} aria-label="Close menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        {[...NAV_LINKS, ...NAV_ACTIONS].map((l) => (
+          l.href.startsWith("/")
+            ? <Link key={l.label} to={l.href} style={{ display: "block", padding: "14px 0", borderBottom: DIVIDER, color: DARK, fontSize: 16, fontWeight: 500, textDecoration: "none" }} onClick={() => { haptic("selection"); setMobileNavOpen(false); }}>{l.label}</Link>
+            : <a key={l.label} href={l.href} style={{ display: "block", padding: "14px 0", borderBottom: DIVIDER, color: DARK, fontSize: 16, fontWeight: 500, textDecoration: "none" }} onClick={() => { haptic("selection"); setMobileNavOpen(false); }}>{l.label}</a>
+        ))}
+        <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+          <Link to="/login" style={{ display: "block", textAlign: "center", padding: "12px", border: `1px solid ${TEAL_BORDER}`, borderRadius: 8, color: TEAL, fontWeight: 600, textDecoration: "none", fontSize: 15 }} onClick={() => { haptic("medium"); setMobileNavOpen(false); }}>Sign in</Link>
+          <Link to="/register" style={{ display: "block", textAlign: "center", padding: "12px", background: TEAL, borderRadius: 8, color: "#fff", fontWeight: 700, textDecoration: "none", fontSize: 15 }} onClick={() => { haptic("medium"); setMobileNavOpen(false); }}>Get started free</Link>
+        </div>
+      </div>
+
       {/* ── Hero ── */}
-      <section style={{ background: "#fff", padding: "72px 48px 56px", maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 420px", gap: 64, alignItems: "center" }}>
-        <div>
+      <section className="lp-section-pad lp-section-inner" style={{ background: "#fff", paddingBottom: 56 }}>
+        <div className="lp-hero">
+          <div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: TEAL_LIGHT, border: `1px solid ${TEAL_BORDER}`, borderRadius: 20, padding: "5px 13px", marginBottom: 22 }}>
             <span style={{ width: 7, height: 7, background: TEAL, borderRadius: "50%", display: "inline-block" }}></span>
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>AI Workers for Your Business — No Coding Needed</span>
@@ -199,7 +277,8 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </div>
+          </div>
+          </div>
 
         {/* Hero live preview — no card border, just subtle background */}
         <div style={{ background: "#f8fafc", borderRadius: 14, padding: 28, border: DIVIDER }}>
@@ -223,7 +302,7 @@ export default function Landing() {
 
       {/* ── Stats Bar ── */}
       <div style={{ borderTop: DIVIDER, borderBottom: DIVIDER, background: "#f8fafc" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 48px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0 }}>
+        <div className="lp-section-inner lp-stats-pad lp-stats" style={{ gap: 0 }}>
           {[
             { stat: "< 5 min", label: "Agent setup time" },
             { stat: "100%", label: "Audit log coverage" },
@@ -239,7 +318,7 @@ export default function Landing() {
       </div>
 
       {/* ── What is an Agent? ── */}
-      <section id="what-is-an-agent" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="what-is-an-agent" className="lp-section-pad lp-section-inner">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>What is an Agent?</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 16px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           Think of it like hiring a really smart employee — who never sleeps.
@@ -248,7 +327,7 @@ export default function Landing() {
           An AI agent is a digital worker you build in minutes. You tell it what job to do — like reviewing invoices, screening job applications, or answering customer questions. Then it does that job, over and over, automatically — without you having to click a single button.
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 48 }}>
+        <div className="lp-cards-3" style={{ marginBottom: 48 }}>
           {[
             {
               emoji: "🧑‍💼",
@@ -279,7 +358,7 @@ export default function Landing() {
         </div>
 
         {/* Simple analogy row */}
-        <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 32px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "center" }}>
+        <div className="lp-analogy" style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 32px" }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>The simple version</div>
             <p style={{ fontSize: 18, fontWeight: 700, color: DARK, margin: "0 0 12px", lineHeight: 1.4 }}>
@@ -321,7 +400,7 @@ export default function Landing() {
       </section>
 
       {/* ── Why It Works ── */}
-      <section id="why-it-works" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="why-it-works" className="lp-section-pad lp-section-inner">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Why it works</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           This is not a chatbot. It actually does the work for you.
@@ -331,10 +410,10 @@ export default function Landing() {
         </p>
         <div>
           {WHY_IT_WORKS.map((f) => (
-            <div key={f.title} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr", gap: 20, padding: "20px 0", borderTop: DIVIDER, alignItems: "start" }}>
+            <div key={f.title} className="lp-row-3col" style={{ padding: "20px 0", borderTop: DIVIDER, alignItems: "start" }}>
               <span style={{ fontSize: 20, paddingTop: 2 }}>{f.emoji}</span>
-              <span style={{ fontSize: 15, fontWeight: 700, color: DARK, paddingTop: 2 }}>{f.title}</span>
-              <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65 }}>{f.desc}</span>
+              <span className="lp-col-mid" style={{ fontSize: 15, fontWeight: 700, color: DARK, paddingTop: 2 }}>{f.title}</span>
+              <div><strong style={{ display: "none" }} className="lp-mobile-title">{f.title}: </strong><span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65 }}>{f.desc}</span></div>
             </div>
           ))}
           <div style={{ borderTop: DIVIDER }} />
@@ -342,8 +421,8 @@ export default function Landing() {
       </section>
 
       {/* ── How Agents Execute Work ── */}
-      <section style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER, padding: "72px 48px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <section className="lp-section-pad" style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER }}>
+        <div className="lp-section-inner">
           <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>How it works</h2>
           <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
             How agents actually do the work
@@ -358,7 +437,7 @@ export default function Landing() {
           {/* Steps as numbered rows */}
           <div>
             {EXECUTION_STEPS.map((s, i) => (
-              <div key={s.num} style={{ display: "grid", gridTemplateColumns: "48px 1fr", gap: 24, padding: "24px 0", borderTop: DIVIDER }}>
+              <div key={s.num} className="lp-row-step" style={{ padding: "24px 0", borderTop: DIVIDER }}>
                 <div style={{ width: 36, height: 36, background: TEAL, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{s.num}</div>
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 5px" }}>{s.title}</h3>
@@ -377,7 +456,7 @@ export default function Landing() {
               { emoji: "📋", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
               { emoji: "🔒", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." },
             ].map((g) => (
-              <div key={g.title} style={{ display: "grid", gridTemplateColumns: "32px 200px 1fr", gap: 20, padding: "16px 0", borderTop: DIVIDER, alignItems: "start" }}>
+              <div key={g.title} className="lp-row-3col" style={{ padding: "16px 0", borderTop: DIVIDER, alignItems: "start" }}>
                 <span style={{ fontSize: 18, paddingTop: 2 }}>{g.emoji}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: TEAL, paddingTop: 2 }}>{g.title}</span>
                 <span style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{g.desc}</span>
@@ -389,7 +468,7 @@ export default function Landing() {
       </section>
 
       {/* ── Connect Your Backend ── */}
-      <section id="integrations" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="integrations" className="lp-section-pad lp-section-inner">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Integrations</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           Connect your backend. Your agent does the rest.
@@ -399,7 +478,7 @@ export default function Landing() {
         </p>
 
         {/* 3-step integration flow */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 40px 1fr 40px 1fr", gap: 0, alignItems: "center", marginBottom: 56 }}>
+        <div className="lp-integration-flow" style={{ marginBottom: 56 }}>
           {/* Step 1 */}
           <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
             <div style={{ width: 36, height: 36, background: TEAL, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 14 }}>🔌</div>
@@ -416,7 +495,7 @@ export default function Landing() {
           </div>
 
           {/* Arrow 1 */}
-          <div style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
+          <div className="lp-arrow" style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
 
           {/* Step 2 */}
           <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
@@ -433,7 +512,7 @@ export default function Landing() {
           </div>
 
           {/* Arrow 2 */}
-          <div style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
+          <div className="lp-arrow" style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
 
           {/* Step 3 */}
           <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
@@ -453,7 +532,7 @@ export default function Landing() {
         {/* Integration types grid */}
         <div style={{ borderTop: DIVIDER, paddingTop: 40 }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: "0 0 24px" }}>Supported integration types</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0 }}>
+          <div className="lp-integration-types" style={{ gap: 0 }}>
             {[
               { emoji: "🌐", title: "REST APIs", desc: "Connect any HTTP endpoint. GET, POST, PUT, DELETE. Custom headers, auth tokens, and request bodies." },
               { emoji: "🗄️", title: "Databases", desc: "PostgreSQL, MySQL, MongoDB, Supabase, PlanetScale. Read-only or read-write. Schema-aware queries." },
@@ -486,7 +565,7 @@ export default function Landing() {
       </section>
 
       {/* ── Platform Features ── */}
-      <section id="platform" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="platform" className="lp-section-pad lp-section-inner">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Platform</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           Everything included in the platform
@@ -496,7 +575,7 @@ export default function Landing() {
         </p>
         <div>
           {PLATFORM_FEATURES.map((f, i) => (
-            <div key={f.title} style={{ display: "grid", gridTemplateColumns: "28px 180px 1fr", gap: 20, padding: "18px 0", borderTop: DIVIDER, alignItems: "start" }}>
+            <div key={f.title} className="lp-row-3col" style={{ padding: "18px 0", borderTop: DIVIDER, alignItems: "start" }}>
               <span style={{ fontSize: 18 }}>{f.emoji}</span>
               <span style={{ fontSize: 14, fontWeight: 700, color: DARK, paddingTop: 1 }}>{f.title}</span>
               <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65 }}>{f.desc}</span>
@@ -507,8 +586,8 @@ export default function Landing() {
       </section>
 
       {/* ── Use Cases by Industry ── */}
-      <section id="industries" style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER, padding: "72px 48px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <section id="industries" className="lp-section-pad" style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER }}>
+        <div className="lp-section-inner">
           <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Industries</h2>
           <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
             Works for any industry or department
@@ -520,7 +599,7 @@ export default function Landing() {
 
           <div>
             {USE_CASES.map((u) => (
-              <div key={u.dept} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr auto", gap: 20, padding: "18px 0", borderTop: DIVIDER, alignItems: "start" }}>
+              <div key={u.dept} className="lp-row-4col" style={{ padding: "18px 0", borderTop: DIVIDER, alignItems: "start" }}>
                 <span style={{ fontSize: 18, paddingTop: 1 }}>{u.emoji}</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: DARK, paddingTop: 1 }}>{u.dept}</span>
                 <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65 }}>{u.task}</span>
@@ -537,7 +616,7 @@ export default function Landing() {
       </section>
 
       {/* ── Security ── */}
-      <section id="security" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <section id="security" className="lp-section-pad lp-section-inner">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Security</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
           How we keep your data safe
@@ -549,7 +628,7 @@ export default function Landing() {
         {/* Tab toggle */}
         <div style={{ display: "inline-flex", background: "#f3f4f6", borderRadius: 8, padding: 3, gap: 2, marginBottom: 40 }}>
           {[{ id: "simple", label: "🔐 Security Made Simple" }, { id: "technical", label: "🛡️ Technical Details" }].map((t) => (
-            <button key={t.id} onClick={() => setSecurityTab(t.id as "simple" | "technical")} style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: securityTab === t.id ? "#fff" : "transparent", color: securityTab === t.id ? TEAL : GRAY_TEXT, fontWeight: securityTab === t.id ? 700 : 500, fontSize: 13, cursor: "pointer", boxShadow: securityTab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>
+            <button key={t.id} onClick={() => { haptic("selection"); setSecurityTab(t.id as "simple" | "technical"); }} style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: securityTab === t.id ? "#fff" : "transparent", color: securityTab === t.id ? TEAL : GRAY_TEXT, fontWeight: securityTab === t.id ? 700 : 500, fontSize: 13, cursor: "pointer", boxShadow: securityTab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>
               {t.label}
             </button>
           ))}
@@ -558,7 +637,7 @@ export default function Landing() {
         {securityTab === "simple" && (
           <div>
             {SECURITY_SIMPLE.map((s, i) => (
-              <div key={s.title} style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: 20, padding: "24px 0", borderTop: DIVIDER }}>
+              <div key={s.title} className="lp-row-step" style={{ padding: "24px 0", borderTop: DIVIDER }}>
                 <span style={{ fontSize: 24 }}>{s.emoji}</span>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{s.subtitle}</div>
@@ -571,7 +650,7 @@ export default function Landing() {
               <p style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>6 Ways We Protect You</p>
               <div>
                 {SECURITY_ICONS.map((ic) => (
-                  <div key={ic.title} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr", gap: 20, padding: "14px 0", borderTop: DIVIDER, alignItems: "start" }}>
+                  <div key={ic.title} className="lp-row-3col" style={{ padding: "14px 0", borderTop: DIVIDER, alignItems: "start" }}>
                     <span style={{ fontSize: 18, paddingTop: 2 }}>{ic.emoji}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: DARK, paddingTop: 2 }}>{ic.title}</span>
                     <span style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{ic.desc}</span>
@@ -586,7 +665,7 @@ export default function Landing() {
         {securityTab === "technical" && (
           <div>
             {SECURITY_TECHNICAL.map((s) => (
-              <div key={s.title} style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 32, padding: "24px 0", borderTop: DIVIDER }}>
+              <div key={s.title} className="lp-row-2col" style={{ padding: "24px 0", borderTop: DIVIDER }}>
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 3px" }}>{s.title}</h3>
                   <div style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>{s.subtitle}</div>
@@ -625,17 +704,17 @@ export default function Landing() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" style={{ background: "#f8fafc", borderTop: DIVIDER, padding: "72px 48px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <section id="pricing" className="lp-section-pad" style={{ background: "#f8fafc", borderTop: DIVIDER }}>
+        <div className="lp-section-inner">
           <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Pricing</h2>
           <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
             Simple, transparent pricing
           </p>
           <p style={{ fontSize: 16, color: GRAY_TEXT, margin: "0 0 48px" }}>Start free. Upgrade when you are ready.</p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0, borderTop: DIVIDER }}>
+          <div className="lp-pricing" style={{ gap: 0, borderTop: DIVIDER }}>
             {PLANS.map((p, i) => (
-              <div key={p.name} style={{ padding: "32px 36px 32px 0", borderRight: i < 2 ? DIVIDER : "none", paddingLeft: i > 0 ? 36 : 0 }}>
+              <div key={p.name} style={{ padding: "32px 24px", borderRight: i < 2 ? DIVIDER : "none" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: p.highlight ? TEAL : DARK, margin: "0 0 3px" }}>{p.name}</h3>
                 <p style={{ fontSize: 13, color: GRAY_TEXT, margin: "0 0 16px" }}>{p.tagline}</p>
                 <div style={{ marginBottom: 20 }}>
@@ -649,7 +728,7 @@ export default function Landing() {
                     </div>
                   ))}
                 </div>
-                <Link to="/register" style={{ display: "inline-block", background: p.highlight ? TEAL : "transparent", color: p.highlight ? "#fff" : TEAL, fontWeight: 700, fontSize: 14, padding: "10px 22px", borderRadius: 7, textDecoration: "none", border: `1px solid ${p.highlight ? TEAL : TEAL_BORDER}` }}>
+                <Link to="/register" onClick={() => haptic("medium")} style={{ display: "inline-block", background: p.highlight ? TEAL : "transparent", color: p.highlight ? "#fff" : TEAL, fontWeight: 700, fontSize: 14, padding: "10px 22px", borderRadius: 7, textDecoration: "none", border: `1px solid ${p.highlight ? TEAL : TEAL_BORDER}` }}>
                   {p.cta}
                 </Link>
               </div>
@@ -659,18 +738,18 @@ export default function Landing() {
       </section>
 
       {/* ── CTA ── */}
-      <section style={{ background: TEAL, padding: "72px 48px", textAlign: "center" }}>
+      <section className="lp-section-pad" style={{ background: TEAL, textAlign: "center" }}>
         <h2 style={{ fontSize: 34, fontWeight: 800, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.01em" }}>Ready to automate your workforce?</h2>
         <p style={{ fontSize: 17, color: "#ccfbf1", margin: "0 0 28px" }}>
           Start automating your workflows today. Your first agent is configured and running in under 5 minutes.
         </p>
-        <Link to="/register" style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "13px 30px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}>
+        <Link to="/register" onClick={() => haptic("heavy")} style={{ background: "#fff", color: TEAL, fontWeight: 700, fontSize: 15, padding: "13px 30px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}>
           Get started for free
         </Link>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: DARK, padding: "32px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+      <footer className="lp-footer-pad" style={{ background: DARK, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 26, height: 26, background: TEAL, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>W</span>

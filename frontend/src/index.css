@@ -99,6 +99,36 @@
   }
 }
 
+/* ── Mobile & Touch ──────────────────────────────────────────────────────── */
+
+/* Prevent double-tap zoom on interactive elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Larger tap targets on mobile */
+@media (max-width: 768px) {
+  .btn-primary, .btn-secondary, .btn-ghost {
+    @apply min-h-[44px] px-4;
+  }
+  .input {
+    @apply min-h-[44px] text-base; /* prevents iOS zoom on focus */
+  }
+  .sidebar-link {
+    @apply min-h-[44px] py-3;
+  }
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Active press state for haptic feel on mobile */
+.btn-primary:active, .btn-secondary:active, .btn-ghost:active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
