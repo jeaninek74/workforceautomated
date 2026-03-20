@@ -512,6 +512,7 @@ export default function Demo() {
         .demo-tour-sidebar { display: block; }
         .demo-nav-pad { padding: 0 48px; }
         .demo-section-pad { padding: 48px; }
+        .demo-pathways { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 900px) {
           .demo-nav-links { display: none; }
           .demo-nav-actions { display: none; }
@@ -521,6 +522,7 @@ export default function Demo() {
           .demo-tour-sidebar button { flex: 1 1 auto; min-width: 120px; }
           .demo-nav-pad { padding: 0 16px; }
           .demo-section-pad { padding: 24px 16px; }
+          .demo-pathways { grid-template-columns: 1fr; }
         }
       `}</style>
       {/* Nav */}
@@ -552,6 +554,50 @@ export default function Demo() {
         </div>
         <h1 style={{ fontSize: 40, fontWeight: 800, color: "#111827", margin: "0 0 12px", letterSpacing: "-0.02em" }}>Watch WorkforceAutomated do the work</h1>
         <p style={{ fontSize: 16, color: "#6b7280", margin: "0 auto", maxWidth: 560, lineHeight: 1.65 }}>Press play on either video to see real AI agents being built, running, and reviewed. Then try the interactive walkthrough below.</p>
+      </div>
+
+      {/* Two Ways to Use */}
+      <div className="demo-section-pad" style={{ background: "#f8fafc", borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ maxWidth: 820, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#e0f2fe", color: "#0369a1", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Two Ways to Get Started
+            </div>
+            <h2 style={{ fontSize: 26, fontWeight: 800, color: "#111827", margin: "0 0 8px", letterSpacing: "-0.01em" }}>Choose how you want to use WorkforceAutomated</h2>
+            <p style={{ fontSize: 14, color: "#6b7280", margin: 0, lineHeight: 1.65 }}>Both paths give you fully working AI agents. Pick the one that fits where you are today.</p>
+          </div>
+          <div className="demo-pathways">
+            <div style={{ background: "#fff", border: "2px solid #0d9488", borderRadius: 16, padding: "28px 28px 24px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Option 1 — Start Instantly
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Enter or Upload a Job Description</h3>
+              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 16px" }}>
+                Paste or upload any job description — a role you're hiring for, a process you want automated, or a workflow you want an agent to own. WorkforceAutomated reads it, builds the agent, and starts executing immediately. No technical setup required.
+              </p>
+              <ul style={{ margin: 0, padding: "0 0 0 18px", fontSize: 13, color: "#6b7280", lineHeight: 2.1 }}>
+                <li>Paste text or upload a PDF / Word file</li>
+                <li>Agent is configured from the description automatically</li>
+                <li>Live in under 3 minutes</li>
+              </ul>
+            </div>
+            <div style={{ background: "#fff", border: "2px solid #6366f1", borderRadius: 16, padding: "28px 28px 24px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#eef2ff", color: "#6366f1", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Option 2 — Connect Your Systems
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Connect to Your Backend</h3>
+              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 16px" }}>
+                Connect WorkforceAutomated directly to your existing systems — REST APIs, databases, or webhooks. Agents pull live data from your backend, execute tasks against real records, and push results back. Every data access is permissioned and logged.
+              </p>
+              <ul style={{ margin: 0, padding: "0 0 0 18px", fontSize: 13, color: "#6b7280", lineHeight: 2.1 }}>
+                <li>REST API, database, or webhook — connected in seconds</li>
+                <li>Agents query your live data during execution</li>
+                <li>Full audit trail of every data access</li>
+              </ul>
+            </div>
+          </div>
+          <p style={{ fontSize: 13, color: "#9ca3af", marginTop: 20, textAlign: "center" }}>Watch the demo videos below to see both paths in action, then try the interactive walkthrough.</p>
+        </div>
       </div>
 
       {/* Videos */}
