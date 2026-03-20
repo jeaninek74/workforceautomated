@@ -120,7 +120,8 @@ export default function AgentBuilder() {
     setSaving(true);
     setError("");
     try {
-      const res = await agentsApi.create(form);
+      const payload = { ...form, confidenceThreshold: form.confidenceThreshold / 100 };
+      const res = await agentsApi.create(payload);
       const agentId = res.data?.agent?.id;
       // Assign selected integrations to the new agent
       if (agentId && selectedIntegrationIds.length > 0) {
