@@ -174,7 +174,7 @@ export default function Landing() {
             <span style={{ color: TEAL }}>Safely.</span>
           </h1>
           <p style={{ fontSize: 18, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 28px", maxWidth: 460 }}>
-            Build AI agents that do your team's repetitive work for you — reviewing invoices, screening applicants, analytical data review, contract review, and more. They work around the clock, ask a human when unsure, and keep a record of everything they do.
+            Build AI agents that do your team's repetitive work for you — reviewing invoices, screening applicants, analytical data review, contract review, marketing campaigns, payroll processing, and more. They work around the clock, ask a human when unsure, and keep a record of everything they do.
           </p>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <Link to="/register" style={{ background: TEAL, color: "#fff", fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>
