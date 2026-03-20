@@ -4,7 +4,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "cd backend && npm run start",
+    "startCommand": "cd backend && node dist/db/migrate.js && npm run start",
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 5
   }

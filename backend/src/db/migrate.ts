@@ -213,6 +213,99 @@ async function migrate() {
       created_at TIMESTAMP DEFAULT NOW() NOT NULL
     );`);
 
+    // Notification settings
+    await client.query(`CREATE TABLE IF NOT EXISTS notification_settings (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      escalation_email_enabled BOOLEAN DEFAULT false NOT NULL,
+      escalation_email TEXT,
+      slack_webhook_enabled BOOLEAN DEFAULT false NOT NULL,
+      slack_webhook_url TEXT,
+      notify_on_high_risk BOOLEAN DEFAULT true NOT NULL,
+      notify_on_critical_risk BOOLEAN DEFAULT true NOT NULL,
+      notify_on_low_confidence BOOLEAN DEFAULT true NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+
+    // Escalation reviews (matching schema exactly)
+    await client.query(`DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'review_status') THEN
+        CREATE TYPE review_status AS ENUM ('pending', 'approved', 'rejected');
+      END IF;
+    END $$;`);
+    await client.query(`CREATE TABLE IF NOT EXISTS escalation_reviews (
+      id SERIAL PRIMARY KEY,
+      execution_id INTEGER NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
+      reviewer_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      status review_status DEFAULT 'pending' NOT NULL,
+      decision_comment TEXT,
+      reviewed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+    await client.query(`CREATE INDEX IF NOT EXISTS escalation_reviews_exec_idx ON escalation_reviews(execution_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS escalation_reviews_reviewer_idx ON escalation_reviews(reviewer_id);`);
+
+    // Schedules (matching schema exactly)
+    await client.query(`CREATE TABLE IF NOT EXISTS schedules (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      agent_id INTEGER REFERENCES agents(id) ON DELETE SET NULL,
+      team_id INTEGER REFERENCES teams(id) ON DELETE SET NULL,
+      cron_expression VARCHAR(100) NOT NULL,
+      input_text TEXT,
+      output_format VARCHAR(50) DEFAULT 'bullet_points',
+      enabled BOOLEAN DEFAULT true NOT NULL,
+      last_run_at TIMESTAMP,
+      next_run_at TIMESTAMP,
+      total_runs INTEGER DEFAULT 0 NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+    await client.query(`CREATE INDEX IF NOT EXISTS schedules_user_idx ON schedules(user_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS schedules_agent_idx ON schedules(agent_id);`);
+
+    // Encryption keys
+    await client.query(`CREATE TABLE IF NOT EXISTS encryption_keys (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      public_key TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+
+    // Recovery keys
+    await client.query(`CREATE TABLE IF NOT EXISTS recovery_keys (
+      id VARCHAR(36) PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      key_hash TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      last_used_at TIMESTAMP,
+      is_active BOOLEAN DEFAULT true NOT NULL
+    );`);
+
+    // Backup metadata
+    await client.query(`CREATE TABLE IF NOT EXISTS backup_metadata (
+      id VARCHAR(36) PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      data_type VARCHAR(50) NOT NULL,
+      backup_date TIMESTAMP DEFAULT NOW() NOT NULL,
+      encrypted_size INTEGER NOT NULL,
+      checksum VARCHAR(64) NOT NULL,
+      storage_location TEXT NOT NULL,
+      is_verified BOOLEAN DEFAULT true NOT NULL,
+      expires_at TIMESTAMP NOT NULL
+    );`);
+
+    // Encrypted backups
+    await client.query(`CREATE TABLE IF NOT EXISTS encrypted_backups (
+      backup_id VARCHAR(36) PRIMARY KEY REFERENCES backup_metadata(id) ON DELETE CASCADE,
+      encrypted_data TEXT NOT NULL,
+      nonce VARCHAR(255) NOT NULL
+    );`);
+
     console.log("Database migration completed successfully!");
   } catch (err) {
     console.error("Migration error:", err);
