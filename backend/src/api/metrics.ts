@@ -19,7 +19,7 @@ metricsRouter.get("/dashboard", async (req: AuthRequest, res) => {
   try {
     const execs = await getUserExecs(req.user!.id, 30);
     const total = execs.length;
-    const successful = execs.filter(e => e.status === "success" || e.status === "completed").length;
+    const successful = execs.filter(e => (e.status as string) === "success").length;
     const failed = execs.filter(e => e.status === "failed").length;
     const escalated = execs.filter(e => e.escalated).length;
     const avgConfRaw = total > 0 ? execs.reduce((s, e) => s + (e.confidenceScore || 0), 0) / total : 0;
@@ -40,7 +40,7 @@ metricsRouter.get("/summary", async (req: AuthRequest, res) => {
   try {
     const execs = await getUserExecs(req.user!.id, 30);
     const total = execs.length;
-    const successful = execs.filter(e => e.status === "success" || e.status === "completed").length;
+    const successful = execs.filter(e => (e.status as string) === "success").length;
     const failed = execs.filter(e => e.status === "failed").length;
     const escalated = execs.filter(e => e.escalated).length;
     const avgConfidence = total > 0 ? execs.reduce((s, e) => s + (e.confidenceScore || 0), 0) / total : 0;
@@ -74,7 +74,7 @@ metricsRouter.get("/trends", async (req: AuthRequest, res) => {
       const day = e.createdAt.toISOString().slice(0, 10);
       if (!byDay[day]) byDay[day] = { date: day, total: 0, success: 0, escalated: 0, avgConf: 0 };
       byDay[day].total++;
-      if (e.status === "success" || e.status === "completed") byDay[day].success++;
+      if ((e.status as string) === "success") byDay[day].success++;
       if (e.escalated) byDay[day].escalated++;
       byDay[day].avgConf += e.confidenceScore || 0;
     }
