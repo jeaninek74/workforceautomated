@@ -268,7 +268,7 @@ function CTAVisual() {
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 40, width: "100%", textAlign: "center" }}>
       <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
       <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>You've seen what's possible.</h3>
-      <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Set up your first agent in under 5 minutes. No credit card required.</p>
+      <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px" }}>Set up your first agent in under 5 minutes.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 280, margin: "0 auto" }}>
         <Link to="/register">
           <a style={{ display: "block", padding: "12px 0", background: "#0d9488", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
@@ -424,21 +424,21 @@ const VISUALS: Record<string, JSX.Element> = {
   cta: <CTAVisual />,
 };
 
-// Loom video IDs — v3 uploads
+// Loom video IDs — v4 uploads
 const LOOM_VIDEOS = [
   {
-    id: "0c7b4d6a0dd3413685a35c7761987744",
+    id: "94cb25f1e6f949a79f81bfc0c675c55d",
     title: "Short Demo — See It in 2 Minutes",
     desc: "Watch an AI agent get built, run, and reviewed in under 2 minutes.",
-    duration: "1 min 42 sec",
+    duration: "2 min 4 sec",
     badge: "Quick Overview",
     badgeColor: "#0d9488",
   },
   {
-    id: "a907f508c05e4c0facc1392c019e31ca",
+    id: "8358185aba5f45dab808f7277fd42182",
     title: "Full Walkthrough — Every Feature Explained",
     desc: "A complete tour: agent builder, execution console, governance, integrations, audit log, and more.",
-    duration: "3 min 13 sec",
+    duration: "4 min 2 sec",
     badge: "Full Tour",
     badgeColor: "#7c3aed",
   },
@@ -700,7 +700,7 @@ export default function Demo() {
       {/* CTA */}
       <div style={{ background: "#0d9488", padding: "72px 48px", textAlign: "center" }}>
         <h2 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>Ready to build your first agent?</h2>
-        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>It takes less than 5 minutes. No coding required. No credit card needed to start.</p>
+        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>It takes less than 5 minutes. No coding required.</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <Link to="/register" style={{ background: "#fff", color: "#0d9488", fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>Start free trial</Link>
           <Link to="/custom-build" style={{ background: "transparent", color: "#fff", fontWeight: 600, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none", border: "2px solid rgba(255,255,255,0.5)" }}>Build a custom plan</Link>

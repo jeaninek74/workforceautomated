@@ -26,6 +26,8 @@ agentsRouter.post("/", async (req: AuthRequest, res) => {
       connectorType: z.enum(["overlay", "readonly", "write_back"]).optional(),
       confidenceThreshold: z.number().min(0).max(1).optional(),
       escalationThreshold: z.number().min(0).max(1).optional(),
+      riskLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
+      escalationEnabled: z.boolean().optional(),
       systemPrompt: z.string().optional(),
     }).parse(req.body);
     const [agent] = await db.insert(agents).values({ ...body, userId: req.user!.id }).returning();

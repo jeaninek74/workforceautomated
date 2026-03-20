@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { db } from "../db/index.js";
-import { executions } from "../db/schema.js";
+import { executions, agents } from "../db/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { runAgentExecution } from "../services/executor.js";
@@ -50,17 +50,46 @@ const upload = multer({
 
 // ─── GET /api/executions ──────────────────────────────────────────────────────
 executionsRouter.get("/", async (req: AuthRequest, res) => {
-  const teamId = req.query.teamId ? parseInt(req.query.teamId as string) : undefined;
-  const whereClause = teamId
-    ? and(eq(executions.userId, req.user!.id), eq(executions.teamId, teamId))
-    : eq(executions.userId, req.user!.id);
-  const list = await db
-    .select()
-    .from(executions)
-    .where(whereClause)
-    .orderBy(desc(executions.createdAt))
-    .limit(100);
-  res.json({ executions: list });
+  try {
+    const agentId = req.query.agentId ? parseInt(req.query.agentId as string) : undefined;
+    const teamId = req.query.teamId ? parseInt(req.query.teamId as string) : undefined;
+    const limit = req.query.limit ? Math.min(parseInt(req.query.limit as string), 200) : 50;
+    let whereClause: any = eq(executions.userId, req.user!.id);
+    if (agentId) whereClause = and(whereClause, eq(executions.agentId, agentId));
+    if (teamId) whereClause = and(whereClause, eq(executions.teamId, teamId));
+    // Join with agents to get agentName
+    const rows = await db
+      .select({
+        id: executions.id,
+        userId: executions.userId,
+        agentId: executions.agentId,
+        teamId: executions.teamId,
+        type: executions.type,
+        status: executions.status,
+        input: executions.input,
+        output: executions.output,
+        confidenceScore: executions.confidenceScore,
+        riskLevel: executions.riskLevel,
+        escalated: executions.escalated,
+        escalationReason: executions.escalationReason,
+        processingTimeMs: executions.processingTimeMs,
+        tokenCount: executions.tokenCount,
+        metadata: executions.metadata,
+        startedAt: executions.startedAt,
+        completedAt: executions.completedAt,
+        createdAt: executions.createdAt,
+        agentName: agents.name,
+      })
+      .from(executions)
+      .leftJoin(agents, eq(executions.agentId, agents.id))
+      .where(whereClause)
+      .orderBy(desc(executions.createdAt))
+      .limit(limit);
+    const total = rows.length;
+    res.json({ executions: rows, total });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ─── POST /api/executions (with optional file uploads) ───────────────────────

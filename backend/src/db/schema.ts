@@ -37,6 +37,8 @@ export const agents = pgTable("agents", {
   connectorType: connectorEnum("connector_type").default("readonly"),
   confidenceThreshold: real("confidence_threshold").default(0.75).notNull(),
   escalationThreshold: real("escalation_threshold").default(0.5).notNull(),
+  riskLevel: riskEnum("agent_risk_level").default("medium"),
+  escalationEnabled: boolean("escalation_enabled").default(true).notNull(),
   systemPrompt: text("system_prompt"),
   status: agentStatusEnum("status").default("draft").notNull(),
   lastExecutedAt: timestamp("last_executed_at"),

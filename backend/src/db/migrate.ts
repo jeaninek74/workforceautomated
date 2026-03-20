@@ -57,6 +57,9 @@ async function migrate() {
       updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     );`);
     await client.query(`CREATE INDEX IF NOT EXISTS agents_user_idx ON agents(user_id);`);
+    // Add riskLevel and escalationEnabled columns if they don't exist (for existing deployments)
+    await client.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS agent_risk_level risk_level DEFAULT 'medium';`);
+    await client.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS escalation_enabled BOOLEAN DEFAULT true NOT NULL;`);
 
     // Teams
     await client.query(`CREATE TABLE IF NOT EXISTS teams (
