@@ -1,132 +1,80 @@
 # WorkforceAutomated Deployment Guide
 
-## Railway Deployment Setup
+This guide explains how the WorkforceAutomated platform is deployed to production using Railway.
 
-### Prerequisites
-- Railway account (https://railway.app)
-- GitHub account with access to jeanynek74/workforceautomated
-- Custom domain: workforceautomated.com
-- Stripe account for payments
+## Architecture Overview
 
-### Step 1: Connect GitHub to Railway
+The application uses a monorepo structure but is deployed as a **single unified service** on Railway to simplify infrastructure and reduce costs.
 
-1. Go to https://railway.app
-2. Sign in with your GitHub account
-3. Create a new project
-4. Select "Deploy from GitHub repo"
-5. Select `jeanynek74/workforceautomated`
-6. Railway will automatically detect the project structure
+- **Frontend**: React SPA built with Vite. During the build process, the static files are generated into `frontend/dist`.
+- **Backend**: Node.js Express API. It serves the `/api/*` routes and is configured to serve the static frontend files from `backend/dist/public` for all other routes.
+- **Database**: A private PostgreSQL instance hosted on Railway, accessible only via the internal network.
 
-### Step 2: Configure Environment Variables
+## Railway Configuration
 
-In Railway dashboard, set these environment variables:
+The deployment is controlled by two key files in the root directory:
 
-```
-# Database
-DATABASE_URL=postgresql://[user]:[password]@[host]:[port]/workforceautomated
+### 1. `nixpacks.toml`
+This file tells Railway's Nixpacks builder how to build the application:
+- Sets up Node.js 20.
+- Installs dependencies for both frontend and backend.
+- Builds the frontend (`npm run build`).
+- Builds the backend (`npm run build`).
+- **Crucial Step**: Copies the frontend build output into the backend's public directory (`cp -r frontend/dist/. backend/dist/public/`).
+- Sets the start command to run the compiled backend index file.
 
-# Server
-NODE_ENV=production
-PORT=3001
-APP_SECRET=[generate-secure-random-string]
+### 2. `railway.toml` / `railway.json`
+These files define the deployment behavior:
+- **Start Command**: `cd backend && node dist/db/migrate.js && npm run start` (Runs database migrations before starting the server).
+- **Healthcheck**: Points to `/api/health` to ensure the server is ready before routing traffic.
+- **Restart Policy**: Automatically restarts on failure (up to 5 retries).
 
-# Frontend
-FRONTEND_URL=https://workforceautomated.com
-VITE_API_URL=https://api.workforceautomated.com
+## Environment Variables
 
-# Stripe
-STRIPE_SECRET_KEY=sk_live_[your_key]
-STRIPE_WEBHOOK_SECRET=whsec_[your_secret]
-VITE_STRIPE_PUBLISHABLE_KEY=pk_live_[your_key]
+The following environment variables must be set in the Railway dashboard for the `app` service:
 
-# Email Service
-SENDGRID_API_KEY=SG.[your_key]
-EMAIL_FROM=noreply@workforceautomated.com
+### Required
+- `DATABASE_URL`: Connection string to the Railway PostgreSQL database (e.g., `postgresql://postgres:password@postgres.railway.internal:5432/railway`).
+- `JWT_SECRET` / `APP_SECRET`: A strong random string for signing authentication tokens.
+- `NODE_ENV`: Must be set to `production`.
+- `PORT`: Usually set to `3001` (Railway will map this automatically).
 
-# Security
-SESSION_SECRET=[generate-secure-random-string]
-ENCRYPTION_KEY=[generate-secure-random-string]
-```
+### AI Providers (At least one required)
+- `OPENAI_API_KEY`: OpenAI API key (starts with `sk-...`).
+- `ANTHROPIC_API_KEY`: Anthropic API key for Claude 3.5 Sonnet.
 
-### Step 3: Set Up PostgreSQL Database
+### Optional (For Billing)
+- `STRIPE_SECRET_KEY`: Stripe secret API key.
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret.
+- `STRIPE_STARTER_PRICE_ID`: Stripe price ID for the Starter plan.
+- `STRIPE_PRO_PRICE_ID`: Stripe price ID for the Professional plan.
+- `STRIPE_ENTERPRISE_PRICE_ID`: Stripe price ID for the Enterprise plan.
 
-1. In Railway dashboard, add a PostgreSQL service
-2. Copy the DATABASE_URL from the PostgreSQL service
-3. Paste it into the environment variables
+## Deployment Process
 
-### Step 4: Configure Custom Domain
+Deployments are triggered automatically when code is pushed to the `main` branch of the GitHub repository.
 
-1. In Railway dashboard, go to your project settings
-2. Under "Domains", add `workforceautomated.com`
-3. Railway will provide DNS records to add
-4. Update your domain registrar's DNS settings:
-   - Add CNAME record pointing to Railway's domain
-   - Or add A record with Railway's IP
+1. **Push to GitHub**: `git push origin main`
+2. **Railway Build**: Railway detects the push and starts a new build using Nixpacks.
+3. **Migration**: Before the new container accepts traffic, it runs `node dist/db/migrate.js` to apply any pending database schema changes.
+4. **Healthcheck**: Railway pings `/api/health`. Once it returns `200 OK`, the new container is marked as ACTIVE.
+5. **Traffic Routing**: Traffic is seamlessly routed to the new container, and the old container is spun down.
 
-### Step 5: Enable Auto-Deployment
+## Caching & Service Workers
 
-1. In Railway dashboard, enable "Auto Deploy" for the main branch
-2. Any push to main will automatically trigger deployment
-3. GitHub Actions workflow will run tests before deployment
+To ensure users always receive the latest version of the frontend SPA after a deployment:
 
-### Step 6: Database Migrations
+1. **HTML Caching**: The backend Express server is configured to serve `index.html` with strict no-cache headers:
+   ```javascript
+   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+   ```
+2. **Asset Caching**: JS and CSS files generated by Vite include content hashes in their filenames (e.g., `index-a1b2c3d4.js`), so they are cached aggressively for performance.
+3. **Service Worker**: A `sw.js` file is deployed that actively unregisters any old service workers and clears browser caches to prevent stale versions of the site from loading.
 
-After deployment, run migrations:
+## Troubleshooting Deployments
 
-```bash
-# SSH into Railway container
-railway run npm run migrate
+If a deployment fails or the site is not updating:
 
-# Or use Railway CLI
-railway run "cd backend && npm run db:push"
-```
-
-### Step 7: Verify Deployment
-
-1. Visit https://workforceautomated.com
-2. Test user registration and login
-3. Verify security features:
-   - Encryption key generation
-   - Recovery key creation
-   - Backup functionality
-   - Audit logs
-
-## Monitoring & Logs
-
-### View Logs
-```bash
-railway logs
-```
-
-### Monitor Performance
-- Railway Dashboard shows CPU, Memory, Network usage
-- Check application logs for errors
-
-### Troubleshooting
-
-**Build Fails:**
-- Check GitHub Actions logs
-- Verify environment variables are set
-- Ensure database is accessible
-
-**Application Crashes:**
-- Check Railway logs
-- Verify database connection string
-- Check for missing environment variables
-
-**Domain Not Working:**
-- Verify DNS records are correct
-- Wait 24-48 hours for DNS propagation
-- Check SSL certificate status
-
-## Rollback
-
-If deployment fails:
-1. Go to Railway dashboard
-2. Select the previous successful deployment
-3. Click "Redeploy"
-
-## Support
-
-For Railway support: https://railway.app/support
-For application issues: Check logs and GitHub issues
+1. **Check Railway Logs**: Go to the Railway dashboard -> App Service -> View Logs. Look for build errors or runtime crashes.
+2. **Database Connection**: Ensure the `DATABASE_URL` is using the `.internal` address, not the public TCP proxy, as the app and database are in the same Railway environment.
+3. **API Keys**: Verify that the `OPENAI_API_KEY` is valid and has billing enabled. The demo chat and execution engine will fail if the API key is invalid or rate-limited.
