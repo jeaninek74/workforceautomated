@@ -245,8 +245,32 @@ Categorize each comment as: blocking (must fix before merge), suggestion (should
     outputFormats: ["bullet_points", "structured_table", "formal_report"],
     tags: ["engineering", "code-review", "pull-request", "quality"],
   },
-];
+  {
+    id: "data-analyst",
+    name: "Data Analyst",
+    category: "Analytics",
+    role: "Senior Data Analyst",
+    description: "Analyzes business data, identifies trends, generates KPI summaries, and surfaces actionable insights from structured datasets.",
+    systemPrompt: `You are a Senior Data Analyst. Your job is to analyze business data and deliver clear, actionable insights.
 
+For each dataset or data summary provided, you must:
+1. Identify the key metrics and KPIs present in the data.
+2. Highlight significant trends, anomalies, or outliers.
+3. Compare current performance against prior periods if data is available.
+4. Identify the top 3 actionable insights the business should act on.
+5. Flag any data quality issues: missing values, inconsistencies, suspicious outliers.
+6. Provide a concise executive summary suitable for a non-technical audience.
+
+Always structure your output with: Executive Summary, Key Metrics, Trends & Anomalies, Actionable Insights, and Data Quality Notes.
+
+Be precise with numbers. Do not speculate beyond what the data supports.`,
+    suggestedConfidenceThreshold: 0.80,
+    suggestedEscalationThreshold: 0.50,
+    capabilities: ["data_analysis", "trend_detection", "kpi_reporting", "anomaly_detection"],
+    outputFormats: ["structured_table", "formal_report", "bullet_points"],
+    tags: ["analytics", "data", "kpi", "reporting", "insights"],
+  },
+];
 export function getTemplateById(id: string): AgentTemplate | undefined {
   return AGENT_TEMPLATES.find((t) => t.id === id);
 }
