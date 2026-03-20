@@ -305,6 +305,103 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── Connect Your Backend ── */}
+      <section id="integrations" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Integrations</h2>
+        <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
+          Connect your backend. Your agent does the rest.
+        </p>
+        <p style={{ fontSize: 16, color: GRAY_TEXT, margin: "0 0 48px", maxWidth: 600, lineHeight: 1.6 }}>
+          Agents connect directly to your existing systems — REST APIs, databases, webhooks, and SaaS tools. You define what each agent can access. The agent reads and writes real data, in real time, within the exact boundaries you set.
+        </p>
+
+        {/* 3-step integration flow */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 40px 1fr 40px 1fr", gap: 0, alignItems: "center", marginBottom: 56 }}>
+          {/* Step 1 */}
+          <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
+            <div style={{ width: 36, height: 36, background: TEAL, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 14 }}>🔌</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Step 1 — Connect</div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>Add Your System</h3>
+            <p style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 16px" }}>Paste your API endpoint, database connection string, or webhook URL. Add authentication headers. Test the connection with one click.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {["REST API (GET, POST, PUT, DELETE)", "PostgreSQL / MySQL / MongoDB", "Webhooks (inbound + outbound)", "SaaS tools (HubSpot, Salesforce, Jira)"].map((item) => (
+                <div key={item} style={{ fontSize: 12, color: GRAY_TEXT, display: "flex", gap: 6, alignItems: "center" }}>
+                  <span style={{ color: TEAL, flexShrink: 0, fontWeight: 700 }}>✓</span> {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Arrow 1 */}
+          <div style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
+
+          {/* Step 2 */}
+          <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
+            <div style={{ width: 36, height: 36, background: TEAL, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 14 }}>🤖</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Step 2 — Assign</div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>Assign to an Agent</h3>
+            <p style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 16px" }}>Select which agent gets access to which integration. Each agent only sees the connections you explicitly authorize. Least-privilege by default.</p>
+            <div style={{ background: "#fff", border: DIVIDER, borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ fontSize: 11, color: GRAY_TEXT, marginBottom: 8, fontWeight: 600 }}>Invoice Reviewer Agent</div>
+              {["✓ Accounts Payable API", "✓ ERP Database (read-only)", "✗ HR System (not authorized)"].map((item) => (
+                <div key={item} style={{ fontSize: 12, color: item.startsWith("✗") ? "#9ca3af" : GRAY_TEXT, padding: "3px 0", fontFamily: "monospace" }}>{item}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Arrow 2 */}
+          <div style={{ textAlign: "center", fontSize: 22, color: TEAL, fontWeight: 700 }}>→</div>
+
+          {/* Step 3 */}
+          <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 24px" }}>
+            <div style={{ width: 36, height: 36, background: TEAL, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 14 }}>⚡</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Step 3 — Execute</div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>Agent Uses Live Data</h3>
+            <p style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 16px" }}>The agent queries your API, reads your database, or fires your webhook — in real time, during task execution. Every data access is logged to the immutable audit trail.</p>
+            <div style={{ background: "#fff", border: DIVIDER, borderRadius: 8, padding: "12px 14px", fontFamily: "monospace", fontSize: 11 }}>
+              <div style={{ color: "#9ca3af", marginBottom: 4 }}>14:32:01 — GET /api/invoices/INV-2041</div>
+              <div style={{ color: TEAL, marginBottom: 4 }}>→ 200 OK · $12,450 · ACME Corp</div>
+              <div style={{ color: "#9ca3af", marginBottom: 4 }}>14:32:02 — Confidence: 94% → Auto-approved</div>
+              <div style={{ color: "#374151" }}>14:32:02 — Audit log entry written ✓</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Integration types grid */}
+        <div style={{ borderTop: DIVIDER, paddingTop: 40 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: "0 0 24px" }}>Supported integration types</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0 }}>
+            {[
+              { emoji: "🌐", title: "REST APIs", desc: "Connect any HTTP endpoint. GET, POST, PUT, DELETE. Custom headers, auth tokens, and request bodies." },
+              { emoji: "🗄️", title: "Databases", desc: "PostgreSQL, MySQL, MongoDB, Supabase, PlanetScale. Read-only or read-write. Schema-aware queries." },
+              { emoji: "🔔", title: "Webhooks", desc: "Trigger agents from external events. Or fire outbound webhooks when an agent completes a task." },
+              { emoji: "🔗", title: "SaaS Tools", desc: "HubSpot, Salesforce, Jira, Slack, SendGrid, Stripe, and more. Pre-built connectors or custom OAuth." },
+            ].map((item, i) => (
+              <div key={item.title} style={{ padding: "20px 24px 20px 0", borderLeft: i > 0 ? DIVIDER : "none", paddingLeft: i > 0 ? 24 : 0 }}>
+                <div style={{ fontSize: 22, marginBottom: 8 }}>{item.emoji}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 6 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Security note */}
+        <div style={{ marginTop: 32, background: TEAL_LIGHT, border: `1px solid ${TEAL_BORDER}`, borderRadius: 10, padding: "16px 24px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 4 }}>Your credentials never leave your environment</div>
+            <div style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>API keys and database passwords are encrypted with AES-256-GCM before storage. They are never logged, never exposed in responses, and never stored in plaintext. Agents access your systems through an encrypted proxy — no credentials are ever written to GitHub or any external system.</div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <Link to="/demo" style={{ color: TEAL, fontWeight: 600, fontSize: 14, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            See the integration flow in the interactive demo →
+          </Link>
+        </div>
+      </section>
+
       {/* ── Platform Features ── */}
       <section id="platform" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Platform</h2>

@@ -21,6 +21,14 @@ const STEPS = [
   },
   {
     id: 3,
+    title: "Connect Your Backend",
+    subtitle: "REST API, database, or webhook — connected in seconds",
+    description:
+      "Assign real integrations to your agent. The agent queries your API, reads your database, or fires your webhook during execution — in real time, within the exact permissions you set. Every data access is logged.",
+    visual: "integration",
+  },
+  {
+    id: 4,
     title: "Agents Execute Work",
     subtitle: "Watch automation happen in real time",
     description:
@@ -28,15 +36,15 @@ const STEPS = [
     visual: "execution",
   },
   {
-    id: 4,
+    id: 5,
     title: "Review Queue",
     subtitle: "Humans stay in control — always",
     description:
-      "Any task below your confidence threshold lands here. Your team reviews, approves, or overrides. Every decision is logged permanently to the immutable audit trail.",
+      "Any task below your confidence threshold lands here. Approve or override. Every decision is logged permanently to the immutable audit trail.",
     visual: "review",
   },
   {
-    id: 5,
+    id: 6,
     title: "Security & Audit Log",
     subtitle: "Zero-knowledge encryption. Full compliance.",
     description:
@@ -44,7 +52,7 @@ const STEPS = [
     visual: "audit",
   },
   {
-    id: 6,
+    id: 7,
     title: "Ready to Automate?",
     subtitle: "Set up your first agent in under 5 minutes",
     description:
@@ -277,9 +285,139 @@ function CTAVisual() {
   );
 }
 
+function IntegrationVisual() {
+  const [stage, setStage] = useState(0);
+  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+  const [assigned, setAssigned] = useState(false);
+  const [executing, setExecuting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const integrations = [
+    { id: "ap-api", label: "Accounts Payable REST API", type: "REST API", url: "https://erp.acme.com/api/invoices", color: "#2563eb" },
+    { id: "db", label: "Finance Database (PostgreSQL)", type: "Database", url: "postgres://finance-db.acme.com:5432/erp", color: "#7c3aed" },
+    { id: "webhook", label: "Approval Webhook", type: "Webhook", url: "https://hooks.acme.com/invoice-approved", color: "#d97706" },
+  ];
+
+  const handleAssign = () => {
+    setAssigned(true);
+    setStage(2);
+  };
+
+  const handleExecute = () => {
+    setExecuting(true);
+    setTimeout(() => { setExecuting(false); setDone(true); setStage(3); }, 2200);
+  };
+
+  const reset = () => { setStage(0); setSelectedIntegration(null); setAssigned(false); setExecuting(false); setDone(false); };
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, width: "100%" }}>
+      {/* Stage indicator */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 20 }}>
+        {["Connect", "Assign", "Execute", "Done"].map((s, i) => (
+          <div key={s} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, flexShrink: 0, background: i <= stage ? "#0d9488" : "#e5e7eb", color: i <= stage ? "#fff" : "#9ca3af" }}>
+              {i < stage ? "\u2713" : i + 1}
+            </div>
+            <div style={{ fontSize: 10, color: i <= stage ? "#0d9488" : "#9ca3af", fontWeight: 600, marginLeft: 4, flex: 1 }}>{s}</div>
+            {i < 3 && <div style={{ width: 16, height: 2, background: i < stage ? "#0d9488" : "#e5e7eb", marginRight: 4 }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Stage 0: Choose integration */}
+      {stage === 0 && (
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 12 }}>Select a system to connect:</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {integrations.map((intg) => (
+              <button key={intg.id} onClick={() => { setSelectedIntegration(intg.id); setStage(1); }} style={{ padding: "12px 14px", border: `1px solid ${selectedIntegration === intg.id ? "#0d9488" : "#e5e7eb"}`, borderRadius: 8, background: "#f9fafb", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: intg.color + "18", color: intg.color }}>{intg.type}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{intg.label}</div>
+                  <div style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace", marginTop: 2 }}>{intg.url}</div>
+                </div>
+                <span style={{ fontSize: 13, color: "#0d9488" }}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stage 1: Assign to agent */}
+      {stage === 1 && selectedIntegration && (() => {
+        const intg = integrations.find(i => i.id === selectedIntegration)!;
+        return (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 4 }}>Connection added: <span style={{ color: "#0d9488" }}>{intg.label}</span></div>
+            <div style={{ fontSize: 12, color: "#9ca3af", fontFamily: "monospace", marginBottom: 16 }}>{intg.url}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 10 }}>Assign to agent:</div>
+            <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, overflow: "hidden" }}>
+              {["Invoice Reviewer", "Contract Analyst", "AP Reconciliation Agent"].map((agent, i) => (
+                <div key={agent} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < 2 ? "1px solid #f3f4f6" : "none", background: i === 0 ? "#f0fdfa" : "#fff" }}>
+                  <div style={{ fontSize: 13, fontWeight: i === 0 ? 600 : 400, color: i === 0 ? "#111827" : "#6b7280" }}>{agent}</div>
+                  {i === 0 ? (
+                    <button onClick={handleAssign} style={{ fontSize: 12, padding: "5px 12px", background: "#0d9488", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>Assign</button>
+                  ) : (
+                    <span style={{ fontSize: 11, color: "#d1d5db" }}>Select</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Stage 2: Execute */}
+      {stage === 2 && selectedIntegration && (() => {
+        const intg = integrations.find(i => i.id === selectedIntegration)!;
+        return (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 4 }}>Invoice Reviewer now has access to:</div>
+            <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", marginBottom: 16 }}>
+              <div style={{ fontSize: 12, color: "#0d9488", fontFamily: "monospace" }}>✓ {intg.label}</div>
+              <div style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace", marginTop: 2 }}>{intg.url}</div>
+            </div>
+            <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16 }}>The agent will query this system during task execution. Ready to run?</div>
+            <button onClick={handleExecute} disabled={executing} style={{ width: "100%", padding: "12px 0", background: executing ? "#99f6e4" : "#0d9488", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: executing ? "default" : "pointer" }}>
+              {executing ? "Agent executing..." : "Run Invoice Reviewer"}
+            </button>
+            {executing && (
+              <div style={{ marginTop: 14, fontFamily: "monospace", fontSize: 11, display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ color: "#9ca3af" }}>14:32:01 — GET {intg.url}/INV-2041...</div>
+                <div style={{ color: "#0d9488" }}>→ 200 OK · $12,450 · ACME Corp</div>
+                <div style={{ color: "#9ca3af" }}>Scoring confidence...</div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Stage 3: Done */}
+      {stage === 3 && (
+        <div>
+          <div style={{ textAlign: "center", padding: "8px 0 16px" }}>
+            <div style={{ width: 48, height: 48, background: "#f0fdfa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", fontSize: 22 }}>✓</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 4 }}>Execution complete</div>
+            <div style={{ fontSize: 13, color: "#6b7280" }}>Agent used live data from your backend</div>
+          </div>
+          <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "12px 14px", fontFamily: "monospace", fontSize: 11, marginBottom: 14 }}>
+            <div style={{ color: "#9ca3af", marginBottom: 3 }}>14:32:01 — Fetched INV-2041 from API</div>
+            <div style={{ color: "#0d9488", marginBottom: 3 }}>→ $12,450 · ACME Corp · Confidence: 94%</div>
+            <div style={{ color: "#9ca3af", marginBottom: 3 }}>14:32:02 — Auto-approved (above threshold)</div>
+            <div style={{ color: "#374151" }}>14:32:02 — Audit log entry written ✓</div>
+          </div>
+          <button onClick={reset} style={{ fontSize: 12, color: "#0d9488", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Try again</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const VISUALS: Record<string, JSX.Element> = {
   dashboard: <DashboardVisual />,
   builder: <BuilderVisual />,
+  integration: <IntegrationVisual />,
   execution: <ExecutionVisual />,
   review: <ReviewVisual />,
   audit: <AuditVisual />,
