@@ -172,10 +172,12 @@ export default function Landing() {
           .lp-stats { grid-template-columns: repeat(2, 1fr); }
           .lp-cards-3 { grid-template-columns: 1fr; }
           .lp-analogy { grid-template-columns: 1fr; gap: 24px; }
-          .lp-row-3col { grid-template-columns: 28px 1fr; }
-          .lp-row-3col .lp-col-mid { display: none; }
-          .lp-row-4col { grid-template-columns: 28px 1fr; }
-          .lp-row-4col .lp-col-agents { display: none; }
+          .lp-row-3col { display: flex; flex-direction: column; gap: 4px; padding-left: 0; }
+          .lp-row-3col > * { display: block !important; width: 100% !important; max-width: 100% !important; word-break: normal !important; overflow-wrap: break-word !important; white-space: normal !important; }
+          .lp-row-3col .lp-col-mid { display: block !important; }
+          .lp-row-4col { display: flex; flex-direction: column; gap: 4px; padding-left: 0; }
+          .lp-row-4col > * { display: block !important; width: 100% !important; max-width: 100% !important; word-break: normal !important; overflow-wrap: break-word !important; white-space: normal !important; }
+          .lp-row-4col .lp-col-agents { display: block !important; }
           .lp-row-2col { grid-template-columns: 1fr; gap: 16px; }
           .lp-integration-flow { grid-template-columns: 1fr; }
           .lp-arrow { display: none; }
