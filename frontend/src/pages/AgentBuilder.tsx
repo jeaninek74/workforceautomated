@@ -83,15 +83,15 @@ export default function AgentBuilder() {
     setError("");
     try {
       const res = await agentsApi.generateFromJD(jobDescription);
-      const data = res.data;
+      const data = res.data?.agent || res.data;
       setForm((prev) => ({
         ...prev,
         name: data.name || prev.name,
         role: data.role || prev.role,
         description: data.description || prev.description,
-        capabilities: data.capabilities || prev.capabilities,
+        capabilities: Array.isArray(data.capabilities) ? data.capabilities : prev.capabilities,
         systemPrompt: data.systemPrompt || prev.systemPrompt,
-        confidenceThreshold: data.confidenceThreshold || prev.confidenceThreshold,
+        confidenceThreshold: data.confidenceThreshold ? Math.round(data.confidenceThreshold * 100) : prev.confidenceThreshold,
       }));
       setMode("manual");
     } catch (err: any) {
