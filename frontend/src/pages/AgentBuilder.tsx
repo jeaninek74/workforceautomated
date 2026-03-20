@@ -276,6 +276,9 @@ export default function AgentBuilder() {
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
                   placeholder="e.g., Customer Support Agent"
                 />
+                {form.name && (
+                  <p className="text-xs text-gray-600 mt-1">AI-generated — feel free to rename</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Role / Job Title *</label>

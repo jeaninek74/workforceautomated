@@ -163,11 +163,15 @@ Operating rules:
 - Log every action with a timestamp and confidence score
 - Never take actions outside your defined permission set`;
 
-  const safeName = roleName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_").slice(0, 40);
+  // Generate a proper human-readable agent name: FirstName — Role Title
+  const agentFirstNames = ["Aria","Nova","Cypher","Atlas","Sage","Echo","Orion","Lyra","Zara","Axel","Mira","Rex","Vera","Juno","Titan","Iris","Coda","Lux","Dex","Nyx"];
+  const nameIndex = roleName.split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % agentFirstNames.length;
+  const firstName = agentFirstNames[nameIndex];
+  const agentDisplayName = `${firstName} \u2014 ${roleName}`;
 
   return {
-    name: safeName + "_Agent",
-    description: `AI agent for ${bestMatch.domain} — ${roleName}. Auto-configured from process document.`,
+    name: agentDisplayName,
+    description: `${firstName} is your AI ${roleName} for ${bestMatch.domain}. Auto-configured from your process document and ready to execute tasks immediately.`,
     role: roleName,
     capabilities: allCapabilities,
     permissions: bestMatch.permissions,
