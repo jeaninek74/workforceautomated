@@ -29,6 +29,7 @@ import Reports from "@/pages/Reports";
 import AccountRecovery from "@/pages/AccountRecovery";
 import SecurityAudit from "@/pages/SecurityAudit";
 import Demo from "@/pages/Demo";
+import LiveDemo from "@/pages/LiveDemo";
 import CustomBuild from "@/pages/CustomBuild";
 import VideoDemo from "@/pages/VideoDemo";
 import WhyItWorks from "@/pages/WhyItWorks";
@@ -88,7 +89,8 @@ function AppRoutes() {
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/security/audit" element={<ProtectedRoute><SecurityAudit /></ProtectedRoute>} />
       <Route path="/recover" element={<AccountRecovery />} />
-      <Route path="/demo" element={<Demo />} />
+      <Route path="/demo" element={<LiveDemo />} />
+      <Route path="/product-tour" element={<Demo />} />
       <Route path="/build" element={<CustomBuild />} />
       <Route path="/custom-build" element={<CustomBuild />} />
       <Route path="/video" element={<VideoDemo />} />
