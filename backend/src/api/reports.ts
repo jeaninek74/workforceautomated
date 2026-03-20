@@ -238,6 +238,13 @@ router.get("/summary.json", async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/reports/executions.pdf — alias for summary.pdf
+router.get("/executions.pdf", async (req: AuthRequest, res) => {
+  // Redirect to summary.pdf
+  const qs = req.url.split('?')[1] ? `?${req.url.split('?')[1]}` : '';
+  res.redirect(`/api/reports/summary.pdf${qs}`);
+});
+
 // GET /api/reports/summary.pdf — formatted PDF report
 router.get("/summary.pdf", async (req: AuthRequest, res) => {
   try {

@@ -79,7 +79,7 @@ Always produce professional, structured outputs with clear recommendations and m
       if (!process.env.ANTHROPIC_API_KEY) {
         // Fallback to OpenAI if Claude key not set
         const fallback = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: "gpt-4o",
           messages: [
             { role: "system", content: systemContent },
             ...history,
@@ -111,7 +111,7 @@ Always produce professional, structured outputs with clear recommendations and m
     } else {
       // ── OpenAI ─────────────────────────────────────────────────────────────
       const openaiResp = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: systemContent },
           ...history,
