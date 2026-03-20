@@ -238,20 +238,15 @@ export default function Landing() {
         <p style={{ fontSize: 16, color: GRAY_TEXT, margin: "0 0 48px", maxWidth: 580, lineHeight: 1.6 }}>
           Built for real business processes, real compliance requirements, and real human oversight.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0" }}>
-          {WHY_IT_WORKS.map((f, i) => (
-            <div key={f.title} style={{
-              padding: "28px 32px 28px 0",
-              borderTop: DIVIDER,
-              borderRight: (i % 3 !== 2) ? DIVIDER : "none",
-              paddingRight: (i % 3 !== 2) ? 32 : 0,
-              paddingLeft: (i % 3 !== 0) ? 32 : 0,
-            }}>
-              <div style={{ fontSize: 22, marginBottom: 10 }}>{f.emoji}</div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 6px" }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+        <div>
+          {WHY_IT_WORKS.map((f) => (
+            <div key={f.title} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr", gap: 20, padding: "20px 0", borderTop: DIVIDER, alignItems: "start" }}>
+              <span style={{ fontSize: 20, paddingTop: 2 }}>{f.emoji}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: DARK, paddingTop: 2 }}>{f.title}</span>
+              <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65 }}>{f.desc}</span>
             </div>
           ))}
+          <div style={{ borderTop: DIVIDER }} />
         </div>
       </section>
 
@@ -283,20 +278,21 @@ export default function Landing() {
             <div style={{ borderTop: DIVIDER }} />
           </div>
 
-          {/* Governance pillars — inline row, no cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, marginTop: 40, paddingTop: 32, borderTop: DIVIDER }}>
+          {/* Governance pillars — flat rows */}
+          <div style={{ marginTop: 40 }}>
             {[
               { emoji: "🎯", title: "Confidence Score", desc: "Every action gets a confidence score. If the AI is not sure enough, it stops and asks you." },
               { emoji: "🚨", title: "Auto-Escalation", desc: "High-risk or low-confidence tasks are automatically sent to the right human for review." },
               { emoji: "📋", title: "Permanent Audit Log", desc: "Every single action is recorded forever. You can see exactly what the AI did and when." },
               { emoji: "🔒", title: "Permission Boundaries", desc: "You define exactly what the agent can and cannot do. It cannot go outside those limits." },
-            ].map((g, i) => (
-              <div key={g.title} style={{ padding: "0 28px 0 0", borderRight: i < 3 ? DIVIDER : "none", paddingLeft: i > 0 ? 28 : 0 }}>
-                <div style={{ fontSize: 20, marginBottom: 8 }}>{g.emoji}</div>
-                <h4 style={{ fontSize: 13, fontWeight: 700, color: TEAL, margin: "0 0 5px" }}>{g.title}</h4>
-                <p style={{ fontSize: 13, color: GRAY_TEXT, margin: 0, lineHeight: 1.6 }}>{g.desc}</p>
+            ].map((g) => (
+              <div key={g.title} style={{ display: "grid", gridTemplateColumns: "32px 200px 1fr", gap: 20, padding: "16px 0", borderTop: DIVIDER, alignItems: "start" }}>
+                <span style={{ fontSize: 18, paddingTop: 2 }}>{g.emoji}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: TEAL, paddingTop: 2 }}>{g.title}</span>
+                <span style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{g.desc}</span>
               </div>
             ))}
+            <div style={{ borderTop: DIVIDER }} />
           </div>
         </div>
       </section>
@@ -383,16 +379,17 @@ export default function Landing() {
                 </div>
               </div>
             ))}
-            <div style={{ borderTop: DIVIDER, paddingTop: 32, marginTop: 8 }}>
-              <p style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 24px" }}>6 Ways We Protect You</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0 }}>
-                {SECURITY_ICONS.map((ic, i) => (
-                  <div key={ic.title} style={{ padding: "20px 28px 20px 0", borderTop: i >= 3 ? DIVIDER : "none", borderRight: (i % 3 !== 2) ? DIVIDER : "none", paddingRight: (i % 3 !== 2) ? 28 : 0, paddingLeft: (i % 3 !== 0) ? 28 : 0 }}>
-                    <span style={{ fontSize: 20, display: "block", marginBottom: 8 }}>{ic.emoji}</span>
-                    <h4 style={{ fontSize: 13, fontWeight: 700, color: DARK, margin: "0 0 5px" }}>{ic.title}</h4>
-                    <p style={{ fontSize: 13, color: GRAY_TEXT, margin: 0, lineHeight: 1.6 }}>{ic.desc}</p>
+              <div style={{ borderTop: DIVIDER, paddingTop: 32, marginTop: 8 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: DARK, margin: "0 0 8px" }}>6 Ways We Protect You</p>
+              <div>
+                {SECURITY_ICONS.map((ic) => (
+                  <div key={ic.title} style={{ display: "grid", gridTemplateColumns: "32px 220px 1fr", gap: 20, padding: "14px 0", borderTop: DIVIDER, alignItems: "start" }}>
+                    <span style={{ fontSize: 18, paddingTop: 2 }}>{ic.emoji}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: DARK, paddingTop: 2 }}>{ic.title}</span>
+                    <span style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{ic.desc}</span>
                   </div>
                 ))}
+                <div style={{ borderTop: DIVIDER }} />
               </div>
             </div>
           </div>
