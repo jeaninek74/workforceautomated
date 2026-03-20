@@ -1,12 +1,18 @@
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import * as fs from "fs";
 import * as path from "path";
 import csv from "csv-parser";
 import * as XLSX from "xlsx";
-import { Readable } from "stream";
+
+// ─── AI Client ────────────────────────────────────────────────────────────────
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 // ─── Agent Config Types ───────────────────────────────────────────────────────
@@ -23,7 +29,7 @@ interface AgentConfig {
   escalationThreshold: number;
 }
 
-// ─── Domain Patterns (used for agent config generation only) ─────────────────
+// ─── Domain Patterns ──────────────────────────────────────────────────────────
 
 const DOMAIN_PATTERNS: Array<{
   keywords: string[];
@@ -124,7 +130,7 @@ function detectConnectorType(text: string): "readonly" | "overlay" | "write_back
   return "readonly";
 }
 
-// ─── Agent Config Generation (uses OpenAI if available, falls back to patterns) ─
+// ─── Agent Config Generation ──────────────────────────────────────────────────
 
 export async function generateAgentFromJobDescription(jobDescription: string): Promise<AgentConfig> {
   const lower = jobDescription.toLowerCase();
@@ -151,7 +157,13 @@ export async function generateAgentFromJobDescription(jobDescription: string): P
     ? detectConnectorType(jobDescription)
     : bestMatch.connectorType;
 
-  const systemPrompt = `You are ${roleName}, an AI agent specializing in ${bestMatch.domain} operations.
+  // Generate a proper human-readable agent name: FirstName — Role Title
+  const agentFirstNames = ["Aria","Nova","Cypher","Atlas","Sage","Echo","Orion","Lyra","Zara","Axel","Mira","Rex","Vera","Juno","Titan","Iris","Coda","Lux","Dex","Nyx"];
+  const nameIndex = roleName.split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % agentFirstNames.length;
+  const firstName = agentFirstNames[nameIndex];
+  const agentDisplayName = `${firstName} \u2014 ${roleName}`;
+
+  const systemPrompt = `You are ${agentDisplayName}, an AI agent specializing in ${bestMatch.domain} operations.
 
 Your responsibilities are derived from the following process document:
 ${jobDescription.slice(0, 800)}${jobDescription.length > 800 ? "..." : ""}
@@ -162,12 +174,6 @@ Operating rules:
 - Escalate if confidence falls below ${(bestMatch.confidenceThreshold * 100).toFixed(0)}%
 - Log every action with a timestamp and confidence score
 - Never take actions outside your defined permission set`;
-
-  // Generate a proper human-readable agent name: FirstName — Role Title
-  const agentFirstNames = ["Aria","Nova","Cypher","Atlas","Sage","Echo","Orion","Lyra","Zara","Axel","Mira","Rex","Vera","Juno","Titan","Iris","Coda","Lux","Dex","Nyx"];
-  const nameIndex = roleName.split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % agentFirstNames.length;
-  const firstName = agentFirstNames[nameIndex];
-  const agentDisplayName = `${firstName} \u2014 ${roleName}`;
 
   return {
     name: agentDisplayName,
@@ -187,12 +193,10 @@ Operating rules:
 export async function extractTextFromFile(filePath: string, mimeType: string): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
 
-  // Plain text / CSV as text
   if (mimeType === "text/plain" || ext === ".txt" || ext === ".md") {
     return fs.readFileSync(filePath, "utf-8");
   }
 
-  // CSV — parse into readable table text
   if (mimeType === "text/csv" || ext === ".csv") {
     return new Promise((resolve, reject) => {
       const rows: Record<string, string>[] = [];
@@ -214,12 +218,10 @@ export async function extractTextFromFile(filePath: string, mimeType: string): P
     });
   }
 
-  // Excel — convert to text table
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
     mimeType === "application/vnd.ms-excel" ||
-    ext === ".xlsx" ||
-    ext === ".xls"
+    ext === ".xlsx" || ext === ".xls"
   ) {
     const workbook = XLSX.readFile(filePath);
     const lines: string[] = [];
@@ -232,7 +234,6 @@ export async function extractTextFromFile(filePath: string, mimeType: string): P
     return lines.join("\n");
   }
 
-  // PDF — extract text using pdf-parse if available, otherwise read buffer
   if (mimeType === "application/pdf" || ext === ".pdf") {
     try {
       const { default: pdfParse } = await import("pdf-parse/lib/pdf-parse.js" as any);
@@ -244,7 +245,6 @@ export async function extractTextFromFile(filePath: string, mimeType: string): P
     }
   }
 
-  // Word documents
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     ext === ".docx"
@@ -261,13 +261,14 @@ export async function extractTextFromFile(filePath: string, mimeType: string): P
   return "(Unsupported file type — please paste the content as text)";
 }
 
-// ─── Real OpenAI Agent Task Execution ────────────────────────────────────────
+// ─── GPT-4o Agent Task Execution ──────────────────────────────────────────────
 
 export interface AgentTaskResult {
   output: string;
   confidenceScore: number;
   riskLevel: "low" | "medium" | "high" | "critical";
   tokenCount: number;
+  model?: string;
 }
 
 export async function runAgentTask(
@@ -283,52 +284,120 @@ export async function runAgentTask(
     userMessage = `The following content was uploaded for you to work with:\n\n${fileContext.slice(0, 12000)}${fileContext.length > 12000 ? "\n\n[Content truncated — showing first 12,000 characters]" : ""}\n\n---\n\nTask instruction: ${input}`;
   }
 
-  // Append output format instruction if specified
   const outputInstruction = outputFormat
     ? `\n\nIMPORTANT: Format your response as: ${outputFormat}`
     : "";
 
-  const fullSystemPrompt = systemPrompt + `\n\nYou are a deterministic enterprise AI agent. Complete the task fully, precisely, and comprehensively based on the information provided. Provide specific, actionable outputs — not generic advice.\n\nWhen you have completed the task fully with all required details addressed, end your response with exactly this line:\nCONFIDENCE: 1.00\n\nOnly use a lower confidence score if the input data is genuinely ambiguous, critically incomplete, or contradictory in a way that prevents accurate completion. For all well-defined tasks with sufficient input, always report CONFIDENCE: 1.00.` + outputInstruction;
+  const fullSystemPrompt = systemPrompt +
+    `\n\nYou are a deterministic enterprise AI agent. Complete the task fully, precisely, and comprehensively based on the information provided. Provide specific, actionable outputs — not generic advice.\n\nWhen you have completed the task fully with all required details addressed, end your response with exactly this line:\nCONFIDENCE: 1.00\n\nOnly use a lower confidence score if the input data is genuinely ambiguous, critically incomplete, or contradictory in a way that prevents accurate completion. For all well-defined tasks with sufficient input, always report CONFIDENCE: 1.00.` +
+    outputInstruction;
 
   let output = "";
   let confidenceScore = 0.75;
   let tokenCount = 0;
+  let modelUsed = "claude-3-5-sonnet-20241022";
 
-  if (!process.env.OPENAI_API_KEY) {
-    // Fallback if no API key — honest stub
-    output = `[Agent Response — OpenAI API key not configured]\n\nThe agent received your task but cannot process it without an OpenAI API key. Please add OPENAI_API_KEY to the environment variables.\n\nTask received: "${input.slice(0, 200)}"`;
+  const hasClaudeKey = !!process.env.ANTHROPIC_API_KEY &&
+    !process.env.ANTHROPIC_API_KEY.startsWith("sk-ant-placeholder") &&
+    process.env.ANTHROPIC_API_KEY.length > 20;
+
+  const hasOpenAIKey = !!process.env.OPENAI_API_KEY &&
+    !process.env.OPENAI_API_KEY.startsWith("sk-place") &&
+    process.env.OPENAI_API_KEY.length > 20;
+
+  if (!hasClaudeKey && !hasOpenAIKey) {
+    output = `[Agent Response — No AI API key configured]\n\nThe agent received your task but cannot process it without a valid API key. Please update ANTHROPIC_API_KEY or OPENAI_API_KEY in the Railway environment variables.\n\nTask received: "${input.slice(0, 200)}"`;
     confidenceScore = 0.0;
-  } else {
+  } else if (hasClaudeKey) {
+    // Primary: Claude 3.5 Sonnet
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: fullSystemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 1500,
-        temperature: 0.3,
+      const response = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 2000,
+        system: fullSystemPrompt,
+        messages: [{ role: "user", content: userMessage }],
       });
 
-      const rawOutput = response.choices[0]?.message?.content || "(No response from model)";
-      tokenCount = response.usage?.total_tokens || 0;
+      const rawOutput = response.content[0]?.type === "text" ? response.content[0].text : "(No response from model)";
+      tokenCount = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
+      modelUsed = "claude-3-5-sonnet-20241022";
 
-      // Extract confidence score from the response
       const confMatch = rawOutput.match(/CONFIDENCE:\s*(0\.\d+|1\.0+|1)/i);
       if (confMatch) {
         confidenceScore = Math.min(1.0, Math.max(0.01, parseFloat(confMatch[1])));
-        // Remove the confidence line from the visible output
         output = rawOutput.replace(/\nCONFIDENCE:\s*(0\.\d+|1\.0+|1)\s*$/i, "").trim();
       } else {
         output = rawOutput;
-        // Estimate confidence from output tone
         const lowerOut = rawOutput.toLowerCase();
         if (lowerOut.includes("cannot") || lowerOut.includes("unclear") || lowerOut.includes("insufficient")) {
           confidenceScore = 0.45;
         } else if (lowerOut.includes("uncertain") || lowerOut.includes("may") || lowerOut.includes("possibly")) {
           confidenceScore = 0.65;
         } else {
-          confidenceScore = 0.82;
+          confidenceScore = 0.88;
+        }
+      }
+    } catch (claudeErr: any) {
+      // Fallback to GPT-4o if Claude fails
+      if (hasOpenAIKey) {
+        try {
+          modelUsed = "gpt-4o";
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: fullSystemPrompt },
+              { role: "user", content: userMessage },
+            ],
+            max_tokens: 2000,
+            temperature: 0.3,
+          });
+          const rawOutput = response.choices[0]?.message?.content || "(No response from model)";
+          tokenCount = response.usage?.total_tokens || 0;
+          const confMatch = rawOutput.match(/CONFIDENCE:\s*(0\.\d+|1\.0+|1)/i);
+          if (confMatch) {
+            confidenceScore = Math.min(1.0, Math.max(0.01, parseFloat(confMatch[1])));
+            output = rawOutput.replace(/\nCONFIDENCE:\s*(0\.\d+|1\.0+|1)\s*$/i, "").trim();
+          } else {
+            output = rawOutput;
+            confidenceScore = 0.88;
+          }
+        } catch (openaiErr: any) {
+          output = `[Execution Error] Both AI models failed. Claude: ${claudeErr.message}. GPT-4o: ${openaiErr.message}`;
+          confidenceScore = 0.0;
+        }
+      } else {
+        output = `[Execution Error] Claude failed: ${claudeErr.message}`;
+        confidenceScore = 0.0;
+      }
+    }
+  } else {
+    // GPT-4o only
+    try {
+      modelUsed = "gpt-4o";
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: fullSystemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 2000,
+        temperature: 0.3,
+      });
+      const rawOutput = response.choices[0]?.message?.content || "(No response from model)";
+      tokenCount = response.usage?.total_tokens || 0;
+      const confMatch = rawOutput.match(/CONFIDENCE:\s*(0\.\d+|1\.0+|1)/i);
+      if (confMatch) {
+        confidenceScore = Math.min(1.0, Math.max(0.01, parseFloat(confMatch[1])));
+        output = rawOutput.replace(/\nCONFIDENCE:\s*(0\.\d+|1\.0+|1)\s*$/i, "").trim();
+      } else {
+        output = rawOutput;
+        const lowerOut = rawOutput.toLowerCase();
+        if (lowerOut.includes("cannot") || lowerOut.includes("unclear") || lowerOut.includes("insufficient")) {
+          confidenceScore = 0.45;
+        } else if (lowerOut.includes("uncertain") || lowerOut.includes("may") || lowerOut.includes("possibly")) {
+          confidenceScore = 0.65;
+        } else {
+          confidenceScore = 0.88;
         }
       }
     } catch (err: any) {
@@ -344,5 +413,5 @@ export async function runAgentTask(
   else if (confidenceScore >= 0.45) riskLevel = "high";
   else riskLevel = "critical";
 
-  return { output, confidenceScore, riskLevel, tokenCount };
+  return { output, confidenceScore, riskLevel, tokenCount, model: modelUsed };
 }
