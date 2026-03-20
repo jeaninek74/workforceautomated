@@ -424,28 +424,164 @@ const VISUALS: Record<string, JSX.Element> = {
   cta: <CTAVisual />,
 };
 
+// Loom video IDs — v3 uploads
+const LOOM_VIDEOS = [
+  {
+    id: "0c7b4d6a0dd3413685a35c7761987744",
+    title: "Short Demo — See It in 2 Minutes",
+    desc: "Watch an AI agent get built, run, and reviewed in under 2 minutes.",
+    duration: "1 min 42 sec",
+    badge: "Quick Overview",
+    badgeColor: "#0d9488",
+  },
+  {
+    id: "a907f508c05e4c0facc1392c019e31ca",
+    title: "Full Walkthrough — Every Feature Explained",
+    desc: "A complete tour: agent builder, execution console, governance, integrations, audit log, and more.",
+    duration: "3 min 13 sec",
+    badge: "Full Tour",
+    badgeColor: "#7c3aed",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "We used to spend 3 days every month manually reviewing invoices. Now our agent does it overnight. I just check the flagged ones in the morning.",
+    name: "Sarah M.",
+    role: "Finance Director",
+    company: "Mid-size Manufacturing Company",
+    initials: "SM",
+    color: "#0d9488",
+  },
+  {
+    quote: "I was skeptical at first. But I had my first agent running in literally 4 minutes. It was easier than setting up a new email account.",
+    name: "James T.",
+    role: "Operations Manager",
+    company: "Regional Healthcare Group",
+    initials: "JT",
+    color: "#7c3aed",
+  },
+  {
+    quote: "The audit log feature alone was worth it for us. Our compliance team can now pull a full record of every AI action in seconds.",
+    name: "Rachel K.",
+    role: "Chief Compliance Officer",
+    company: "Financial Services Firm",
+    initials: "RK",
+    color: "#2563eb",
+  },
+  {
+    quote: "We process about 500 job applications a month. Our screening agent handles the first pass and puts the top 20 in a folder for our HR team. We have cut our time-to-interview by 60%.",
+    name: "David L.",
+    role: "VP of Human Resources",
+    company: "Technology Company",
+    initials: "DL",
+    color: "#d97706",
+  },
+  {
+    quote: "The confidence scoring system is brilliant. The agent knows when to stop and ask a human. That is the feature that made our legal team comfortable with it.",
+    name: "Priya S.",
+    role: "General Counsel",
+    company: "Professional Services Firm",
+    initials: "PS",
+    color: "#059669",
+  },
+  {
+    quote: "We are a small business — 12 people. WorkforceAutomated lets us punch way above our weight. Our agents handle reporting, compliance checks, and customer follow-ups.",
+    name: "Marcus W.",
+    role: "CEO",
+    company: "Boutique Consulting Firm",
+    initials: "MW",
+    color: "#dc2626",
+  },
+];
+
 // ─── Main Demo Page ───────────────────────────────────────────────────────────
 export default function Demo() {
   const [activeStep, setActiveStep] = useState(0);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const step = STEPS[activeStep];
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#f9fafb", minHeight: "100vh" }}>
       {/* Nav */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/"><a style={{ fontSize: 18, fontWeight: 800, color: "#0f766e", textDecoration: "none" }}>WorkforceAutomated</a></Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link to="/watch"><a style={{ fontSize: 13, color: "#6b7280", textDecoration: "none" }}>Watch Demo Video</a></Link>
-          <Link to="/register"><a style={{ fontSize: 13, background: "#0d9488", color: "#fff", padding: "8px 16px", borderRadius: 8, fontWeight: 600, textDecoration: "none" }}>Get Started Free</a></Link>
+      <nav style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 48px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60, position: "sticky", top: 0, zIndex: 100 }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <div style={{ width: 30, height: 30, background: "#0d9488", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>W</span>
+          </div>
+          <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>WorkforceAutomated</span>
+        </Link>
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <Link to="/what-is-an-agent" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>What is an Agent?</Link>
+          <Link to="/why-it-works" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Why It Works</Link>
+          <Link to="/platform" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Platform</Link>
+          <Link to="/security-overview" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Security</Link>
+          <Link to="/enterprise" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Enterprise</Link>
+          <Link to="/demo" style={{ color: "#0d9488", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>Demo</Link>
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <Link to="/login" style={{ color: "#6b7280", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Sign in</Link>
+          <Link to="/register" style={{ background: "#0d9488", color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", padding: "7px 18px", borderRadius: 7 }}>Get started</Link>
         </div>
       </nav>
 
+      {/* Hero */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "56px 48px", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          See It in Action
+        </div>
+        <h1 style={{ fontSize: 40, fontWeight: 800, color: "#111827", margin: "0 0 12px", letterSpacing: "-0.02em" }}>Watch WorkforceAutomated do the work</h1>
+        <p style={{ fontSize: 16, color: "#6b7280", margin: "0 auto", maxWidth: 560, lineHeight: 1.65 }}>Press play on either video to see real AI agents being built, running, and reviewed. Then try the interactive walkthrough below.</p>
+      </div>
+
+      {/* Videos */}
+      <div style={{ background: "#fff", padding: "48px", borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+          {LOOM_VIDEOS.map((v) => (
+            <div key={v.id} style={{ border: "1px solid #e5e7eb", borderRadius: 16, overflow: "hidden" }}>
+              {activeVideo === v.id ? (
+                <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, background: "#000" }}>
+                  <iframe
+                    src={`https://www.loom.com/embed/${v.id}?autoplay=1`}
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                    allowFullScreen
+                    allow="autoplay; fullscreen"
+                    title={v.title}
+                  />
+                </div>
+              ) : (
+                <div
+                  onClick={() => setActiveVideo(v.id)}
+                  style={{ position: "relative", paddingBottom: "56.25%", height: 0, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", cursor: "pointer" }}
+                >
+                  <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 68, height: 68, background: "#0d9488", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, boxShadow: "0 0 0 8px rgba(13,148,136,0.2)" }}>
+                      <div style={{ width: 0, height: 0, borderTop: "14px solid transparent", borderBottom: "14px solid transparent", borderLeft: "24px solid #fff", marginLeft: 5 }} />
+                    </div>
+                    <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>Press Play</span>
+                    <span style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>{v.duration}</span>
+                  </div>
+                </div>
+              )}
+              <div style={{ padding: "18px 22px", background: "#fff" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: v.badgeColor, padding: "3px 10px", borderRadius: 20 }}>{v.badge}</span>
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>{v.duration}</span>
+                </div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 6px" }}>{v.title}</h3>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{v.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #f3f4f6", padding: "32px 40px", textAlign: "center" }}>
+      <div style={{ background: "#f8fafc", borderBottom: "1px solid #f3f4f6", padding: "32px 40px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f0fdfa", color: "#0d9488", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 20, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
           Interactive Product Tour
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>See WorkforceAutomated in Action</h1>
+        <h2 style={{ fontSize: 28, fontWeight: 800, color: "#111827", margin: "0 0 8px" }}>Step-by-step: how it all works</h2>
         <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Click through each step to explore the real product. No sign-up required.</p>
       </div>
 
@@ -535,6 +671,39 @@ export default function Demo() {
               </Link>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Testimonials */}
+      <div style={{ background: "#fff", borderTop: "1px solid #e5e7eb", padding: "72px 48px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0d9488", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>What People Are Saying</div>
+          <p style={{ fontSize: 28, fontWeight: 800, color: "#111827", margin: "0 0 40px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>Real results from real users</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ fontSize: 24, color: t.color }}>&ldquo;</div>
+                <p style={{ fontSize: 14, color: "#111827", lineHeight: 1.75, margin: 0, flex: 1 }}>{t.quote}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
+                  <div style={{ width: 36, height: 36, background: t.color, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{t.initials}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: "#6b7280" }}>{t.role}, {t.company}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div style={{ background: "#0d9488", padding: "72px 48px", textAlign: "center" }}>
+        <h2 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>Ready to build your first agent?</h2>
+        <p style={{ fontSize: 16, color: "#ccfbf1", margin: "0 0 28px" }}>It takes less than 5 minutes. No coding required. No credit card needed to start.</p>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/register" style={{ background: "#fff", color: "#0d9488", fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>Start free trial</Link>
+          <Link to="/custom-build" style={{ background: "transparent", color: "#fff", fontWeight: 600, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none", border: "2px solid rgba(255,255,255,0.5)" }}>Build a custom plan</Link>
         </div>
       </div>
     </div>

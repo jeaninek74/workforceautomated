@@ -38,6 +38,8 @@ import IndustriesPage from "@/pages/IndustriesPage";
 import SecurityOverview from "@/pages/SecurityOverview";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
+import WhatIsAnAgent from "@/pages/WhatIsAnAgent";
+import Enterprise from "@/pages/Enterprise";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -89,7 +91,8 @@ function AppRoutes() {
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/security/audit" element={<ProtectedRoute><SecurityAudit /></ProtectedRoute>} />
       <Route path="/recover" element={<AccountRecovery />} />
-      <Route path="/demo" element={<LiveDemo />} />
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/live-demo" element={<LiveDemo />} />
       <Route path="/product-tour" element={<Demo />} />
       <Route path="/build" element={<CustomBuild />} />
       <Route path="/custom-build" element={<CustomBuild />} />
@@ -99,6 +102,8 @@ function AppRoutes() {
       <Route path="/platform" element={<PlatformPage />} />
       <Route path="/industries" element={<IndustriesPage />} />
       <Route path="/security-overview" element={<SecurityOverview />} />
+      <Route path="/what-is-an-agent" element={<WhatIsAnAgent />} />
+      <Route path="/enterprise" element={<Enterprise />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<Navigate to="/" replace />} />

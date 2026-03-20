@@ -144,6 +144,117 @@ export default function SecurityOverview() {
         </p>
       </section>
 
+      {/* Visual Demo — Security Made Simple */}
+      <section style={{ background: "#f8fafc", borderTop: DIVIDER, borderBottom: DIVIDER, padding: "72px 48px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 20, padding: "5px 13px", marginBottom: 22 }}>
+            <span style={{ fontSize: 12, color: "#d97706", fontWeight: 600 }}>Security Made Simple</span>
+          </div>
+          <h2 style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 8px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
+            How does security actually work here?
+          </h2>
+          <p style={{ fontSize: 16, color: GRAY_TEXT, margin: "0 0 48px", maxWidth: 620, lineHeight: 1.6 }}>
+            Imagine your data is a secret diary. Here is exactly how we protect it — explained so simply that a 12-year-old could understand it.
+          </p>
+
+          {/* Step-by-step visual flow */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {[
+              {
+                step: "1",
+                emoji: "✏️",
+                title: "You type something into the app",
+                simple: "Like writing in your diary.",
+                what: "You add an agent, upload a file, or run a task.",
+                color: "#3b82f6",
+                bgColor: "#eff6ff",
+                borderColor: "#bfdbfe",
+              },
+              {
+                step: "2",
+                emoji: "🔐",
+                title: "We scramble it before saving it",
+                simple: "Like writing in a secret code only you can read.",
+                what: "Before your data is saved anywhere, we scramble it using AES-256 encryption — the same code used by banks and governments. Even if someone broke into our database, they would see random gibberish.",
+                color: TEAL,
+                bgColor: TEAL_LIGHT,
+                borderColor: TEAL_BORDER,
+              },
+              {
+                step: "3",
+                emoji: "🚀",
+                title: "It travels safely to our servers",
+                simple: "Like sending a letter in a locked box that only we can open.",
+                what: "When your data travels from your browser to our servers, it goes through a secure tunnel called TLS 1.3. Nobody can intercept it or read it on the way.",
+                color: "#7c3aed",
+                bgColor: "#f5f3ff",
+                borderColor: "#ddd6fe",
+              },
+              {
+                step: "4",
+                emoji: "💾",
+                title: "We save a backup copy every day",
+                simple: "Like saving your homework on two USB drives, just in case.",
+                what: "Every day, we make an encrypted copy of all your data and store it in a completely separate location. If anything ever goes wrong, we can restore everything. Your data is never lost.",
+                color: "#059669",
+                bgColor: "#ecfdf5",
+                borderColor: "#a7f3d0",
+              },
+              {
+                step: "5",
+                emoji: "📋",
+                title: "We write down every single action",
+                simple: "Like a school attendance record that cannot be erased.",
+                what: "Every time an agent does something — reads a file, sends an alert, approves a task — we write it down in a permanent log. Nobody can delete or change these records. This is how we prove what happened if anyone ever asks.",
+                color: "#d97706",
+                bgColor: "#fffbeb",
+                borderColor: "#fde68a",
+              },
+              {
+                step: "6",
+                emoji: "🚪",
+                title: "We check who you are at every door",
+                simple: "Like a school that checks your ID every time you enter a new building.",
+                what: "Every single request to our system has to prove it is really you. We use secure login tokens that expire automatically. Even inside our own systems, nothing is trusted without proof.",
+                color: "#dc2626",
+                bgColor: "#fef2f2",
+                borderColor: "#fecaca",
+              },
+            ].map((s, i) => (
+              <div key={s.step} style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: 0, position: "relative" }}>
+                {/* Connector line */}
+                {i < 5 && (
+                  <div style={{ position: "absolute", left: 29, top: 60, width: 2, height: "calc(100% - 20px)", background: "#e5e7eb", zIndex: 0 }} />
+                )}
+                {/* Step circle */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 20, zIndex: 1 }}>
+                  <div style={{ width: 40, height: 40, background: s.color, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0, border: `3px solid #fff`, boxShadow: `0 0 0 2px ${s.color}` }}>{s.step}</div>
+                </div>
+                {/* Content */}
+                <div style={{ padding: "20px 0 32px 16px" }}>
+                  <div style={{ background: s.bgColor, border: `1px solid ${s.borderColor}`, borderRadius: 12, padding: "20px 24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                      <span style={{ fontSize: 24 }}>{s.emoji}</span>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: DARK, margin: 0 }}>{s.title}</h3>
+                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: s.color, margin: "0 0 8px" }}>{s.simple}</p>
+                    <p style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.7, margin: 0 }}>{s.what}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary box */}
+          <div style={{ background: TEAL, borderRadius: 12, padding: "28px 32px", marginTop: 16 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 0 12px" }}>The short version:</h3>
+            <p style={{ fontSize: 15, color: "#ccfbf1", lineHeight: 1.7, margin: 0 }}>
+              Your data is scrambled before it is saved. It travels in a locked tunnel. We back it up every day. We write down every action. And we check who you are every single time. Even if someone broke into our servers, they would not be able to read your data.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Security Layers */}
       <section style={{ padding: "0 48px 72px", maxWidth: 900, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 32px" }}>Security Layers</h2>

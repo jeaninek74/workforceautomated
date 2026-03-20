@@ -115,10 +115,12 @@ export default function PlatformPage() {
           <span style={{ fontWeight: 700, fontSize: 15, color: DARK }}>WorkforceAutomated</span>
         </Link>
         <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <Link to="/what-is-an-agent" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>What is an Agent?</Link>
           <Link to="/why-it-works" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Why It Works</Link>
           <Link to="/platform" style={{ color: TEAL, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>Platform</Link>
           <Link to="/industries" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Industries</Link>
           <Link to="/security-overview" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Security</Link>
+          <Link to="/enterprise" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Enterprise</Link>
           <Link to="/#pricing" style={{ color: GRAY_TEXT, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Pricing</Link>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -150,8 +152,20 @@ export default function PlatformPage() {
       {/* Category nav */}
       <div style={{ borderTop: DIVIDER, borderBottom: DIVIDER, padding: "0 48px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", gap: 32, overflowX: "auto", padding: "12px 0" }}>
-          {CATEGORIES.map((cat) => (
-            <span key={cat} style={{ fontSize: 13, fontWeight: 600, color: GRAY_TEXT, whiteSpace: "nowrap", cursor: "pointer" }}>{cat}</span>
+          {[
+            { label: "Getting Started", href: "/agents/new" },
+            { label: "Analytics", href: "/kpi" },
+            { label: "Compliance", href: "/audit" },
+            { label: "Human Oversight", href: "/reviews" },
+            { label: "Automation", href: "/schedules" },
+            { label: "Reporting", href: "/reports" },
+            { label: "Connectivity", href: "/integrations" },
+            { label: "Account", href: "/billing" },
+          ].map((cat) => (
+            <Link key={cat.label} to={cat.href} style={{ fontSize: 13, fontWeight: 600, color: TEAL, whiteSpace: "nowrap", textDecoration: "none", padding: "4px 0", borderBottom: `2px solid transparent` }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = TEAL)}
+              onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
+            >{cat.label}</Link>
           ))}
         </div>
       </div>

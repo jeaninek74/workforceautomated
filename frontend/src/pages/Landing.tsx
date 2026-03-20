@@ -4,15 +4,16 @@ import { Link } from "react-router-dom";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
+  { label: "What is an Agent?", href: "/what-is-an-agent" },
   { label: "Why It Works", href: "/why-it-works" },
   { label: "Platform", href: "/platform" },
   { label: "Industries", href: "/industries" },
   { label: "Security", href: "/security-overview" },
+  { label: "Enterprise", href: "/enterprise" },
   { label: "Pricing", href: "#pricing" },
 ];
 const NAV_ACTIONS = [
-  { label: "Live Demo", href: "/demo" },
-  { label: "Watch Demo", href: "/watch" },
+  { label: "Demo", href: "/demo" },
   { label: "Custom Build", href: "/custom-build" },
 ];
 
@@ -167,14 +168,14 @@ export default function Landing() {
         <div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: TEAL_LIGHT, border: `1px solid ${TEAL_BORDER}`, borderRadius: 20, padding: "5px 13px", marginBottom: 22 }}>
             <span style={{ width: 7, height: 7, background: TEAL, borderRadius: "50%", display: "inline-block" }}></span>
-            <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>Enterprise AI Workforce Operating System</span>
+            <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>AI Workers for Your Business — No Coding Needed</span>
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.12, color: DARK, margin: "0 0 18px", letterSpacing: "-0.02em" }}>
-            Your work, done automatically.<br />
-            <span style={{ color: TEAL }}>Safely.</span>
+            Hire AI workers that never<br />
+            <span style={{ color: TEAL }}>sleep, forget, or quit.</span>
           </h1>
           <p style={{ fontSize: 18, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 28px", maxWidth: 460 }}>
-            Build AI agents that do your team's repetitive work for you — reviewing invoices, screening applicants, analytical data review, contract review, marketing campaigns, payroll processing, and more. They work around the clock, ask a human when unsure, and keep a record of everything they do.
+            WorkforceAutomated lets you build AI workers — called agents — that handle your most repetitive tasks. Think invoice reviews, job application screening, contract checks, payroll processing, and more. They run 24 hours a day, 7 days a week. When they are not sure about something, they ask a real person. And they write down everything they do so you always know what happened.
           </p>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <Link to="/register" style={{ background: TEAL, color: "#fff", fontWeight: 700, fontSize: 15, padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>
@@ -323,10 +324,10 @@ export default function Landing() {
       <section id="why-it-works" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Why it works</h2>
         <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 6px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
-          Not a chatbot. An enterprise AI Workforce Operating System.
+          This is not a chatbot. It actually does the work for you.
         </p>
         <p style={{ fontSize: 16, color: GRAY_TEXT, margin: "0 0 48px", maxWidth: 580, lineHeight: 1.6 }}>
-          Built for real business processes, real compliance requirements, and real human oversight.
+          A chatbot just answers questions. WorkforceAutomated agents take real actions — they read your files, write reports, check your data, and flag anything that needs a human to decide. Think of it like hiring a very reliable worker who never takes a day off and never makes a mistake.
         </p>
         <div>
           {WHY_IT_WORKS.map((f) => (
