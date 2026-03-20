@@ -76,6 +76,8 @@ async function migrate() {
     );`);
     // Add execution_mode column if it doesn't exist (for existing deployments)
     await client.query(`ALTER TABLE teams ADD COLUMN IF NOT EXISTS execution_mode VARCHAR(32) DEFAULT 'sequential' NOT NULL;`);
+    // Add branching_rules column if it doesn't exist (for existing deployments)
+    await client.query(`ALTER TABLE teams ADD COLUMN IF NOT EXISTS branching_rules JSONB;`);
 
     // Executions
     await client.query(`CREATE TABLE IF NOT EXISTS executions (
