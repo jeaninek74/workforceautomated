@@ -237,6 +237,88 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* ── What is an Agent? ── */}
+      <section id="what-is-an-agent" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>What is an Agent?</h2>
+        <p style={{ fontSize: 30, fontWeight: 800, color: DARK, margin: "0 0 16px", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
+          Think of it like hiring a really smart employee — who never sleeps.
+        </p>
+        <p style={{ fontSize: 17, color: GRAY_TEXT, lineHeight: 1.7, margin: "0 0 48px", maxWidth: 640 }}>
+          An AI agent is a digital worker you build in minutes. You tell it what job to do — like reviewing invoices, screening job applications, or answering customer questions. Then it does that job, over and over, automatically — without you having to click a single button.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 48 }}>
+          {[
+            {
+              emoji: "🧑‍💼",
+              title: "You describe the job",
+              desc: "Paste a job description or a process document — like you would give to a new hire. The platform reads it and builds the agent automatically.",
+              example: "Example: \"Review all incoming invoices and flag any that are over $10,000 for manager approval.\""
+            },
+            {
+              emoji: "🔌",
+              title: "The agent connects to your tools",
+              desc: "You tell the agent which systems it is allowed to use — like your accounting software, your database, or your email. It only touches what you say it can.",
+              example: "Example: \"You can read from our invoice system, but you cannot send payments.\""
+            },
+            {
+              emoji: "⚡",
+              title: "It does the work — you stay in charge",
+              desc: "The agent works automatically. When it is confident, it acts. When it is not sure, it stops and asks a human. Every action is saved in a permanent log.",
+              example: "Example: Invoice for $8,500 → auto-approved. Invoice for $14,000 → sent to manager for review."
+            },
+          ].map((card) => (
+            <div key={card.title} style={{ border: DIVIDER, borderRadius: 12, padding: 28 }}>
+              <div style={{ fontSize: 32, marginBottom: 14 }}>{card.emoji}</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: DARK, margin: "0 0 10px" }}>{card.title}</h3>
+              <p style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.65, margin: "0 0 14px" }}>{card.desc}</p>
+              <p style={{ fontSize: 12, color: TEAL, fontWeight: 600, background: TEAL_LIGHT, padding: "8px 12px", borderRadius: 7, margin: 0, lineHeight: 1.5 }}>{card.example}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Simple analogy row */}
+        <div style={{ background: "#f8fafc", border: DIVIDER, borderRadius: 12, padding: "28px 32px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>The simple version</div>
+            <p style={{ fontSize: 18, fontWeight: 700, color: DARK, margin: "0 0 12px", lineHeight: 1.4 }}>
+              It is like a really good employee who:
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                "Never forgets to do their job",
+                "Works 24 hours a day, 7 days a week",
+                "Writes down everything they do",
+                "Asks for help when they are not sure",
+                "Only touches what you give them permission to touch",
+              ].map((point) => (
+                <div key={point} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ color: TEAL, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.5 }}>{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>But unlike a human employee:</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                "No salary, no benefits, no sick days",
+                "Can handle hundreds of tasks at the same time",
+                "Gets set up in under 5 minutes",
+                "Never makes a typo or forgets a step",
+                "Costs a fraction of a full-time hire",
+              ].map((point) => (
+                <div key={point} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ color: "#ef4444", fontWeight: 700, flexShrink: 0 }}>✗</span>
+                  <span style={{ fontSize: 14, color: GRAY_TEXT, lineHeight: 1.5 }}>{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Why It Works ── */}
       <section id="why-it-works" style={{ padding: "72px 48px", maxWidth: 1100, margin: "0 auto" }}>
         <h2 style={{ fontSize: 13, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Why it works</h2>
