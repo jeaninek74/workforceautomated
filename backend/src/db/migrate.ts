@@ -67,12 +67,15 @@ async function migrate() {
       member_agent_ids JSONB,
       execution_order JSONB,
       governance_rules JSONB,
+      execution_mode VARCHAR(32) DEFAULT 'sequential' NOT NULL,
       confidence_threshold REAL DEFAULT 0.7 NOT NULL,
       is_active BOOLEAN DEFAULT true NOT NULL,
       total_executions INTEGER DEFAULT 0 NOT NULL,
       created_at TIMESTAMP DEFAULT NOW() NOT NULL,
       updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     );`);
+    // Add execution_mode column if it doesn't exist (for existing deployments)
+    await client.query(`ALTER TABLE teams ADD COLUMN IF NOT EXISTS execution_mode VARCHAR(32) DEFAULT 'sequential' NOT NULL;`);
 
     // Executions
     await client.query(`CREATE TABLE IF NOT EXISTS executions (
