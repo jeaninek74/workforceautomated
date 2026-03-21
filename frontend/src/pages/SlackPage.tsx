@@ -182,7 +182,7 @@ export default function SlackPage() {
               { num: "2", title: "Create a Slack app in 30 seconds", desc: "Give it any name — like \"WorkforceAutomated.\" Pick your Slack workspace. Click Create." },
               { num: "3", title: "Turn on Incoming Webhooks", desc: "In the left menu click \"Incoming Webhooks.\" Flip the switch to On. Then click \"Add New Webhook to Workspace.\" Pick the channel where you want the AI to send messages — like #general or #finance-alerts." },
               { num: "4", title: "Copy the webhook URL", desc: "Slack gives you a link that starts with https://hooks.slack.com/services/... Copy that whole link." },
-              { num: "5", title: "Paste it in WorkforceAutomated", desc: "In your WorkforceAutomated account, go to Settings → Notifications → Slack. Paste the link. Click Save. Done — your AI will now talk to you through Slack." },
+              { num: "5", title: "Paste it in WorkforceAutomated", desc: "In your WorkforceAutomated account, go to Settings → Slack. Paste the link. Click Save. Done — your AI will now talk to you through Slack." },
             ].map((item) => (
               <div key={item.num} style={{ display: "flex", gap: 18, background: "#fff", borderRadius: 12, padding: "20px 24px", border: `1px solid ${PURPLE_BORDER}` }}>
                 <div style={{ width: 36, height: 36, borderRadius: "50%", background: PURPLE, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15, color: "#fff", flexShrink: 0 }}>{item.num}</div>
