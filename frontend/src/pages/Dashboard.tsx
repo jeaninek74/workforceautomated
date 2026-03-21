@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import OnboardingBanner from "@/components/onboarding/OnboardingBanner";
 import {
   Bot, Users, Play, Shield, TrendingUp, AlertTriangle,
   CheckCircle, Clock, ArrowRight, Plus, Zap, Activity
@@ -90,6 +91,8 @@ export default function Dashboard() {
           New Agent
         </Link>
       </div>
+
+      <OnboardingBanner />
 
       {/* Stats Row */}
       {loading ? (
