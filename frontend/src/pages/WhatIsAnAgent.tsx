@@ -262,6 +262,7 @@ export default function WhatIsAnAgent() {
       <footer style={{ background: DARK, padding: "32px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
         <span style={{ color: "#9ca3af", fontSize: 13 }}>WorkforceAutomated © 2026</span>
         <div style={{ display: "flex", gap: 24 }}>
+          <a href="mailto:contact@workforceautomated.com" style={{ color: "#9ca3af", fontSize: 12, textDecoration: "none" }}>contact@workforceautomated.com</a>
           <Link to="/privacy" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Privacy</Link>
           <Link to="/terms" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Terms</Link>
           <Link to="/security-overview" style={{ color: "#9ca3af", fontSize: 13, textDecoration: "none" }}>Security</Link>
