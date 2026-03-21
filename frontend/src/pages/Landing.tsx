@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "Industries", href: "/industries" },
   { label: "Security", href: "/security-overview" },
   { label: "Enterprise", href: "/enterprise" },
+  { label: "Slack", href: "/slack" },
   { label: "Pricing", href: "#pricing" },
 ];
 const NAV_ACTIONS = [
