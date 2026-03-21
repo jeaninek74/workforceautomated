@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Shield, CheckCircle, AlertTriangle, Loader2, ExternalLink, Key, Settings, Info } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-import DashboardLayout from "../components/layout/DashboardLayout";
 
 const API = import.meta.env.VITE_API_URL || "";
 
@@ -95,17 +94,14 @@ export default function SSOSettings() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
@@ -336,7 +332,6 @@ export default function SSOSettings() {
             </p>
           )}
         </form>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }
