@@ -596,6 +596,23 @@ export default function Demo() {
               </ul>
             </div>
           </div>
+          {/* Slack communication callout */}
+          <div style={{ background: "#f5f3ff", border: "1.5px solid #c4b5fd", borderRadius: 14, padding: "20px 24px", marginTop: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
+            <div style={{ flexShrink: 0, width: 40, height: 40, background: "#7c3aed", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "#5b21b6", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>How the AI communicates with you</div>
+              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>
+                When an AI agent has a question, needs a decision, or escalates a low-confidence task, it sends a real-time alert directly to your <strong>Slack channel</strong> — including the full task context, confidence score, and a link to approve or reject in the dashboard.
+              </p>
+              <ul style={{ margin: 0, padding: "0 0 0 18px", fontSize: 13, color: "#6b7280", lineHeight: 2.1 }}>
+                <li>Connect Slack in <strong style={{ color: "#374151" }}>Settings → Notifications → Slack Notifications</strong></li>
+                <li>Create a free Incoming Webhook at <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" style={{ color: "#7c3aed", fontWeight: 600 }}>api.slack.com/apps</a> and paste the URL — takes 2 minutes</li>
+                <li>Every escalation, question, and approval request appears instantly in your chosen channel</li>
+              </ul>
+            </div>
+          </div>
           <p style={{ fontSize: 13, color: "#9ca3af", marginTop: 20, textAlign: "center" }}>Watch the demo videos below to see both paths in action, then try the interactive walkthrough.</p>
         </div>
       </div>
