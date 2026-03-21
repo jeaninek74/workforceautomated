@@ -116,7 +116,7 @@ export default function Reports() {
 
   const downloadFile = async (url: string, filename: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("wfa_token");
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
