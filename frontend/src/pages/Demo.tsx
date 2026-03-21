@@ -597,19 +597,19 @@ export default function Demo() {
             </div>
           </div>
           {/* Slack communication callout */}
-          <div style={{ background: "#f5f3ff", border: "1.5px solid #c4b5fd", borderRadius: 14, padding: "20px 24px", marginTop: 20, display: "flex", gap: 16, alignItems: "flex-start" }}>
-            <div style={{ flexShrink: 0, width: 40, height: 40, background: "#7c3aed", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </div>
+          <div style={{ background: "#f5f3ff", border: "1.5px solid #c4b5fd", borderRadius: 14, padding: "24px 28px", marginTop: 20, display: "flex", gap: 18, alignItems: "flex-start" }}>
+            <div style={{ flexShrink: 0, fontSize: 32 }}>💬</div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "#5b21b6", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>How the AI communicates with you</div>
-              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>
-                When an AI agent has a question, needs a decision, or escalates a low-confidence task, it sends a real-time alert directly to your <strong>Slack channel</strong> — including the full task context, confidence score, and a link to approve or reject in the dashboard.
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#5b21b6", marginBottom: 8 }}>How your AI talks to you through Slack</div>
+              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: "0 0 12px" }}>
+                Picture a very fast coworker who never sleeps. When they finish a task, they send you a message in Slack saying exactly what they did. When they are not sure about something, they stop and ask you first — right in Slack, on your phone or laptop. You tap <strong>Approve</strong> or <strong>Reject</strong> and they keep going. No email. No logging into anything. Just a message in the chat app you already use every day.
               </p>
-              <ul style={{ margin: 0, padding: "0 0 0 18px", fontSize: 13, color: "#6b7280", lineHeight: 2.1 }}>
-                <li>Connect Slack in <strong style={{ color: "#374151" }}>Settings → Notifications → Slack Notifications</strong></li>
-                <li>Create a free Incoming Webhook at <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" style={{ color: "#7c3aed", fontWeight: 600 }}>api.slack.com/apps</a> and paste the URL — takes 2 minutes</li>
-                <li>Every escalation, question, and approval request appears instantly in your chosen channel</li>
+              <ul style={{ margin: 0, padding: "0 0 0 18px", fontSize: 13, color: "#374151", lineHeight: 2.3 }}>
+                <li>💬 <strong>Agent finishes a task</strong> — you get a Slack message with the result and confidence score</li>
+                <li>❓ <strong>Agent is not sure</strong> — it asks you in Slack before doing anything</li>
+                <li>✅ <strong>You tap Approve</strong> — agent continues automatically, no dashboard needed</li>
+                <li>📱 <strong>Works on your phone</strong> — approve from anywhere, any time of day</li>
+                <li>⏱️ <strong>Takes 2 minutes to set up</strong> — go to Settings → Notifications → Slack, paste one URL, done</li>
               </ul>
             </div>
           </div>

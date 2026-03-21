@@ -67,6 +67,7 @@ workforceautomated/
 │   ├── package.json
 │   ├── tailwind.config.js
 │   └── vite.config.ts
+├── docs/                   # Technical documentation
 ├── package.json            # Root package.json for monorepo scripts
 ├── railway.toml            # Railway deployment configuration
 └── nixpacks.toml           # Nixpacks build configuration
@@ -80,7 +81,6 @@ workforceautomated/
 - API Keys: OpenAI, Anthropic (optional), Stripe (optional)
 
 ### Environment Variables
-
 Create a `.env` file in the `backend` directory:
 
 ```env
@@ -93,7 +93,7 @@ FRONTEND_URL=http://localhost:5173
 DATABASE_URL=postgresql://user:password@localhost:5432/workforceautomated
 
 # Authentication
-APP_SECRET=your_super_secret_jwt_key
+APP_SECRET=development_secret_key_do_not_use_in_production
 JWT_EXPIRES_IN=30d
 
 # AI Providers

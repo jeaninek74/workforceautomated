@@ -154,7 +154,7 @@ export default function Landing() {
         .lp-row-2col { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
         .lp-row-step { display: grid; grid-template-columns: 48px 1fr; gap: 24px; }
         .lp-integration-flow { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: center; }
-        .lp-integration-types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+        .lp-integration-types { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
         .lp-pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
         .lp-section-pad { padding: 72px 48px; }
         .lp-section-inner { max-width: 1100px; margin: 0 auto; }
@@ -539,7 +539,8 @@ export default function Landing() {
               { emoji: "🌐", title: "REST APIs", desc: "Connect any HTTP endpoint. GET, POST, PUT, DELETE. Custom headers, auth tokens, and request bodies." },
               { emoji: "🗄️", title: "Databases", desc: "PostgreSQL, MySQL, MongoDB, Supabase, PlanetScale. Read-only or read-write. Schema-aware queries." },
               { emoji: "🔔", title: "Webhooks", desc: "Trigger agents from external events. Or fire outbound webhooks when an agent completes a task." },
-              { emoji: "🔗", title: "SaaS Tools", desc: "HubSpot, Salesforce, Jira, Slack, SendGrid, Stripe, and more. Pre-built connectors or custom OAuth." },
+              { emoji: "💬", title: "Slack", desc: "Your AI talks to you in Slack — just like a coworker would. When it finishes a task, it sends a message. When it gets stuck, it asks you. You approve or reject right from your phone." },
+              { emoji: "🔗", title: "SaaS Tools", desc: "HubSpot, Salesforce, Jira, SendGrid, Stripe, Google Drive, and more. Pre-built connectors or custom OAuth." },
             ].map((item, i) => (
               <div key={item.title} style={{ padding: "20px 24px 20px 0", borderLeft: i > 0 ? DIVIDER : "none", paddingLeft: i > 0 ? 24 : 0 }}>
                 <div style={{ fontSize: 22, marginBottom: 8 }}>{item.emoji}</div>
@@ -547,6 +548,30 @@ export default function Landing() {
                 <div style={{ fontSize: 13, color: GRAY_TEXT, lineHeight: 1.6 }}>{item.desc}</div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Slack plain-language callout */}
+        <div style={{ marginTop: 32, background: "#f5f3ff", border: "1.5px solid #c4b5fd", borderRadius: 12, padding: "24px 28px", display: "flex", gap: 18, alignItems: "flex-start" }}>
+          <div style={{ flexShrink: 0, fontSize: 32 }}>💬</div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#5b21b6", marginBottom: 8 }}>How Slack works with your AI agent — explained simply</div>
+            <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: "0 0 12px" }}>
+              Imagine you hired a very fast assistant who works 24 hours a day. When they finish something, they tap you on the shoulder and say <em>"Done — here's what I did."</em> When they are not sure about something, they ask you before they act. That is exactly how Slack works here.
+            </p>
+            <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.8, margin: "0 0 14px" }}>
+              Your AI agent sends a message to a Slack channel of your choice. You see the task, the result, and the confidence score. If the agent needs your approval, there is a button right in the message — you tap Approve or Reject, and the agent continues. No email. No logging in. Just a message in the app your team already uses every day.
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+              {[
+                "✓ Agent finishes → Slack message sent",
+                "✓ Agent unsure → asks you in Slack",
+                "✓ You approve → agent continues automatically",
+                "✓ Works on your phone too"
+              ].map((s) => (
+                <span key={s} style={{ background: "#ede9fe", color: "#5b21b6", fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 20, border: "1px solid #c4b5fd" }}>{s}</span>
+              ))}
+            </div>
           </div>
         </div>
 
