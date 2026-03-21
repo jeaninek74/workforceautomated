@@ -114,25 +114,46 @@ export default function Reports() {
   const agentsList = agentsData?.agents || [];
   const teamsList = teamsData?.teams || [];
 
-  const downloadFile = (url: string, filename: string) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Export failed (${res.status}): ${errText}`);
+      }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      alert(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
   const downloadCsv = (type: "executions" | "audit" | "escalations") => {
     const params = buildParams();
     const url = `/api/reports/${type}.csv${params ? "?" + params : ""}`;
-    downloadFile(url, `${type}-${Date.now()}.csv`);
+    downloadFile(url, `${type}-${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
+  const downloadExcel = () => {
+    const params = buildParams();
+    const url = `/api/reports/executions.xlsx${params ? "?" + params : ""}`;
+    downloadFile(url, `executions-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const downloadPdf = () => {
     const params = buildParams();
     const url = `/api/reports/summary.pdf${params ? "?" + params : ""}`;
-    downloadFile(url, `workforce-report-${Date.now()}.pdf`);
+    downloadFile(url, `workforce-report-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   const statCard = (icon: React.ReactNode, label: string, value: string, sub?: string, color?: string) => (
@@ -177,6 +198,12 @@ export default function Reports() {
             className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm font-medium transition-colors"
           >
             <Download className="w-4 h-4" /> Audit Log CSV
+          </button>
+          <button
+            onClick={downloadExcel}
+            className="flex items-center gap-2 px-3 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Download className="w-4 h-4" /> Excel (.xlsx)
           </button>
         </div>
       </div>

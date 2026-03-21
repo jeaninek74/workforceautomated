@@ -4,6 +4,7 @@ import { executions, agents, teams, auditLogs, escalationReviews } from "../db/s
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import PDFDocument from "pdfkit";
+import * as XLSX from "xlsx";
 
 const router = Router();
 router.use(authenticate);
@@ -419,6 +420,72 @@ router.get("/schedule-delivery", async (req: AuthRequest, res) => {
       ? JSON.parse((settings as any).reportScheduleConfig)
       : null;
     res.json({ schedule: config });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/reports/executions.xlsx — formatted Excel export with two sheets
+router.get("/executions.xlsx", async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const { startDate, endDate, agentId, teamId } = req.query as Record<string, string>;
+    const filters: any[] = [eq(executions.userId, userId), ...buildDateFilters(startDate, endDate)];
+    if (agentId) filters.push(eq(executions.agentId, parseInt(agentId)));
+    if (teamId) filters.push(eq(executions.teamId, parseInt(teamId)));
+    const rows = await db.select().from(executions).where(and(...filters)).orderBy(desc(executions.createdAt)).limit(5000);
+
+    const dataRows = await Promise.all(rows.map(async (r) => {
+      let name = "";
+      if (r.agentId) {
+        const [a] = await db.select({ name: agents.name }).from(agents).where(eq(agents.id, r.agentId));
+        name = a?.name || `Agent #${r.agentId}`;
+      } else if (r.teamId) {
+        const [t] = await db.select({ name: teams.name }).from(teams).where(eq(teams.id, r.teamId));
+        name = t?.name || `Team #${r.teamId}`;
+      }
+      return {
+        "ID": r.id,
+        "Date": fmtDate(r.createdAt),
+        "Type": r.type || "",
+        "Status": r.status || "",
+        "Agent / Team": name,
+        "Confidence (%)": r.confidenceScore ? parseFloat((r.confidenceScore * 100).toFixed(1)) : "",
+        "Risk Level": r.riskLevel || "",
+        "Escalated": r.escalated ? "Yes" : "No",
+        "Processing Time (ms)": r.processingTimeMs || "",
+        "Input (preview)": (r.input || "").slice(0, 200),
+        "Output (preview)": (r.output || "").slice(0, 500),
+      };
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+    ws["!cols"] = [
+      { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 24 },
+      { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 40 }, { wch: 60 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, "Executions");
+
+    const total = dataRows.length;
+    const successCount = dataRows.filter(r => r["Status"] === "success").length;
+    const escalatedCount = dataRows.filter(r => r["Escalated"] === "Yes").length;
+    const summaryData = [
+      { "Metric": "Total Executions", "Value": total },
+      { "Metric": "Successful", "Value": successCount },
+      { "Metric": "Escalated", "Value": escalatedCount },
+      { "Metric": "Automation Rate", "Value": total > 0 ? `${((successCount / total) * 100).toFixed(1)}%` : "0%" },
+      { "Metric": "Escalation Rate", "Value": total > 0 ? `${((escalatedCount / total) * 100).toFixed(1)}%` : "0%" },
+      { "Metric": "Report Generated", "Value": new Date().toISOString() },
+    ];
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    wsSummary["!cols"] = [{ wch: 24 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="executions-${Date.now()}.xlsx"`);
+    res.send(buf);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
