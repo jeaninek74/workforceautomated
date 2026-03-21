@@ -121,7 +121,7 @@ const SECURITY_TECHNICAL = [
 const PLANS = [
   { name: "Starter", price: "$49", period: "/mo", tagline: "For a single team or department", features: ["Up to 5 active AI agents", "1 agent team", "10,000 executions/month", "Slack + webhook integrations", "Audit log & governance"], cta: "Start Free Trial", highlight: false },
   { name: "Professional", price: "$149", period: "/mo", tagline: "For growing organizations", features: ["Up to 25 active AI agents", "Unlimited agent teams", "100,000 executions/month", "Slack, Zapier, REST API, CRM & ERP connectors", "Execution trend reports & agent performance dashboards", "Advanced governance & custom KPIs"], cta: "Start Free Trial", highlight: true },
-  { name: "Enterprise", price: "$499", period: "/mo", tagline: "For large-scale deployments", features: ["Unlimited agents & teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "Private cloud or on-premise deployment", "SSO / SAML & white-label option"], cta: "Start Free Trial", highlight: false },
+  { name: "Enterprise", price: "$499", period: "/mo", tagline: "For large-scale deployments", features: ["Unlimited agents & teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "SSO / SAML & white-label option"], cta: "Start Free Trial", highlight: false },
 ];
 
 // ─── Shared styles ────────────────────────────────────────────────────────────

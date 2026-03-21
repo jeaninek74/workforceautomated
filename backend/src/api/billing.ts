@@ -30,7 +30,7 @@ const PLANS = {
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "price_1TDHvYEI9dLhzTVp3q00L7i4",
     name: "Enterprise",
     price: 499,
-    features: ["Unlimited agents", "Unlimited agent teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "Private cloud or on-premise deployment", "SSO / SAML & white-label option"],
+    features: ["Unlimited agents", "Unlimited agent teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "SSO / SAML & white-label option"],
   },
 };
 
