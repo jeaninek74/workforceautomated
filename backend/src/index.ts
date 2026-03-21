@@ -28,6 +28,7 @@ import schedulesRouter from "./api/schedules.js";
 import reportsRouter from "./api/reports.js";
 import securityRouter from "./api/security.js";
 import demoRouter from "./api/demo.js";
+import { customBuildRouter } from "./api/customBuild.js";
 import { startReportScheduler } from "./services/reportScheduler.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -85,6 +86,7 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/agent-templates", agentTemplatesRouter);
 app.use("/api/security", securityRouter);
 app.use("/api/demo", demoRouter);
+app.use("/api/custom-build", customBuildRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), version: "1.0.0" });
