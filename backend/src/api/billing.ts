@@ -18,19 +18,19 @@ const PLANS = {
     priceId: process.env.STRIPE_STARTER_PRICE_ID || "price_1TDHvUEI9dLhzTVpioXPV7q8",
     name: "Starter",
     price: 49,
-    features: ["5 AI agents", "500 executions/mo", "Email support", "Slack notifications", "Audit log"],
+    features: ["5 AI agents", "1 agent team", "10,000 executions/month", "Slack + webhook integrations", "Audit log & governance"],
   },
   professional: {
     priceId: process.env.STRIPE_PRO_PRICE_ID || "price_1TDHvWEI9dLhzTVpwKCUQmkf",
     name: "Professional",
     price: 149,
-    features: ["25 AI agents", "5,000 executions/mo", "Priority support", "Slack notifications", "Advanced governance", "Custom KPIs", "Scheduled runs"],
+    features: ["25 AI agents", "Unlimited agent teams", "100,000 executions/month", "Slack, Zapier, REST API, CRM & ERP connectors", "Execution trend reports & agent performance dashboards", "Advanced governance & custom KPIs"],
   },
   enterprise: {
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "price_1TDHvYEI9dLhzTVp3q00L7i4",
     name: "Enterprise",
     price: 499,
-    features: ["Unlimited agents", "Unlimited executions", "Dedicated support", "SSO / SAML", "Custom integrations", "SLA guarantee", "White-label option"],
+    features: ["Unlimited agents", "Unlimited agent teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "Private cloud or on-premise deployment", "SSO / SAML & white-label option"],
   },
 };
 

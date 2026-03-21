@@ -6,6 +6,7 @@ import {
   CheckCircle, Clock, ArrowRight, Plus, Zap, Activity
 } from "lucide-react";
 import { agentsApi, teamsApi, executionsApi, metricsApi } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Stats {
   totalAgents: number;
@@ -29,6 +30,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({
     totalAgents: 0, activeAgents: 0, totalTeams: 0,
     totalExecutions: 0, avgConfidence: 0, escalations: 0,
@@ -36,6 +38,7 @@ export default function Dashboard() {
   const [recentExecutions, setRecentExecutions] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [monthlyExecutions, setMonthlyExecutions] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -57,6 +60,12 @@ export default function Dashboard() {
           escalations: metricsRes.data?.escalations || 0,
         });
         setRecentExecutions(execRes.data?.executions || []);
+        // Count executions this month
+        const allExecs = execRes.data?.executions || [];
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const thisMonth = allExecs.filter((e: any) => new Date(e.createdAt || e.created_at || 0) >= monthStart).length;
+        setMonthlyExecutions(thisMonth);
       } catch (_) {}
       setLoading(false);
     };
@@ -122,6 +131,49 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* ── Monthly Execution Usage Meter ── */}
+      {!loading && (() => {
+        const plan = user?.plan || "starter";
+        const limit = plan === "enterprise" ? null : plan === "professional" ? 100000 : 10000;
+        const pct = limit ? Math.min((monthlyExecutions / limit) * 100, 100) : 0;
+        const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-500" : "bg-emerald-500";
+        return (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-green-400" />
+                <h2 className="font-semibold text-white text-sm">Executions This Month</h2>
+              </div>
+              <Link to="/billing" className="text-xs text-gray-500 hover:text-blue-400 flex items-center gap-1 transition-colors">
+                {plan === "enterprise" ? "Enterprise" : plan === "professional" ? "Professional" : "Starter"} plan <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="flex items-end justify-between mb-2">
+              <span className="text-3xl font-bold text-white">{monthlyExecutions.toLocaleString()}</span>
+              <span className="text-sm text-gray-500">{limit ? `of ${limit.toLocaleString()} included` : "Unlimited"}</span>
+            </div>
+            {limit ? (
+              <>
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-xs text-gray-600">{pct.toFixed(1)}% used</span>
+                  <span className="text-xs text-gray-600">{(limit - monthlyExecutions).toLocaleString()} remaining</span>
+                </div>
+                {pct >= 80 && (
+                  <div className="mt-2 text-xs text-yellow-400 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Approaching your monthly limit — <Link to="/billing" className="underline hover:text-yellow-300">upgrade your plan</Link>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-xs text-emerald-400 mt-1">No execution limits on Enterprise</div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── Operational Health ── */}
       {!loading && stats.totalExecutions > 0 && (
