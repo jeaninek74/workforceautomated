@@ -196,8 +196,79 @@ export default function AgentDetail() {
           </Link>
         </div>
 
-        {/* Right column: execution history */}
-        <div className="lg:col-span-2">
+        {/* Right column: performance analytics + execution history */}
+        <div className="lg:col-span-2 space-y-4">
+
+          {/* Performance Analytics Panel */}
+          {executions.length > 0 && (() => {
+            const completed = executions.filter(e => e.status === "completed" || e.status === "success");
+            const escalated = executions.filter(e => e.status === "escalated");
+            const withConf = executions.filter(e => e.confidenceScore != null);
+            const avgConf = withConf.length > 0
+              ? withConf.reduce((s, e) => s + (e.confidenceScore <= 1 ? e.confidenceScore * 100 : e.confidenceScore), 0) / withConf.length
+              : 0;
+            const withTime = executions.filter(e => e.processingTimeMs != null);
+            const avgTime = withTime.length > 0
+              ? withTime.reduce((s, e) => s + e.processingTimeMs, 0) / withTime.length
+              : 0;
+            const successRate = executions.length > 0 ? (completed.length / executions.length) * 100 : 0;
+            return (
+              <div className="border border-gray-800 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity className="w-4 h-4 text-purple-400" />
+                  <h2 className="font-semibold text-white text-sm">Performance Analytics</h2>
+                  <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">This Agent</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 mb-1">Task Success Rate</div>
+                    <div className={`text-xl font-bold ${successRate >= 80 ? "text-emerald-400" : successRate >= 60 ? "text-yellow-400" : "text-red-400"}`}>
+                      {`${Math.round(successRate)}%`}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">{completed.length}/{executions.length} tasks</div>
+                    <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${successRate >= 80 ? "bg-emerald-500" : successRate >= 60 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${successRate}%` }} />
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 mb-1">Avg Confidence</div>
+                    <div className={`text-xl font-bold ${avgConf >= 80 ? "text-emerald-400" : avgConf >= 60 ? "text-yellow-400" : "text-red-400"}`}>
+                      {withConf.length > 0 ? `${Math.round(avgConf)}%` : "—"}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">AI decision certainty</div>
+                    <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${avgConf >= 80 ? "bg-emerald-500" : avgConf >= 60 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${Math.min(avgConf, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 mb-1">Avg Processing Time</div>
+                    <div className="text-xl font-bold text-blue-400">
+                      {withTime.length > 0 ? `${(avgTime / 1000).toFixed(1)}s` : "—"}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">Per task execution</div>
+                    <div className="mt-2">
+                      <span className="text-xs text-gray-600">{withTime.length} timed runs</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 mb-1">Escalation Freq.</div>
+                    <div className={`text-xl font-bold ${escalated.length === 0 ? "text-emerald-400" : escalated.length <= 2 ? "text-yellow-400" : "text-red-400"}`}>
+                      {escalated.length === 0 ? "None" : `${escalated.length}x`}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">Human reviews needed</div>
+                    <div className="mt-2">
+                      {escalated.length === 0 ? (
+                        <span className="text-xs text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Autonomous</span>
+                      ) : (
+                        <span className="text-xs text-orange-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Needs tuning</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="border border-gray-800 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 bg-gray-900/50 border-b border-gray-800">
               <h2 className="font-semibold text-white flex items-center gap-2">

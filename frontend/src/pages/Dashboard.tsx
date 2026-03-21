@@ -123,6 +123,70 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* ── Operational Health ── */}
+      {!loading && stats.totalExecutions > 0 && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-400" />
+              <h2 className="font-semibold text-white text-sm">Operational Health</h2>
+              <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">Live</span>
+            </div>
+            <Link to="/metrics" className="text-xs text-gray-500 hover:text-blue-400 flex items-center gap-1 transition-colors">
+              Full analytics <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 mb-1">Success Rate</div>
+              <div className="text-2xl font-bold text-emerald-400">
+                {`${Math.round(((stats.totalExecutions - stats.escalations) / stats.totalExecutions) * 100)}%`}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5">Tasks without escalation</div>
+              <div className="mt-2 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.round(((stats.totalExecutions - stats.escalations) / stats.totalExecutions) * 100)}%` }} />
+              </div>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 mb-1">Avg AI Confidence</div>
+              <div className={`text-2xl font-bold ${stats.avgConfidence >= 80 ? "text-emerald-400" : stats.avgConfidence >= 60 ? "text-yellow-400" : "text-red-400"}`}>
+                {`${Math.round(stats.avgConfidence)}%`}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5">Across all executions</div>
+              <div className="mt-2 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${stats.avgConfidence >= 80 ? "bg-emerald-500" : stats.avgConfidence >= 60 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${Math.min(stats.avgConfidence, 100)}%` }} />
+              </div>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 mb-1">Escalation Rate</div>
+              <div className={`text-2xl font-bold ${(stats.escalations / stats.totalExecutions) < 0.1 ? "text-emerald-400" : (stats.escalations / stats.totalExecutions) < 0.25 ? "text-yellow-400" : "text-red-400"}`}>
+                {`${Math.round((stats.escalations / stats.totalExecutions) * 100)}%`}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5">{stats.escalations} tasks need review</div>
+              <div className="mt-2">
+                {stats.escalations === 0 ? (
+                  <span className="text-xs text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> All clear</span>
+                ) : (
+                  <Link to="/governance" className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 transition-colors">
+                    <AlertTriangle className="w-3 h-3" /> Review now
+                  </Link>
+                )}
+              </div>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 mb-1">Est. Hours Saved</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {`${(stats.totalExecutions * 0.25).toFixed(0)}h`}
+              </div>
+              <div className="text-xs text-gray-600 mt-0.5">~15 min saved per task</div>
+              <div className="mt-2">
+                <span className="text-xs text-gray-500">≈ ${(stats.totalExecutions * 0.25 * 35).toFixed(0)} labor cost saved</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Run Panel */}
         <div className="lg:col-span-1">
