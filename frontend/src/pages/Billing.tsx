@@ -31,7 +31,7 @@ const PLANS = [
     price: "Custom",
     period: "",
     priceId: "",
-    features: ["Unlimited AI Agents", "Unlimited agent teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA with response time commitments", "SSO / SAML & white-label option"],
+    features: ["Unlimited AI Agents", "Unlimited agent teams", "Unlimited executions", "Custom integrations", "99.9% uptime SLA", "SSO / SAML"],
     icon: Shield,
     color: "green",
   },

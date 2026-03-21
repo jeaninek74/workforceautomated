@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send, Server, Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
+import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send, Server, Eye, EyeOff, KeyRound, Activity } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { authApi } from "../lib/api";
 import axios from "axios";
@@ -112,9 +113,27 @@ export default function Settings() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-gray-400 text-sm mt-1">Manage your account settings</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Settings</h1>
+          <p className="text-gray-400 text-sm mt-1">Manage your account settings</p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            to="/sso"
+            className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 bg-purple-950/30 border border-purple-800/50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            SSO / SAML
+          </Link>
+          <Link
+            to="/status"
+            className="flex items-center gap-1.5 text-xs text-green-400 hover:text-green-300 bg-green-950/30 border border-green-800/50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <Activity className="w-3.5 h-3.5" />
+            System Status
+          </Link>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -127,6 +146,7 @@ export default function Settings() {
           { id: "notifications", label: "Notifications", icon: Bell },
           { id: "slack", label: "Slack", icon: MessageSquare },
         ] as const).map((t) => (
+
           <button
             key={t.id}
             onClick={() => { setTab(t.id); setError(""); setSuccess(""); }}

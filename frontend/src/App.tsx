@@ -41,6 +41,8 @@ import Terms from "@/pages/Terms";
 import WhatIsAnAgent from "@/pages/WhatIsAnAgent";
 import Enterprise from "@/pages/Enterprise";
 import SlackPage from "@/pages/SlackPage";
+import SSOSettings from "@/pages/SSOSettings";
+import StatusPage from "@/pages/StatusPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -108,6 +110,8 @@ function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/slack" element={<SlackPage />} />
+      <Route path="/sso" element={<ProtectedRoute><SSOSettings /></ProtectedRoute>} />
+      <Route path="/status" element={<StatusPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
