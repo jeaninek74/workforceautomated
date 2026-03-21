@@ -6,7 +6,7 @@ import fs from "fs";
 import os from "os";
 import { db } from "../db/index.js";
 import { executions, agents } from "../db/schema.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { runAgentExecution } from "../services/executor.js";
 
@@ -158,6 +158,42 @@ executionsRouter.post(
     }
   }
 );
+
+// ─── GET /api/executions/usage/monthly ──────────────────────────────────────────
+// Real database count of executions since the 1st of the current month.
+// Returns count, plan limit, percent used, and remaining so the
+// dashboard counter widget always shows accurate live data.
+executionsRouter.get("/usage/monthly", async (req: AuthRequest, res) => {
+  try {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const [row] = await db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(executions)
+      .where(and(
+        eq(executions.userId, req.user!.id),
+        gte(executions.createdAt, monthStart)
+      ));
+    const count = row?.count ?? 0;
+    const plan: string = (req.user as any)?.plan || "starter";
+    const limits: Record<string, number | null> = {
+      starter: 10000,
+      professional: 100000,
+      enterprise: null,
+    };
+    const limit = limits[plan] ?? 10000;
+    res.json({
+      count,
+      limit,
+      plan,
+      month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+      percentUsed: limit ? Math.min(Math.round((count / limit) * 100), 100) : 0,
+      remaining: limit !== null ? Math.max(limit - count, 0) : null,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ─── GET /api/executions/:id ──────────────────────────────────────────────────
 executionsRouter.get("/:id", async (req: AuthRequest, res) => {

@@ -38,16 +38,17 @@ export default function Dashboard() {
   const [recentExecutions, setRecentExecutions] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [monthlyExecutions, setMonthlyExecutions] = useState(0);
+  const [monthlyUsage, setMonthlyUsage] = useState<{ count: number; limit: number | null; percentUsed: number; remaining: number | null; plan: string } | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [agentsRes, teamsRes, execRes, metricsRes] = await Promise.all([
+        const [agentsRes, teamsRes, execRes, metricsRes, usageRes] = await Promise.all([
           agentsApi.list(),
           teamsApi.list(),
           executionsApi.list({ limit: 8 }),
           metricsApi.dashboard(),
+          executionsApi.monthlyUsage(),
         ]);
         const agentList = agentsRes.data?.agents || [];
         setAgents(agentList);
@@ -60,12 +61,10 @@ export default function Dashboard() {
           escalations: metricsRes.data?.escalations || 0,
         });
         setRecentExecutions(execRes.data?.executions || []);
-        // Count executions this month
-        const allExecs = execRes.data?.executions || [];
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const thisMonth = allExecs.filter((e: any) => new Date(e.createdAt || e.created_at || 0) >= monthStart).length;
-        setMonthlyExecutions(thisMonth);
+        // Real monthly count from dedicated backend endpoint
+        if (usageRes.data) {
+          setMonthlyUsage(usageRes.data);
+        }
       } catch (_) {}
       setLoading(false);
     };
@@ -132,11 +131,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Monthly Execution Usage Meter ── */}
+      {/* ── Monthly Execution Usage Meter (real live count from backend) ── */}
       {!loading && (() => {
-        const plan = user?.plan || "starter";
-        const limit = plan === "enterprise" ? null : plan === "professional" ? 100000 : 10000;
-        const pct = limit ? Math.min((monthlyExecutions / limit) * 100, 100) : 0;
+        const usage = monthlyUsage;
+        const count = usage?.count ?? 0;
+        const limit = usage?.limit ?? null;
+        const pct = usage?.percentUsed ?? 0;
+        const remaining = usage?.remaining ?? null;
+        const planLabel = usage?.plan === "enterprise" ? "Enterprise" : usage?.plan === "professional" ? "Professional" : "Starter";
         const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-500" : "bg-emerald-500";
         return (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -144,13 +146,14 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <Play className="w-4 h-4 text-green-400" />
                 <h2 className="font-semibold text-white text-sm">Executions This Month</h2>
+                <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">Live</span>
               </div>
               <Link to="/billing" className="text-xs text-gray-500 hover:text-blue-400 flex items-center gap-1 transition-colors">
-                {plan === "enterprise" ? "Enterprise" : plan === "professional" ? "Professional" : "Starter"} plan <ArrowRight className="w-3 h-3" />
+                {planLabel} plan <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <div className="flex items-end justify-between mb-2">
-              <span className="text-3xl font-bold text-white">{monthlyExecutions.toLocaleString()}</span>
+              <span className="text-3xl font-bold text-white">{count.toLocaleString()}</span>
               <span className="text-sm text-gray-500">{limit ? `of ${limit.toLocaleString()} included` : "Unlimited"}</span>
             </div>
             {limit ? (
@@ -160,7 +163,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-gray-600">{pct.toFixed(1)}% used</span>
-                  <span className="text-xs text-gray-600">{(limit - monthlyExecutions).toLocaleString()} remaining</span>
+                  <span className="text-xs text-gray-600">{(remaining ?? 0).toLocaleString()} remaining</span>
                 </div>
                 {pct >= 80 && (
                   <div className="mt-2 text-xs text-yellow-400 flex items-center gap-1">

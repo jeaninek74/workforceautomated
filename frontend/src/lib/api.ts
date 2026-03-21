@@ -91,6 +91,7 @@ export const executionsApi = {
     return api.post("/api/executions", data);
   },
   cancel: (id: number) => api.post(`/api/executions/${id}/cancel`),
+  monthlyUsage: () => api.get("/api/executions/usage/monthly"),
 };
 
 // Integrations
