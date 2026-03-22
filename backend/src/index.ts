@@ -33,6 +33,9 @@ import { ssoRouter } from "./api/sso.js";
 import { statusRouter } from "./api/status.js";
 import { startReportScheduler } from "./services/reportScheduler.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { db as _db } from "./db/index.js";
+import { users as _users } from "./db/schema.js";
+import { eq as _eq } from "drizzle-orm";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3001");
@@ -126,6 +129,24 @@ app.use(errorHandler);
 
 // Start scheduled report delivery cron job
 startReportScheduler();
+
+// One-time: ensure test accounts have the correct plan assigned
+(async () => {
+  const testAccounts = [
+    { email: "test.starter@workforceautomated.com", plan: "starter" as const },
+    { email: "test.pro@workforceautomated.com", plan: "professional" as const },
+    { email: "test.enterprise@workforceautomated.com", plan: "enterprise" as const },
+  ];
+  for (const acct of testAccounts) {
+    try {
+      const [row] = await _db.select({ plan: _users.plan }).from(_users).where(_eq(_users.email, acct.email));
+      if (row && row.plan !== acct.plan) {
+        await _db.update(_users).set({ plan: acct.plan }).where(_eq(_users.email, acct.email));
+        console.log(`[seed] Updated ${acct.email} → ${acct.plan}`);
+      }
+    } catch (_e) { /* ignore */ }
+  }
+})();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`WorkforceAutomated API running on port ${PORT}`);
