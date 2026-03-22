@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import OnboardingBanner from "@/components/onboarding/OnboardingBanner";
 import {
   Bot, Users, Play, Shield, TrendingUp, AlertTriangle,
-  CheckCircle, Clock, ArrowRight, Plus, Zap, Activity
+  CheckCircle, Clock, ArrowRight, Plus, Zap, Activity, Settings2, Save
 } from "lucide-react";
-import { agentsApi, teamsApi, executionsApi, metricsApi } from "../lib/api";
+import { agentsApi, teamsApi, executionsApi, metricsApi, api } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 
 interface Stats {
@@ -39,6 +39,9 @@ export default function Dashboard() {
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [monthlyUsage, setMonthlyUsage] = useState<{ count: number; limit: number | null; percentUsed: number; remaining: number | null; plan: string } | null>(null);
+  const [outputPreferences, setOutputPreferences] = useState("");
+  const [prefSaving, setPrefSaving] = useState(false);
+  const [prefSaved, setPrefSaved] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -70,6 +73,23 @@ export default function Dashboard() {
     };
     load();
   }, []);
+
+  // Load output preferences
+  useEffect(() => {
+    api.get("/output-preferences")
+      .then((r) => setOutputPreferences(r.data?.outputPreferences || ""))
+      .catch(() => {});
+  }, []);
+
+  const saveOutputPreferences = useCallback(async () => {
+    setPrefSaving(true);
+    try {
+      await api.put("/output-preferences", { outputPreferences });
+      setPrefSaved(true);
+      setTimeout(() => setPrefSaved(false), 2500);
+    } catch (_) {}
+    setPrefSaving(false);
+  }, [outputPreferences]);
 
   const statusColor: Record<string, string> = {
     completed: "text-emerald-400 bg-emerald-950/50",
@@ -424,6 +444,39 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* ── Output Preferences ── */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Settings2 className="w-4 h-4 text-purple-400" />
+            <h2 className="font-semibold text-white text-sm">Output Preferences</h2>
+          </div>
+          <button
+            onClick={saveOutputPreferences}
+            disabled={prefSaving}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white disabled:opacity-50"
+          >
+            <Save className="w-3.5 h-3.5" />
+            {prefSaving ? "Saving…" : prefSaved ? "Saved!" : "Save"}
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          Describe exactly how you want your agent outputs formatted. This preference is applied to every execution automatically — no character limit.
+        </p>
+        <textarea
+          value={outputPreferences}
+          onChange={(e) => setOutputPreferences(e.target.value)}
+          placeholder={`Examples:\n• Always respond in bullet points with a 1-sentence executive summary at the top\n• Use a formal business tone, avoid jargon, and include a recommended next action at the end\n• Format all outputs as a structured report with sections: Summary, Key Findings, Risks, Recommendations\n• Keep responses concise — no more than 300 words unless the task requires detail`}
+          rows={7}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 resize-y leading-relaxed"
+        />
+        {prefSaved && (
+          <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+            <CheckCircle className="w-3.5 h-3.5" /> Preferences saved — all future executions will follow these instructions.
+          </p>
+        )}
       </div>
     </div>
   );

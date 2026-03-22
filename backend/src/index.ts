@@ -30,6 +30,7 @@ import securityRouter from "./api/security.js";
 import demoRouter from "./api/demo.js";
 import { customBuildRouter } from "./api/customBuild.js";
 import { ssoRouter } from "./api/sso.js";
+import { outputPreferencesRouter } from "./api/outputPreferences.js";
 import { statusRouter } from "./api/status.js";
 import { startReportScheduler } from "./services/reportScheduler.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -93,6 +94,7 @@ app.use("/api/security", securityRouter);
 app.use("/api/demo", demoRouter);
 app.use("/api/custom-build", customBuildRouter);
 app.use("/api/sso", ssoRouter);
+app.use("/api/output-preferences", outputPreferencesRouter);
 app.use("/api/status", statusRouter);
 
 app.get("/api/health", (_req, res) => {

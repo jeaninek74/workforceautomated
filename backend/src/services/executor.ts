@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { executions, agents, teams, governanceSettings } from "../db/schema.js";
+import { executions, agents, teams, governanceSettings, users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { runAgentTask, extractTextFromFile } from "./llm.js";
 import { fetchIntegrationData } from "./integrations.js";
@@ -12,6 +12,7 @@ interface ExecutionInput {
   input: string;
   type: string;
   outputFormat?: string;
+  userOutputPreferences?: string;
   files?: Array<{ path: string; mimeType: string; originalName: string }>;
 }
 
@@ -280,6 +281,14 @@ export async function runAgentExecution(
       .limit(1);
     const escalationThreshold = govSettings?.globalEscalationThreshold || 0.5;
 
+    // Fetch user's saved output preferences
+    const [userRow] = await db
+      .select({ outputPreferences: users.outputPreferences })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const userOutputPreferences = input.userOutputPreferences || userRow?.outputPreferences || undefined;
+
     // Pull live data from connected integrations
     let integrationContext = "";
     if (input.agentId) {
@@ -327,12 +336,18 @@ export async function runAgentExecution(
     let agentMessages: AgentMessage[] = [];
     let teamResultsForMeta: AgentResult[] = [];
 
+    // Build the effective output format: combine outputFormat + user preferences
+    const effectiveOutputFormat = [
+      input.outputFormat,
+      userOutputPreferences ? `User output preferences: ${userOutputPreferences}` : undefined,
+    ].filter(Boolean).join(" | ") || undefined;
+
     // ── Single agent ──
     if (input.agentId) {
       const result = await runSingleAgent(
         input.agentId,
         input.input,
-        input.outputFormat,
+        effectiveOutputFormat,
         combinedFileContext,
         []
       );
@@ -361,11 +376,11 @@ export async function runAgentExecution(
 
       let teamResult: { output: string; results: AgentResult[]; messages: AgentMessage[] };
        if (mode === "parallel") {
-        teamResult = await runParallel(memberIds, input.input, input.outputFormat, combinedFileContext);
+        teamResult = await runParallel(memberIds, input.input, effectiveOutputFormat, combinedFileContext);
       } else if (mode === "conditional") {
-        teamResult = await runConditional(memberIds, branchingRules, input.input, input.outputFormat, combinedFileContext);
+        teamResult = await runConditional(memberIds, branchingRules, input.input, effectiveOutputFormat, combinedFileContext);
       } else {
-        teamResult = await runSequential(memberIds, input.input, input.outputFormat, combinedFileContext);
+        teamResult = await runSequential(memberIds, input.input, effectiveOutputFormat, combinedFileContext);
       }
 
       output = teamResult.output;

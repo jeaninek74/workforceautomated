@@ -314,6 +314,44 @@ async function migrate() {
       nonce VARCHAR(255) NOT NULL
     );`);
 
+    // Add output_preferences column to users (for existing deployments)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS output_preferences TEXT;`);
+
+    // SSO config table
+    await client.query(`CREATE TABLE IF NOT EXISTS sso_config (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      enabled BOOLEAN DEFAULT false NOT NULL,
+      provider VARCHAR(64),
+      entity_id TEXT,
+      sso_url TEXT,
+      certificate TEXT,
+      attribute_mapping JSONB,
+      force_sso BOOLEAN DEFAULT false NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+
+    // Status checks table
+    await client.query(`CREATE TABLE IF NOT EXISTS status_checks (
+      id SERIAL PRIMARY KEY,
+      service VARCHAR(64) NOT NULL,
+      status VARCHAR(32) NOT NULL,
+      response_time_ms INTEGER,
+      checked_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );`);
+
+    // Status incidents table
+    await client.query(`CREATE TABLE IF NOT EXISTS status_incidents (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      severity VARCHAR(32) NOT NULL,
+      status VARCHAR(32) NOT NULL DEFAULT 'resolved',
+      started_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      resolved_at TIMESTAMP
+    );`);
+
     console.log("Database migration completed successfully!");
   } catch (err) {
     console.error("Migration error:", err);
