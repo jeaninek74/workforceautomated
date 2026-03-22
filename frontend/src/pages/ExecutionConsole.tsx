@@ -4,7 +4,7 @@ import {
   Bot, Play, Loader2, CheckCircle, XCircle, AlertTriangle,
   ArrowLeft, Shield, Upload, X, FileText, ChevronDown, Zap,
   Link2, Copy, Check, MessageSquare, ArrowRight, RefreshCw,
-  Clock, Lightbulb
+  Clock, Lightbulb, History, PlusCircle, ChevronUp
 } from "lucide-react";
 import { agentsApi, executionsApi, integrationsApi } from "../lib/api";
 
@@ -168,6 +168,14 @@ function OutputRenderer({ text }: { text: string }) {
   );
 }
 
+// Task history item type
+interface TaskHistoryItem {
+  input: string;
+  timestamp: string;
+  status: string;
+  confidence?: number;
+}
+
 export default function ExecutionConsole() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -182,18 +190,49 @@ export default function ExecutionConsole() {
   const [agentIntegrations, setAgentIntegrations] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
+  const [taskHistory, setTaskHistory] = useState<TaskHistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [appendText, setAppendText] = useState("");
+  const [showAppend, setShowAppend] = useState(false);
   const logsRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const taskInputRef = useRef<HTMLTextAreaElement>(null);
 
+  // localStorage key per agent
+  const storageKey = id ? `wfa_task_${id}` : null;
+  const historyKey = id ? `wfa_task_history_${id}` : null;
+
+  // Load persisted input and history on mount
   useEffect(() => {
     if (!id) return;
     agentsApi.get(Number(id)).then((r) => setAgent(r.data)).catch(() => {});
     integrationsApi.getAgentAssignments(Number(id))
       .then((r) => setAgentIntegrations(r.data?.assignments || []))
       .catch(() => {});
+
+    // Restore saved task input
+    if (storageKey) {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setInput(saved);
+    }
+    // Restore task history
+    if (historyKey) {
+      try {
+        const savedHistory = localStorage.getItem(historyKey);
+        if (savedHistory) setTaskHistory(JSON.parse(savedHistory));
+      } catch (_) {}
+    }
+
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [id]);
+
+  // Persist input to localStorage whenever it changes
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(storageKey, input);
+    }
+  }, [input, storageKey]);
 
   useEffect(() => {
     if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight;
@@ -224,11 +263,34 @@ export default function ExecutionConsole() {
     }
   };
 
+  // After execution completes, keep the input visible and allow building on it
   const handleRunAgain = () => {
     setExecution(null);
     setLogs([]);
     setError("");
-    // Keep the same input so user can tweak and re-run
+    // Input is intentionally NOT cleared — user can build on it
+    // Scroll task input into view
+    setTimeout(() => taskInputRef.current?.focus(), 100);
+  };
+
+  // Append additional context to the existing task
+  const handleAppend = () => {
+    if (!appendText.trim()) return;
+    const separator = input.trim() ? "\n\n" : "";
+    const newInput = input + separator + appendText.trim();
+    setInput(newInput);
+    setAppendText("");
+    setShowAppend(false);
+    setTimeout(() => taskInputRef.current?.focus(), 100);
+  };
+
+  // Use a history item as the new task input
+  const handleUseHistoryItem = (item: TaskHistoryItem) => {
+    setInput(item.input);
+    setShowHistory(false);
+    setExecution(null);
+    setLogs([]);
+    setTimeout(() => taskInputRef.current?.focus(), 100);
   };
 
   const getConfidencePct = (score: number) => Math.round(score <= 1 ? score * 100 : score);
@@ -280,6 +342,20 @@ export default function ExecutionConsole() {
             clearInterval(pollRef.current);
             setExecution(exec);
             setRunning(false);
+
+            // Save to task history
+            const historyItem: TaskHistoryItem = {
+              input: input.trim(),
+              timestamp: new Date().toISOString(),
+              status: exec.status,
+              confidence: exec.confidenceScore,
+            };
+            setTaskHistory((prev) => {
+              const updated = [historyItem, ...prev].slice(0, 20); // keep last 20
+              if (historyKey) localStorage.setItem(historyKey, JSON.stringify(updated));
+              return updated;
+            });
+
             if (exec.status === "success" || exec.status === "completed") {
               addLog(`Execution completed. Confidence: ${getConfidencePct(exec.confidenceScore || 0)}%`);
               addLog(`Risk level: ${exec.riskLevel || "low"}`);
@@ -329,7 +405,6 @@ export default function ExecutionConsole() {
     google_drive: "Drive", slack: "Slack", rest_api: "API", webhook: "Webhook", database: "DB",
   };
 
-  // Parse agent display name
   const agentFirstName = agent?.name?.split(" — ")[0] || agent?.name;
 
   return (
@@ -342,7 +417,7 @@ export default function ExecutionConsole() {
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-bold text-white">Run Agent</h1>
           {agent && (
             <p className="text-gray-400 text-sm mt-0.5">
@@ -350,7 +425,68 @@ export default function ExecutionConsole() {
             </p>
           )}
         </div>
+        {/* Task History button */}
+        {taskHistory.length > 0 && (
+          <button
+            onClick={() => setShowHistory((v) => !v)}
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-gray-900 border border-gray-800 hover:border-gray-700 px-3 py-2 rounded-lg transition-colors"
+          >
+            <History className="w-3.5 h-3.5" />
+            Task History ({taskHistory.length})
+            {showHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+        )}
       </div>
+
+      {/* Task History Panel */}
+      {showHistory && taskHistory.length > 0 && (
+        <div className="border border-gray-700 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 bg-gray-900 border-b border-gray-700 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-white">Previous Tasks</span>
+              <span className="text-xs text-gray-500">Click any task to reuse or build on it</span>
+            </div>
+            <button onClick={() => {
+              if (historyKey) localStorage.removeItem(historyKey);
+              setTaskHistory([]);
+              setShowHistory(false);
+            }} className="text-xs text-gray-600 hover:text-red-400 transition-colors">Clear history</button>
+          </div>
+          <div className="divide-y divide-gray-800 max-h-72 overflow-y-auto">
+            {taskHistory.map((item, i) => (
+              <button
+                key={i}
+                onClick={() => handleUseHistoryItem(item)}
+                className="w-full text-left px-4 py-3 hover:bg-gray-800/50 transition-colors group"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 flex-1">{item.input}</p>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                      item.status === "success" || item.status === "completed"
+                        ? "bg-emerald-950/50 text-emerald-400 border-emerald-800"
+                        : item.status === "escalated"
+                        ? "bg-orange-950/50 text-orange-400 border-orange-800"
+                        : "bg-red-950/50 text-red-400 border-red-800"
+                    }`}>
+                      {item.status === "completed" ? "success" : item.status}
+                    </span>
+                    {item.confidence !== undefined && (
+                      <span className={`text-xs font-medium ${confidenceColor(item.confidence)}`}>
+                        {getConfidencePct(item.confidence)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  {new Date(item.timestamp).toLocaleString()}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Agent Info Bar */}
       {agent && (
@@ -383,125 +519,179 @@ export default function ExecutionConsole() {
         </div>
       )}
 
-      {/* Task Input */}
-      {!execution && (
-        <div className="border border-gray-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
-            <h2 className="font-semibold text-white flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              Task
-            </h2>
-            <button
-              onClick={() => setShowExamples((v) => !v)}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-400 transition-colors"
-            >
-              <Lightbulb className="w-3.5 h-3.5" />
-              Example prompts
-            </button>
+      {/* Task Input — always visible, never hidden */}
+      <div className="border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
+          <h2 className="font-semibold text-white flex items-center gap-2">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            Task
+            {execution && (
+              <span className="text-xs font-normal text-gray-500 ml-1">— edit and re-run, or build on your previous task below</span>
+            )}
+          </h2>
+          <button
+            onClick={() => setShowExamples((v) => !v)}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-400 transition-colors"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            Example prompts
+          </button>
+        </div>
+
+        {/* Example prompts */}
+        {showExamples && (
+          <div className="px-5 py-3 bg-blue-950/20 border-b border-blue-900/30 space-y-2">
+            <p className="text-xs text-blue-400 font-medium">Click to use an example:</p>
+            {getExamples().map((ex, i) => (
+              <button
+                key={i}
+                onClick={() => { setInput(ex); setShowExamples(false); }}
+                className="w-full text-left text-xs text-gray-300 hover:text-white bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-lg px-3 py-2 transition-colors"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="p-5 space-y-4 bg-gray-900">
+          {/* Task description — persistent, never cleared */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs text-gray-400">What should {agentFirstName || "the agent"} do?</label>
+              <span className="text-xs text-gray-600">Auto-saved · {input.length} characters</span>
+            </div>
+            <textarea
+              ref={taskInputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={running}
+              rows={6}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500 resize-y disabled:opacity-50"
+              placeholder={`Describe the task in detail. Your input is automatically saved and never cleared — build on it across multiple runs.`}
+            />
+            <div className="flex items-center gap-2 mt-2">
+              {/* Append to task */}
+              <button
+                onClick={() => setShowAppend((v) => !v)}
+                disabled={running}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-400 disabled:opacity-50 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Add context
+              </button>
+              <span className="text-gray-700">·</span>
+              {input.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (storageKey) localStorage.removeItem(storageKey);
+                    setInput("");
+                  }}
+                  disabled={running}
+                  className="text-xs text-gray-600 hover:text-red-400 disabled:opacity-50 transition-colors"
+                >
+                  Clear task
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Example prompts */}
-          {showExamples && (
-            <div className="px-5 py-3 bg-blue-950/20 border-b border-blue-900/30 space-y-2">
-              <p className="text-xs text-blue-400 font-medium">Click to use an example:</p>
-              {getExamples().map((ex, i) => (
+          {/* Append context panel */}
+          {showAppend && (
+            <div className="bg-blue-950/20 border border-blue-900/30 rounded-lg p-4 space-y-3">
+              <p className="text-xs text-blue-400 font-medium">Add context or follow-up instructions to your existing task:</p>
+              <textarea
+                value={appendText}
+                onChange={(e) => setAppendText(e.target.value)}
+                rows={3}
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500 resize-none"
+                placeholder="e.g. Also include a risk assessment section. Focus on Q1 data only."
+                autoFocus
+              />
+              <div className="flex gap-2">
                 <button
-                  key={i}
-                  onClick={() => { setInput(ex); setShowExamples(false); }}
-                  className="w-full text-left text-xs text-gray-300 hover:text-white bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 rounded-lg px-3 py-2 transition-colors"
+                  onClick={handleAppend}
+                  disabled={!appendText.trim()}
+                  className="flex items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
                 >
-                  {ex}
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  Append to task
                 </button>
-              ))}
+                <button
+                  onClick={() => { setShowAppend(false); setAppendText(""); }}
+                  className="text-xs text-gray-500 hover:text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
-          <div className="p-5 space-y-4 bg-gray-900">
-            {/* Task description */}
-            <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">What should {agentFirstName || "the agent"} do?</label>
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+          {/* Output Format */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1.5 block">Output Format</label>
+            <div className="relative">
+              <select
+                value={outputFormat}
+                onChange={(e) => setOutputFormat(e.target.value)}
                 disabled={running}
-                rows={5}
-                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500 resize-none disabled:opacity-50"
-                placeholder={`Describe the task in detail. For example: "Review the attached invoice CSV and flag any amounts over $10,000 for approval."`}
-              />
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-xs text-gray-600">{input.length} characters</span>
-                {input.length > 0 && (
-                  <button onClick={() => setInput("")} className="text-xs text-gray-600 hover:text-gray-400 transition-colors">Clear</button>
-                )}
-              </div>
-            </div>
-
-            {/* Output Format */}
-            <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">Output Format</label>
-              <div className="relative">
-                <select
-                  value={outputFormat}
-                  onChange={(e) => setOutputFormat(e.target.value)}
-                  disabled={running}
-                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 appearance-none disabled:opacity-50 pr-10"
-                >
-                  {OUTPUT_FORMATS.map((f) => (
-                    <option key={f.value} value={f.value}>{f.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* File Upload */}
-            <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">
-                Attach Files — PDF, CSV, Excel, Word, TXT (up to 5 files, 20MB each)
-              </label>
-              <div
-                onClick={() => !running && fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-                  running ? "border-gray-700 opacity-50 cursor-not-allowed" : "border-gray-700 hover:border-blue-500 cursor-pointer"
-                }`}
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 appearance-none disabled:opacity-50 pr-10"
               >
-                <Upload className="w-5 h-5 text-gray-500 mx-auto mb-1" />
-                <p className="text-sm text-gray-400">Click to upload or drag &amp; drop</p>
-                <p className="text-xs text-gray-600 mt-0.5">The agent will read and reason over the file content</p>
-              </div>
-              <input ref={fileInputRef} type="file" multiple accept={ACCEPTED_FILE_TYPES} onChange={handleFileChange} className="hidden" />
-              {files.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {files.map((file, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                      <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                      <span className="text-gray-300 flex-1 truncate">{file.name}</span>
-                      <span className="text-gray-500 text-xs">{(file.size / 1024 / 1024).toFixed(1)}MB</span>
-                      <button onClick={() => removeFile(i)} disabled={running} className="text-gray-500 hover:text-red-400 transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {OUTPUT_FORMATS.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
-
-            {error && <div className="text-red-400 text-sm bg-red-950/30 border border-red-800 rounded-lg px-3 py-2">{error}</div>}
-
-            <button
-              onClick={handleRun}
-              disabled={running || !input.trim()}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              {running ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Running — this takes about 7-10 seconds...</>
-              ) : (
-                <><Play className="w-4 h-4" /> Execute Agent</>
-              )}
-            </button>
           </div>
+
+          {/* File Upload */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1.5 block">
+              Attach Files — PDF, CSV, Excel, Word, TXT (up to 5 files, 20MB each)
+            </label>
+            <div
+              onClick={() => !running && fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                running ? "border-gray-700 opacity-50 cursor-not-allowed" : "border-gray-700 hover:border-blue-500 cursor-pointer"
+              }`}
+            >
+              <Upload className="w-5 h-5 text-gray-500 mx-auto mb-1" />
+              <p className="text-sm text-gray-400">Click to upload or drag &amp; drop</p>
+              <p className="text-xs text-gray-600 mt-0.5">The agent will read and reason over the file content</p>
+            </div>
+            <input ref={fileInputRef} type="file" multiple accept={ACCEPTED_FILE_TYPES} onChange={handleFileChange} className="hidden" />
+            {files.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {files.map((file, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
+                    <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <span className="text-gray-300 flex-1 truncate">{file.name}</span>
+                    <span className="text-gray-500 text-xs">{(file.size / 1024 / 1024).toFixed(1)}MB</span>
+                    <button onClick={() => removeFile(i)} disabled={running} className="text-gray-500 hover:text-red-400 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <div className="text-red-400 text-sm bg-red-950/30 border border-red-800 rounded-lg px-3 py-2">{error}</div>}
+
+          <button
+            onClick={handleRun}
+            disabled={running || !input.trim()}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors"
+          >
+            {running ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Running — this takes about 7-10 seconds...</>
+            ) : (
+              <><Play className="w-4 h-4" /> Execute Agent</>
+            )}
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Execution Logs */}
       {logs.length > 0 && (
@@ -538,7 +728,7 @@ export default function ExecutionConsole() {
                 className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 px-3 py-1.5 rounded-lg transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                Run Again
+                Edit &amp; Re-run
               </button>
             </div>
           </div>
@@ -611,15 +801,20 @@ export default function ExecutionConsole() {
               </div>
             )}
 
-            {/* Run again prompt */}
+            {/* Build on task prompt */}
             <div className="border-t border-gray-800 pt-4 flex items-center justify-between">
-              <p className="text-xs text-gray-600">Want to run a different task with {agentFirstName || "this agent"}?</p>
+              <p className="text-xs text-gray-500">Your task is saved above — edit it, add context, or run a new task.</p>
               <button
-                onClick={handleRunAgain}
+                onClick={() => {
+                  setShowAppend(true);
+                  setExecution(null);
+                  setLogs([]);
+                  setTimeout(() => taskInputRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+                }}
                 className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                New Task
+                <PlusCircle className="w-3.5 h-3.5" />
+                Build on this task
               </button>
             </div>
           </div>
