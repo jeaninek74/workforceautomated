@@ -9,6 +9,7 @@ import { executions, agents } from "../db/schema.js";
 import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { runAgentExecution } from "../services/executor.js";
+import { checkTaskScope } from "../services/llm.js";
 
 export const executionsRouter = Router();
 executionsRouter.use(authenticate);
@@ -46,6 +47,32 @@ const upload = multer({
       cb(new Error(`Unsupported file type: ${file.mimetype}. Supported: PDF, CSV, Excel, Word, TXT`));
     }
   },
+});
+
+// ─── POST /api/executions/check-scope ───────────────────────────────────────
+// Fast pre-flight scope check — does NOT create an execution record.
+// Returns { inScope, reason, suggestedCapabilities, agentName }
+executionsRouter.post("/check-scope", async (req: AuthRequest, res) => {
+  try {
+    const { agentId, input } = req.body;
+    if (!agentId || !input) return res.status(400).json({ error: "agentId and input are required" });
+    const [agent] = await db
+      .select()
+      .from(agents)
+      .where(and(eq(agents.id, parseInt(agentId)), eq(agents.userId, req.user!.id)))
+      .limit(1);
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+    const result = await checkTaskScope(
+      agent.name,
+      agent.role || null,
+      agent.description || null,
+      agent.systemPrompt || null,
+      input
+    );
+    res.json({ ...result, agentName: agent.name });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ─── GET /api/executions ──────────────────────────────────────────────────────

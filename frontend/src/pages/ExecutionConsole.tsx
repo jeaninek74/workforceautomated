@@ -4,9 +4,11 @@ import {
   Bot, Play, Loader2, CheckCircle, XCircle, AlertTriangle,
   ArrowLeft, Shield, Upload, X, FileText, ChevronDown, Zap,
   Link2, Copy, Check, MessageSquare, ArrowRight, RefreshCw,
-  Clock, Lightbulb, History, PlusCircle, ChevronUp
+  Clock, Lightbulb, History, PlusCircle, ChevronUp,
+  Download, Sparkles, AlertCircle
 } from "lucide-react";
 import { agentsApi, executionsApi, integrationsApi } from "../lib/api";
+import { api } from "../lib/api";
 
 const OUTPUT_FORMATS = [
   { value: "", label: "Default (agent decides)" },
@@ -194,6 +196,15 @@ export default function ExecutionConsole() {
   const [showHistory, setShowHistory] = useState(false);
   const [appendText, setAppendText] = useState("");
   const [showAppend, setShowAppend] = useState(false);
+  // Scope check / self-upgrade state
+  const [scopeCheckLoading, setScopeCheckLoading] = useState(false);
+  const [upgradeModal, setUpgradeModal] = useState<{
+    visible: boolean;
+    reason: string;
+    suggestedCapabilities: string[];
+    agentName: string;
+  }>({ visible: false, reason: "", suggestedCapabilities: [], agentName: "" });
+  const [upgrading, setUpgrading] = useState(false);
   const logsRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -305,7 +316,56 @@ export default function ExecutionConsole() {
     return EXAMPLE_PROMPTS.default;
   };
 
-  const handleRun = async () => {
+  // ─── Download output helpers ───────────────────────────────────────────────
+  const downloadOutput = (format: "txt" | "csv" | "pdf") => {
+    if (!execution?.output) return;
+    const text = typeof execution.output === "string" ? execution.output : JSON.stringify(execution.output, null, 2);
+    const agentLabel = agent?.name?.replace(/[^a-z0-9]/gi, "_") || "output";
+    const ts = new Date().toISOString().slice(0, 10);
+    if (format === "txt") {
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `${agentLabel}_${ts}.txt`; a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === "csv") {
+      // Wrap output as a single CSV cell with proper escaping
+      const escaped = text.replace(/"/g, '""');
+      const csv = `"Agent","Date","Confidence","Risk","Output"\n"${agentLabel}","${ts}","${Math.round((execution.confidenceScore || 0) * 100)}%","${execution.riskLevel || "low"}","${escaped}"`;
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `${agentLabel}_${ts}.csv`; a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === "pdf") {
+      // Use print-to-PDF via a new window with formatted HTML
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${agentLabel} Output</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#111}h1{font-size:20px;margin-bottom:4px}p.meta{font-size:12px;color:#666;margin-bottom:24px}pre{white-space:pre-wrap;word-wrap:break-word;font-size:13px;line-height:1.6;background:#f5f5f5;padding:20px;border-radius:6px}</style></head><body><h1>${agent?.name || "Agent"} — Output</h1><p class="meta">Date: ${new Date().toLocaleString()} &nbsp;|&nbsp; Confidence: ${Math.round((execution.confidenceScore || 0) * 100)}% &nbsp;|&nbsp; Risk: ${execution.riskLevel || "low"}</p><pre>${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre></body></html>`;
+      const win = window.open("", "_blank");
+      if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 500); }
+    }
+  };
+
+  // ─── Scope check + upgrade logic ────────────────────────────────────────────
+  const handleUpgradeAgent = async () => {
+    if (!id || !agent) return;
+    setUpgrading(true);
+    try {
+      // Expand agent's role and system prompt to include the new task scope
+      const newRole = `${agent.role || "General purpose"} + ${upgradeModal.suggestedCapabilities.join(", ")}`;
+      const newSystemPrompt = (agent.systemPrompt || "") +
+        `\n\n[Self-Upgrade] This agent has been expanded to handle: ${upgradeModal.suggestedCapabilities.join(", ")}. ` +
+        `Reason: ${upgradeModal.reason}`;
+      await agentsApi.update(Number(id), { role: newRole, systemPrompt: newSystemPrompt });
+      setAgent((prev: any) => ({ ...prev, role: newRole, systemPrompt: newSystemPrompt }));
+      setUpgradeModal({ visible: false, reason: "", suggestedCapabilities: [], agentName: "" });
+      // Now run the execution
+      await executeTask();
+    } catch {
+      setError("Failed to upgrade agent. Please try again.");
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
+  const executeTask = async () => {
     if (!input.trim() || !id) return;
     setRunning(true);
     setError("");
@@ -343,7 +403,6 @@ export default function ExecutionConsole() {
             setExecution(exec);
             setRunning(false);
 
-            // Save to task history
             const historyItem: TaskHistoryItem = {
               input: input.trim(),
               timestamp: new Date().toISOString(),
@@ -351,7 +410,7 @@ export default function ExecutionConsole() {
               confidence: exec.confidenceScore,
             };
             setTaskHistory((prev) => {
-              const updated = [historyItem, ...prev].slice(0, 20); // keep last 20
+              const updated = [historyItem, ...prev].slice(0, 20);
               if (historyKey) localStorage.setItem(historyKey, JSON.stringify(updated));
               return updated;
             });
@@ -385,6 +444,25 @@ export default function ExecutionConsole() {
       setRunning(false);
       addLog("Failed to start execution");
     }
+  };
+
+  const handleRun = async () => {
+    if (!input.trim() || !id) return;
+    // Pre-flight scope check
+    setScopeCheckLoading(true);
+    try {
+      const scopeRes = await api.post("/executions/check-scope", { agentId: id, input });
+      const { inScope, reason, suggestedCapabilities, agentName } = scopeRes.data;
+      setScopeCheckLoading(false);
+      if (!inScope) {
+        setUpgradeModal({ visible: true, reason, suggestedCapabilities, agentName });
+        return;
+      }
+    } catch {
+      // If scope check fails, proceed with execution anyway
+      setScopeCheckLoading(false);
+    }
+    await executeTask();
   };
 
   const confidenceColor = (score: number) => {
@@ -681,10 +759,12 @@ export default function ExecutionConsole() {
 
           <button
             onClick={handleRun}
-            disabled={running || !input.trim()}
+            disabled={running || scopeCheckLoading || !input.trim()}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors"
           >
-            {running ? (
+            {scopeCheckLoading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Checking task scope...</>
+            ) : running ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Running — this takes about 7-10 seconds...</>
             ) : (
               <><Play className="w-4 h-4" /> Execute Agent</>
@@ -763,13 +843,38 @@ export default function ExecutionConsole() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-sm font-medium text-gray-300">Output</div>
-                  <button
-                    onClick={handleCopyOutput}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                    {copied ? "Copied!" : "Copy"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCopyOutput}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                    >
+                      {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                    <span className="text-gray-700">|</span>
+                    <span className="text-xs text-gray-600">Download:</span>
+                    <button
+                      onClick={() => downloadOutput("txt")}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-400 bg-gray-800 hover:bg-gray-700 border border-gray-700 px-2 py-1 rounded transition-colors"
+                      title="Download as plain text"
+                    >
+                      <Download className="w-3 h-3" /> TXT
+                    </button>
+                    <button
+                      onClick={() => downloadOutput("csv")}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-emerald-400 bg-gray-800 hover:bg-gray-700 border border-gray-700 px-2 py-1 rounded transition-colors"
+                      title="Download as CSV (Excel-compatible)"
+                    >
+                      <Download className="w-3 h-3" /> CSV
+                    </button>
+                    <button
+                      onClick={() => downloadOutput("pdf")}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-400 bg-gray-800 hover:bg-gray-700 border border-gray-700 px-2 py-1 rounded transition-colors"
+                      title="Download as PDF"
+                    >
+                      <Download className="w-3 h-3" /> PDF
+                    </button>
+                  </div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-5 max-h-[500px] overflow-y-auto">
                   {typeof execution.output === "string" ? (
@@ -816,6 +921,82 @@ export default function ExecutionConsole() {
                 <PlusCircle className="w-3.5 h-3.5" />
                 Build on this task
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Self-Upgrade Modal ─────────────────────────────────────────────── */}
+      {upgradeModal.visible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-gray-900 border border-yellow-700/60 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+            <div className="flex items-start gap-4 px-6 py-5 border-b border-gray-800">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Sparkles className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white">Task Outside Agent Scope</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  <span className="font-medium text-yellow-300">{upgradeModal.agentName}</span> was not programmed for this task.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-gray-300">{upgradeModal.reason}</p>
+                </div>
+              </div>
+              {upgradeModal.suggestedCapabilities.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Capabilities needed for this task:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {upgradeModal.suggestedCapabilities.map((cap, i) => (
+                      <span key={i} className="text-xs bg-blue-950/50 text-blue-300 border border-blue-800/50 px-2.5 py-1 rounded-full">{cap}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <p className="text-sm text-gray-400">What would you like to do?</p>
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  onClick={handleUpgradeAgent}
+                  disabled={upgrading}
+                  className="flex items-start gap-3 text-left bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/40 hover:border-blue-500 rounded-xl px-4 py-4 transition-colors disabled:opacity-50"
+                >
+                  <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-sm font-semibold text-white flex items-center gap-2">
+                      Upgrade this agent for this task
+                      {upgrading && <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">Expand {upgradeModal.agentName}'s capabilities and immediately run the task.</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setUpgradeModal({ visible: false, reason: "", suggestedCapabilities: [], agentName: "" });
+                    navigate("/agents/new", { state: { prefillTask: input, prefillCapabilities: upgradeModal.suggestedCapabilities } });
+                  }}
+                  className="flex items-start gap-3 text-left bg-purple-600/10 hover:bg-purple-600/20 border border-purple-600/40 hover:border-purple-500 rounded-xl px-4 py-4 transition-colors"
+                >
+                  <Bot className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Create a new agent</div>
+                    <div className="text-xs text-gray-400 mt-0.5">Build a purpose-built agent for this task in the Agent Builder.</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setUpgradeModal({ visible: false, reason: "", suggestedCapabilities: [], agentName: "" });
+                    executeTask();
+                  }}
+                  className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 justify-center py-2 transition-colors"
+                >
+                  Run anyway without upgrading
+                </button>
+              </div>
             </div>
           </div>
         </div>

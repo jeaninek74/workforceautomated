@@ -410,8 +410,80 @@ export async function runAgentTask(
   let riskLevel: "low" | "medium" | "high" | "critical";
   if (confidenceScore >= 0.80) riskLevel = "low";
   else if (confidenceScore >= 0.65) riskLevel = "medium";
-  else if (confidenceScore >= 0.45) riskLevel = "high";
+   else if (confidenceScore >= 0.45) riskLevel = "high";
   else riskLevel = "critical";
-
   return { output, confidenceScore, riskLevel, tokenCount, model: modelUsed };
+}
+
+// ─── Scope Detection ─────────────────────────────────────────────────────────
+
+export interface ScopeCheckResult {
+  inScope: boolean;
+  reason: string;
+  suggestedCapabilities: string[];
+}
+
+export async function checkTaskScope(
+  agentName: string,
+  agentRole: string | null,
+  agentDescription: string | null,
+  agentSystemPrompt: string | null,
+  taskInput: string
+): Promise<ScopeCheckResult> {
+  const hasOpenAIKey = !!process.env.OPENAI_API_KEY &&
+    !process.env.OPENAI_API_KEY.startsWith("sk-place") &&
+    process.env.OPENAI_API_KEY.length > 20;
+  const hasClaudeKey = !!process.env.ANTHROPIC_API_KEY &&
+    !process.env.ANTHROPIC_API_KEY.startsWith("sk-ant-placeholder") &&
+    process.env.ANTHROPIC_API_KEY.length > 20;
+
+  if (!hasOpenAIKey && !hasClaudeKey) {
+    return { inScope: true, reason: "", suggestedCapabilities: [] };
+  }
+
+  const systemMsg = `You are a scope evaluator for AI agents. Given an agent's definition and a user task, determine if the task is within the agent's programmed scope.
+
+Agent Name: ${agentName}
+Agent Role: ${agentRole || "General purpose"}
+Agent Description: ${agentDescription || "No description provided"}
+Agent System Prompt: ${agentSystemPrompt ? agentSystemPrompt.slice(0, 500) : "None"}
+
+Respond ONLY with a JSON object in this exact format (no markdown, no extra text):
+{"inScope": true, "reason": "", "suggestedCapabilities": []}
+
+If inScope is false, reason should explain what the task requires that the agent lacks, and suggestedCapabilities should list 2-4 new capabilities the agent would need to handle this task.`;
+
+  try {
+    let responseText = "";
+    if (hasClaudeKey) {
+      const resp = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 300,
+        system: systemMsg,
+        messages: [{ role: "user", content: `User task: ${taskInput.slice(0, 1000)}` }],
+      });
+      responseText = resp.content[0]?.type === "text" ? resp.content[0].text : "";
+    } else {
+      const resp = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        max_tokens: 300,
+        messages: [
+          { role: "system", content: systemMsg },
+          { role: "user", content: `User task: ${taskInput.slice(0, 1000)}` },
+        ],
+      });
+      responseText = resp.choices[0]?.message?.content || "";
+    }
+    // Strip markdown code fences if present
+    const cleaned = responseText.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      inScope: !!parsed.inScope,
+      reason: parsed.reason || "",
+      suggestedCapabilities: Array.isArray(parsed.suggestedCapabilities) ? parsed.suggestedCapabilities : [],
+    };
+  } catch {
+    // If scope check fails for any reason, allow execution to proceed normally
+    return { inScope: true, reason: "", suggestedCapabilities: [] };
+  }
 }
