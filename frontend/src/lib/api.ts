@@ -52,6 +52,7 @@ export const agentsApi = {
   delete: (id: number) => api.delete(`/api/agents/${id}`),
   generateFromJD: (jobDescription: string) =>
     api.post("/api/agents/generate-from-jd", { jobDescription }),
+  getUsage: () => api.get("/api/agents/usage"),
 };
 
 // Teams

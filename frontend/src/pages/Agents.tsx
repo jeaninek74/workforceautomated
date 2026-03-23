@@ -40,12 +40,17 @@ export default function Agents() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [usage, setUsage] = useState<{ current: number; limit: number | null; plan: string; percentUsed: number } | null>(null);
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await agentsApi.list({ search });
-      setAgents(res.data?.agents || []);
+      const [listRes, usageRes] = await Promise.all([
+        agentsApi.list({ search }),
+        agentsApi.getUsage(),
+      ]);
+      setAgents(listRes.data?.agents || []);
+      setUsage(usageRes.data || null);
     } catch (_) {}
     setLoading(false);
   };
@@ -89,6 +94,39 @@ export default function Agents() {
           New Agent
         </Link>
       </div>
+
+      {/* Usage Bar */}
+      {usage && usage.limit !== null && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-400">
+              Agent Usage — <span className="capitalize text-white font-medium">{usage.plan}</span> plan
+            </span>
+            <span className={`text-sm font-semibold ${
+              usage.percentUsed >= 100 ? "text-red-400" :
+              usage.percentUsed >= 80 ? "text-yellow-400" : "text-green-400"
+            }`}>
+              {usage.current} / {usage.limit} agents
+            </span>
+          </div>
+          <div className="w-full bg-gray-800 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${
+                usage.percentUsed >= 100 ? "bg-red-500" :
+                usage.percentUsed >= 80 ? "bg-yellow-500" : "bg-blue-500"
+              }`}
+              style={{ width: `${Math.min(usage.percentUsed, 100)}%` }}
+            />
+          </div>
+          {usage.percentUsed >= 80 && (
+            <p className="text-xs text-yellow-400 mt-2">
+              {usage.percentUsed >= 100
+                ? "Agent limit reached. Upgrade your plan to create more agents."
+                : `${usage.limit! - usage.current} agent slot${usage.limit! - usage.current !== 1 ? "s" : ""} remaining.`}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative max-w-sm">

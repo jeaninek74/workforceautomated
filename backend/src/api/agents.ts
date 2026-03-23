@@ -2,21 +2,63 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/index.js";
 import { agents } from "../db/schema.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { logAudit } from "../services/audit.js";
 import { generateAgentFromJobDescription } from "../services/llm.js";
+import { getLimits } from "../lib/planLimits.js";
 
 export const agentsRouter = Router();
 agentsRouter.use(authenticate);
+
+/** Check agent count against plan limit. Returns error response or null. */
+async function checkAgentLimit(req: AuthRequest, res: any): Promise<boolean> {
+  const plan: string = (req.user as any)?.plan || "starter";
+  const limits = getLimits(plan);
+  if (limits.agents === null) return false; // unlimited
+  const [row] = await db
+    .select({ count: sql<number>`cast(count(*) as int)` })
+    .from(agents)
+    .where(eq(agents.userId, req.user!.id));
+  const current = row?.count ?? 0;
+  if (current >= limits.agents) {
+    res.status(403).json({
+      error: `Agent limit reached. Your ${plan} plan allows ${limits.agents} agent${limits.agents !== 1 ? "s" : ""}. Upgrade your plan to create more.`,
+      limitReached: true,
+      limit: limits.agents,
+      current,
+    });
+    return true; // blocked
+  }
+  return false;
+}
 
 agentsRouter.get("/", async (req: AuthRequest, res) => {
   const list = await db.select().from(agents).where(eq(agents.userId, req.user!.id)).orderBy(desc(agents.createdAt));
   res.json({ agents: list });
 });
 
+// GET /agents/usage — returns current count and plan limit
+agentsRouter.get("/usage", async (req: AuthRequest, res) => {
+  const plan: string = (req.user as any)?.plan || "starter";
+  const limits = getLimits(plan);
+  const [row] = await db
+    .select({ count: sql<number>`cast(count(*) as int)` })
+    .from(agents)
+    .where(eq(agents.userId, req.user!.id));
+  const current = row?.count ?? 0;
+  res.json({
+    current,
+    limit: limits.agents,
+    plan,
+    percentUsed: limits.agents ? Math.min(Math.round((current / limits.agents) * 100), 100) : 0,
+    remaining: limits.agents !== null ? Math.max(limits.agents - current, 0) : null,
+  });
+});
+
 agentsRouter.post("/", async (req: AuthRequest, res) => {
   try {
+    if (await checkAgentLimit(req, res)) return;
     const body = z.object({
       name: z.string().min(1),
       description: z.string().optional(),
@@ -40,6 +82,7 @@ agentsRouter.post("/", async (req: AuthRequest, res) => {
 
 async function handleGenerateFromJD(req: AuthRequest, res: any) {
   try {
+    if (await checkAgentLimit(req, res)) return;
     const { jobDescription } = z.object({ jobDescription: z.string().min(10) }).parse(req.body);
     const agentConfig = await generateAgentFromJobDescription(jobDescription);
     const [agent] = await db.insert(agents).values({ ...agentConfig, userId: req.user!.id }).returning();

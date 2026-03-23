@@ -67,6 +67,12 @@ export default function TeamBuilder() {
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState("");
 
+  // Inline agent builder state
+  const [showInlineBuilder, setShowInlineBuilder] = useState(false);
+  const [buildingAgent, setBuildingAgent] = useState(false);
+  const [newAgent, setNewAgent] = useState({ name: "", role: "", description: "", systemPrompt: "" });
+  const [buildError, setBuildError] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -109,6 +115,33 @@ export default function TeamBuilder() {
         : [...prev.executionOrder, agentId];
       return { ...prev, memberAgentIds: newIds, executionOrder: newOrder };
     });
+  };
+
+  // Inline agent builder: create agent and auto-select it in the team
+  const handleBuildAgent = async () => {
+    if (!newAgent.name.trim()) { setBuildError("Agent name is required"); return; }
+    setBuildingAgent(true);
+    setBuildError("");
+    try {
+      const res = await agentsApi.create({
+        name: newAgent.name.trim(),
+        role: newAgent.role.trim() || undefined,
+        description: newAgent.description.trim() || undefined,
+        systemPrompt: newAgent.systemPrompt.trim() || undefined,
+      });
+      const created = res.data?.agent;
+      if (created) {
+        setAgents((prev) => [created, ...prev]);
+        toggleAgent(created.id);
+        setNewAgent({ name: "", role: "", description: "", systemPrompt: "" });
+        setShowInlineBuilder(false);
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err.message || "Failed to create agent";
+      setBuildError(msg);
+    } finally {
+      setBuildingAgent(false);
+    }
   };
 
   const moveAgent = (index: number, direction: "up" | "down") => {
@@ -359,6 +392,77 @@ export default function TeamBuilder() {
       {/* ── Step 2: Add Agents ── */}
       {step === 2 && (
         <div className="space-y-5">
+
+          {/* ── Inline Agent Builder ── */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Plus className="w-4 h-4 text-green-400" /> Build a New Agent
+              </h2>
+              <button
+                onClick={() => { setShowInlineBuilder((v) => !v); setBuildError(""); }}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                {showInlineBuilder ? "Cancel" : "+ Create agent here"}
+              </button>
+            </div>
+            {showInlineBuilder && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Agent Name <span className="text-red-400">*</span></label>
+                  <input
+                    value={newAgent.name}
+                    onChange={(e) => setNewAgent((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="e.g. Risk Analyst"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Role / Title</label>
+                  <input
+                    value={newAgent.role}
+                    onChange={(e) => setNewAgent((p) => ({ ...p, role: e.target.value }))}
+                    placeholder="e.g. Senior Risk Analyst"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Description</label>
+                  <input
+                    value={newAgent.description}
+                    onChange={(e) => setNewAgent((p) => ({ ...p, description: e.target.value }))}
+                    placeholder="What does this agent do?"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">System Instructions</label>
+                  <textarea
+                    value={newAgent.systemPrompt}
+                    onChange={(e) => setNewAgent((p) => ({ ...p, systemPrompt: e.target.value }))}
+                    placeholder="Detailed instructions for how this agent should behave..."
+                    rows={3}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-y"
+                  />
+                </div>
+                {buildError && (
+                  <div className="flex items-center gap-2 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2 text-xs text-red-400">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    {buildError}
+                  </div>
+                )}
+                <button
+                  onClick={handleBuildAgent}
+                  disabled={buildingAgent}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                >
+                  {buildingAgent ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating agent...</> : <><Plus className="w-4 h-4" /> Create &amp; Add to Team</>}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ── Select Existing Agents ── */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-white flex items-center gap-2">
@@ -369,8 +473,8 @@ export default function TeamBuilder() {
             {agents.length === 0 ? (
               <div className="text-center py-8">
                 <Bot className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">No active agents found.</p>
-                <p className="text-gray-500 text-xs mt-1">Create agents in the Agent Builder first.</p>
+                <p className="text-gray-400 text-sm">No agents yet.</p>
+                <p className="text-gray-500 text-xs mt-1">Use the builder above to create your first agent.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

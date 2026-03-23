@@ -2,9 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/index.js";
 import { teams, agents } from "../db/schema.js";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { logAudit } from "../services/audit.js";
+import { getLimits } from "../lib/planLimits.js";
 
 export const teamsRouter = Router();
 teamsRouter.use(authenticate);
@@ -63,6 +64,24 @@ teamsRouter.get("/", async (req: AuthRequest, res) => {
 
 teamsRouter.post("/", async (req: AuthRequest, res) => {
   try {
+    // Enforce per-plan team limit
+    const plan: string = (req.user as any)?.plan || "starter";
+    const limits = getLimits(plan);
+    if (limits.teams !== null) {
+      const [row] = await db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(teams)
+        .where(eq(teams.userId, req.user!.id));
+      const current = row?.count ?? 0;
+      if (current >= limits.teams) {
+        return res.status(403).json({
+          error: `Team limit reached. Your ${plan} plan allows ${limits.teams} team${limits.teams !== 1 ? "s" : ""}. Upgrade your plan to create more.`,
+          limitReached: true,
+          limit: limits.teams,
+          current,
+        });
+      }
+    }
     const body = teamBodySchema.parse(req.body);
     const [team] = await db.insert(teams).values({
       ...body,
