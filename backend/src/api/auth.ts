@@ -98,6 +98,23 @@ authRouter.post("/deactivate-user", authenticate, async (req: AuthRequest, res) 
   }
 });
 
+// One-time bootstrap: promote a specific user to admin using a secret key
+// This endpoint is only active when BOOTSTRAP_SECRET env var is set
+authRouter.post("/bootstrap-admin", async (req, res) => {
+  try {
+    const { secret, userId } = z.object({ secret: z.string(), userId: z.number() }).parse(req.body);
+    const bootstrapSecret = process.env.BOOTSTRAP_SECRET;
+    if (!bootstrapSecret || secret !== bootstrapSecret) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    await db.update(users).set({ role: 'admin' as any, updatedAt: new Date() }).where(eq(users.id, userId));
+    await logAudit({ userId, action: "user.bootstrap-admin", entityType: "user", entityId: String(userId), req });
+    res.json({ success: true, message: `User ${userId} promoted to admin via bootstrap` });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // Admin-only: promote user to admin (only works if already admin or first user)
 authRouter.post("/promote-admin", authenticate, async (req: AuthRequest, res) => {
   try {
