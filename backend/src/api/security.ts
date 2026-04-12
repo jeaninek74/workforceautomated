@@ -160,6 +160,13 @@ router.post('/backup/restore', authenticate, (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Verify the backup belongs to the requesting user
+    const userBackups = DRASSService.listBackups(userId);
+    const ownsBackup = userBackups.some((b: { id: string }) => b.id === backupId);
+    if (!ownsBackup) {
+      return res.status(403).json({ error: 'Forbidden: backup does not belong to this user' });
+    }
+
     const restoredData = DRASSService.restoreBackup(backupId, backupKey);
     res.json({
       message: 'Backup restored successfully',
@@ -173,11 +180,12 @@ router.post('/backup/restore', authenticate, (req: AuthRequest, res) => {
 
 /**
  * POST /api/security/verify-recovery-key
- * Verify a recovery key for secondary access
+ * Verify a recovery key for secondary access (requires authentication)
  */
-router.post('/verify-recovery-key', (req, res) => {
+router.post('/verify-recovery-key', authenticate, (req: AuthRequest, res) => {
   try {
-    const { userId, recoveryKey } = req.body;
+    const userId = req.user?.id;
+    const { recoveryKey } = req.body;
 
     if (!userId || !recoveryKey) {
       return res.status(400).json({ error: 'Missing required fields' });

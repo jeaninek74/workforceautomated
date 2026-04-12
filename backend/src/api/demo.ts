@@ -1,9 +1,19 @@
 import { Router, Request, Response } from "express";
+import { rateLimit } from "express-rate-limit";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { INDUSTRY_INTELLIGENCE, buildAgentSystemPrompt, getAllIndustriesSummary } from "../data/industryIntelligence.js";
 
 const router = Router();
+
+// Stricter rate limit for unauthenticated demo chat to prevent LLM credit abuse
+const demoChatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many demo requests, please try again later" },
+});
 
 // ─── AI Clients ───────────────────────────────────────────────────────────────
 
@@ -30,7 +40,7 @@ function computeConfidence(message: string, reply: string, industry?: string): n
 
 // ─── POST /api/demo/chat ──────────────────────────────────────────────────────
 
-router.post("/chat", async (req: Request, res: Response) => {
+router.post("/chat", demoChatLimiter, async (req: Request, res: Response) => {
   try {
     const {
       message,

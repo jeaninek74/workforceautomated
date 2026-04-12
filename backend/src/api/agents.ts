@@ -13,7 +13,7 @@ agentsRouter.use(authenticate);
 
 /** Check agent count against plan limit. Returns error response or null. */
 async function checkAgentLimit(req: AuthRequest, res: any): Promise<boolean> {
-  const plan: string = (req.user as any)?.plan || "starter";
+  const plan: string = req.user?.plan || "starter";
   const limits = getLimits(plan);
   if (limits.agents === null) return false; // unlimited
   const [row] = await db
@@ -40,7 +40,7 @@ agentsRouter.get("/", async (req: AuthRequest, res) => {
 
 // GET /agents/usage — returns current count and plan limit
 agentsRouter.get("/usage", async (req: AuthRequest, res) => {
-  const plan: string = (req.user as any)?.plan || "starter";
+  const plan: string = req.user?.plan || "starter";
   const limits = getLimits(plan);
   const [row] = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
@@ -105,7 +105,21 @@ agentsRouter.get("/:id", async (req: AuthRequest, res) => {
 
 agentsRouter.put("/:id", async (req: AuthRequest, res) => {
   try {
-    const [agent] = await db.update(agents).set({ ...req.body, updatedAt: new Date() })
+    const updateBody = z.object({
+      name: z.string().min(1).optional(),
+      description: z.string().optional(),
+      role: z.string().optional(),
+      capabilities: z.array(z.string()).optional(),
+      permissions: z.array(z.string()).optional(),
+      connectorType: z.enum(["overlay", "readonly", "write_back"]).optional(),
+      confidenceThreshold: z.number().min(0).max(1).optional(),
+      escalationThreshold: z.number().min(0).max(1).optional(),
+      riskLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
+      escalationEnabled: z.boolean().optional(),
+      systemPrompt: z.string().optional(),
+      status: z.enum(["active", "inactive", "draft"]).optional(),
+    }).parse(req.body);
+    const [agent] = await db.update(agents).set({ ...updateBody, updatedAt: new Date() })
       .where(and(eq(agents.id, parseInt(req.params.id)), eq(agents.userId, req.user!.id))).returning();
     if (!agent) return res.status(404).json({ error: "Agent not found" });
     await logAudit({ userId: req.user!.id, agentId: agent.id, action: "agent.update", entityType: "agent", entityId: String(agent.id), req });
