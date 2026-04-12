@@ -316,6 +316,10 @@ async function migrate() {
 
     // Add output_preferences column to users (for existing deployments)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS output_preferences TEXT;`);
+    // Add is_active column to users (for existing deployments - required for account deactivation feature)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true NOT NULL;`);
+    // Add is_active column to agents (for existing deployments)
+    await client.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true NOT NULL;`);
 
     // SSO config table
     await client.query(`CREATE TABLE IF NOT EXISTS sso_config (
