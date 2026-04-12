@@ -115,6 +115,29 @@ authRouter.post("/bootstrap-admin", async (req, res) => {
   }
 });
 
+// Admin-only: update user plan and role
+authRouter.patch("/admin/users/:userId", authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Forbidden: admin role required" });
+    }
+    const userId = parseInt(req.params.userId, 10);
+    if (isNaN(userId)) return res.status(400).json({ error: "Invalid userId" });
+    const { plan, role } = z.object({
+      plan: z.enum(['starter', 'professional', 'enterprise']).optional(),
+      role: z.enum(['user', 'admin']).optional(),
+    }).parse(req.body);
+    const updates: Record<string, any> = { updatedAt: new Date() };
+    if (plan) updates.plan = plan;
+    if (role) updates.role = role;
+    await db.update(users).set(updates).where(eq(users.id, userId));
+    await logAudit({ userId: req.user!.userId, action: "user.admin-update", entityType: "user", entityId: String(userId), req });
+    res.json({ success: true, message: `User ${userId} updated` });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // Admin-only: promote user to admin (only works if already admin or first user)
 authRouter.post("/promote-admin", authenticate, async (req: AuthRequest, res) => {
   try {
