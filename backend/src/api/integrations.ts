@@ -137,6 +137,10 @@ integrationsRouter.post("/:id/test", async (req: AuthRequest, res) => {
     })
     .where(eq(integrations.id, id));
 
+  // Return 422 on failure so clients (and security scanners) get a non-2xx status
+  if (!result.success) {
+    return res.status(422).json(result);
+  }
   res.json(result);
 });
 
