@@ -7,6 +7,7 @@ import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { logAudit } from "../services/audit.js";
 import { generateAgentFromJobDescription } from "../services/llm.js";
 import { getLimits } from "../lib/planLimits.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 export const agentsRouter = Router();
 agentsRouter.use(authenticate);
@@ -98,7 +99,8 @@ agentsRouter.post("/from-job-description", handleGenerateFromJD);
 agentsRouter.post("/generate-from-jd", handleGenerateFromJD);
 
 agentsRouter.get("/:id", async (req: AuthRequest, res) => {
-  const [agent] = await db.select().from(agents).where(and(eq(agents.id, parseInt(req.params.id)), eq(agents.userId, req.user!.id))).limit(1);
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
+  const [agent] = await db.select().from(agents).where(and(eq(agents.id, id), eq(agents.userId, req.user!.id))).limit(1);
   if (!agent) return res.status(404).json({ error: "Agent not found" });
   res.json({ agent });
 });
@@ -119,8 +121,9 @@ agentsRouter.put("/:id", async (req: AuthRequest, res) => {
       systemPrompt: z.string().optional(),
       status: z.enum(["active", "inactive", "draft"]).optional(),
     }).parse(req.body);
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const [agent] = await db.update(agents).set({ ...updateBody, updatedAt: new Date() })
-      .where(and(eq(agents.id, parseInt(req.params.id)), eq(agents.userId, req.user!.id))).returning();
+      .where(and(eq(agents.id, id), eq(agents.userId, req.user!.id))).returning();
     if (!agent) return res.status(404).json({ error: "Agent not found" });
     await logAudit({ userId: req.user!.id, agentId: agent.id, action: "agent.update", entityType: "agent", entityId: String(agent.id), req });
     res.json({ agent });
@@ -130,7 +133,8 @@ agentsRouter.put("/:id", async (req: AuthRequest, res) => {
 });
 
 agentsRouter.delete("/:id", async (req: AuthRequest, res) => {
-  const [agent] = await db.delete(agents).where(and(eq(agents.id, parseInt(req.params.id)), eq(agents.userId, req.user!.id))).returning();
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
+  const [agent] = await db.delete(agents).where(and(eq(agents.id, id), eq(agents.userId, req.user!.id))).returning();
   if (!agent) return res.status(404).json({ error: "Agent not found" });
   await logAudit({ userId: req.user!.id, agentId: agent.id, action: "agent.delete", entityType: "agent", entityId: String(agent.id), req });
   res.json({ success: true });

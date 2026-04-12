@@ -4,6 +4,7 @@ import { schedules, agents, teams, executions } from "../db/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { runAgentExecution } from "../services/executor.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 const router = Router();
 router.use(authenticate);
@@ -95,7 +96,7 @@ router.post("/", async (req: AuthRequest, res) => {
 router.put("/:id", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id);
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const { name, description, cronExpression, inputText, outputFormat, enabled } = req.body;
 
     const [existing] = await db.select().from(schedules).where(and(eq(schedules.id, id), eq(schedules.userId, userId)));
@@ -120,7 +121,7 @@ router.put("/:id", async (req: AuthRequest, res) => {
 router.delete("/:id", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id);
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     await db.delete(schedules).where(and(eq(schedules.id, id), eq(schedules.userId, userId)));
     res.json({ success: true });
   } catch (err: any) {
@@ -132,7 +133,7 @@ router.delete("/:id", async (req: AuthRequest, res) => {
 router.post("/:id/run-now", async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id);
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
 
     const [schedule] = await db.select().from(schedules).where(and(eq(schedules.id, id), eq(schedules.userId, userId)));
     if (!schedule) return res.status(404).json({ error: "Schedule not found" });

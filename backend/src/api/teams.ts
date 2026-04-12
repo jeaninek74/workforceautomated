@@ -6,6 +6,7 @@ import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { logAudit } from "../services/audit.js";
 import { getLimits } from "../lib/planLimits.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 export const teamsRouter = Router();
 teamsRouter.use(authenticate);
@@ -102,8 +103,9 @@ teamsRouter.post("/", async (req: AuthRequest, res) => {
 
 teamsRouter.get("/:id", async (req: AuthRequest, res) => {
   try {
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const [team] = await db.select().from(teams)
-      .where(and(eq(teams.id, parseInt(req.params.id)), eq(teams.userId, req.user!.id)))
+      .where(and(eq(teams.id, id), eq(teams.userId, req.user!.id)))
       .limit(1);
     if (!team) return res.status(404).json({ error: "Team not found" });
     res.json({ team: await enrichTeam(team) });
@@ -114,10 +116,11 @@ teamsRouter.get("/:id", async (req: AuthRequest, res) => {
 
 teamsRouter.put("/:id", async (req: AuthRequest, res) => {
   try {
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const body = teamBodySchema.partial().parse(req.body);
     const [team] = await db.update(teams)
       .set({ ...body, updatedAt: new Date() } as any)
-      .where(and(eq(teams.id, parseInt(req.params.id)), eq(teams.userId, req.user!.id)))
+      .where(and(eq(teams.id, id), eq(teams.userId, req.user!.id)))
       .returning();
     if (!team) return res.status(404).json({ error: "Team not found" });
     await logAudit({
@@ -135,8 +138,9 @@ teamsRouter.put("/:id", async (req: AuthRequest, res) => {
 
 teamsRouter.delete("/:id", async (req: AuthRequest, res) => {
   try {
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const [team] = await db.delete(teams)
-      .where(and(eq(teams.id, parseInt(req.params.id)), eq(teams.userId, req.user!.id)))
+      .where(and(eq(teams.id, id), eq(teams.userId, req.user!.id)))
       .returning();
     if (!team) return res.status(404).json({ error: "Team not found" });
     await logAudit({

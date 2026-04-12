@@ -10,6 +10,7 @@ import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { runAgentExecution } from "../services/executor.js";
 import { checkTaskScope } from "../services/llm.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 export const executionsRouter = Router();
 executionsRouter.use(authenticate);
@@ -224,10 +225,11 @@ executionsRouter.get("/usage/monthly", async (req: AuthRequest, res) => {
 
 // ─── GET /api/executions/:id ──────────────────────────────────────────────────
 executionsRouter.get("/:id", async (req: AuthRequest, res) => {
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
   const [exec] = await db
     .select()
     .from(executions)
-    .where(and(eq(executions.id, parseInt(req.params.id)), eq(executions.userId, req.user!.id)))
+    .where(and(eq(executions.id, id), eq(executions.userId, req.user!.id)))
     .limit(1);
   if (!exec) return res.status(404).json({ error: "Execution not found" });
   res.json({ execution: exec });
@@ -235,10 +237,11 @@ executionsRouter.get("/:id", async (req: AuthRequest, res) => {
 
 // ─── POST /api/executions/:id/cancel ─────────────────────────────────────────
 executionsRouter.post("/:id/cancel", async (req: AuthRequest, res) => {
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
   const [exec] = await db
     .update(executions)
     .set({ status: "cancelled", completedAt: new Date() })
-    .where(and(eq(executions.id, parseInt(req.params.id)), eq(executions.userId, req.user!.id)))
+    .where(and(eq(executions.id, id), eq(executions.userId, req.user!.id)))
     .returning();
   if (!exec) return res.status(404).json({ error: "Execution not found" });
   res.json({ execution: exec });

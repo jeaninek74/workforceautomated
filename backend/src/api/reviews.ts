@@ -3,6 +3,7 @@ import { db } from "../db/index.js";
 import { escalationReviews, executions, agents, teams, users } from "../db/schema.js";
 import { eq, desc, and } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 const router = Router();
 router.use(authenticate);
@@ -145,7 +146,7 @@ router.post("/:executionId/approve", async (req: AuthRequest, res) => {
     if (!hasAccess) {
       return res.status(403).json({ error: "Only admins and managers can approve reviews" });
     }
-    const executionId = parseInt(req.params.executionId);
+    const executionId = parseIntParam(req.params.executionId, res); if (executionId === null) return;
     const { comment } = req.body;
 
     const [exec] = await db.select().from(executions).where(and(eq(executions.id, executionId), eq(executions.userId, userId)));
@@ -184,7 +185,7 @@ router.post("/:executionId/reject", async (req: AuthRequest, res) => {
     if (!hasAccess) {
       return res.status(403).json({ error: "Only admins and managers can reject reviews" });
     }
-    const executionId = parseInt(req.params.executionId);
+    const executionId = parseIntParam(req.params.executionId, res); if (executionId === null) return;
     const { comment } = req.body;
 
     const [exec] = await db.select().from(executions).where(and(eq(executions.id, executionId), eq(executions.userId, userId)));

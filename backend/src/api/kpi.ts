@@ -4,6 +4,7 @@ import { db } from "../db/index.js";
 import { kpiDefinitions, kpiResults } from "../db/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 export const kpiRouter = Router();
 kpiRouter.use(authenticate);
@@ -34,17 +35,20 @@ kpiRouter.post("/", async (req: AuthRequest, res) => {
 });
 
 kpiRouter.delete("/:id", async (req: AuthRequest, res) => {
-  await db.delete(kpiDefinitions).where(and(eq(kpiDefinitions.id, parseInt(req.params.id)), eq(kpiDefinitions.userId, req.user!.id)));
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
+  await db.delete(kpiDefinitions).where(and(eq(kpiDefinitions.id, id), eq(kpiDefinitions.userId, req.user!.id)));
   res.json({ success: true });
 });
 
 kpiRouter.get("/:id/results", async (req: AuthRequest, res) => {
-  const results = await db.select().from(kpiResults).where(eq(kpiResults.kpiId, parseInt(req.params.id))).orderBy(desc(kpiResults.calculatedAt)).limit(100);
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
+  const results = await db.select().from(kpiResults).where(eq(kpiResults.kpiId, id)).orderBy(desc(kpiResults.calculatedAt)).limit(100);
   res.json({ results });
 });
 
 kpiRouter.post("/:id/results", async (req: AuthRequest, res) => {
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
   const { value, metadata } = req.body;
-  const [result] = await db.insert(kpiResults).values({ kpiId: parseInt(req.params.id), value, metadata }).returning();
+  const [result] = await db.insert(kpiResults).values({ kpiId: id, value, metadata }).returning();
   res.status(201).json({ result });
 });

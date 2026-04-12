@@ -5,6 +5,7 @@ import { integrations, agentIntegrations, agents } from "../db/schema.js";
 import { eq, and } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { testIntegration } from "../services/integrations.js";
+import { parseIntParam } from "../utils/parseIntParam.js";
 
 export const integrationsRouter = Router();
 integrationsRouter.use(authenticate);
@@ -69,7 +70,7 @@ integrationsRouter.post("/", async (req: AuthRequest, res) => {
 // ─── PUT /api/integrations/:id ────────────────────────────────────────────────
 integrationsRouter.put("/:id", async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseIntParam(req.params.id, res); if (id === null) return;
     const body = z.object({
       name: z.string().min(1).max(255).optional(),
       credentials: z.record(z.string()).optional(),
@@ -99,7 +100,7 @@ integrationsRouter.put("/:id", async (req: AuthRequest, res) => {
 
 // ─── DELETE /api/integrations/:id ────────────────────────────────────────────
 integrationsRouter.delete("/:id", async (req: AuthRequest, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
   const [deleted] = await db
     .delete(integrations)
     .where(and(eq(integrations.id, id), eq(integrations.userId, req.user!.id)))
@@ -111,7 +112,7 @@ integrationsRouter.delete("/:id", async (req: AuthRequest, res) => {
 
 // ─── POST /api/integrations/:id/test ─────────────────────────────────────────
 integrationsRouter.post("/:id/test", async (req: AuthRequest, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseIntParam(req.params.id, res); if (id === null) return;
   const [integration] = await db
     .select()
     .from(integrations)
@@ -142,7 +143,7 @@ integrationsRouter.post("/:id/test", async (req: AuthRequest, res) => {
 // ─── GET /api/integrations/agent/:agentId ────────────────────────────────────
 // Ownership check: verify the agent belongs to the authenticated user
 integrationsRouter.get("/agent/:agentId", async (req: AuthRequest, res) => {
-  const agentId = parseInt(req.params.agentId);
+  const agentId = parseIntParam(req.params.agentId, res); if (agentId === null) return;
 
   // Verify the agent belongs to the authenticated user
   const [agent] = await db
@@ -174,7 +175,7 @@ integrationsRouter.get("/agent/:agentId", async (req: AuthRequest, res) => {
 // Ownership checks: verify both the agent and the integration belong to the user
 integrationsRouter.post("/agent/:agentId/assign", async (req: AuthRequest, res) => {
   try {
-    const agentId = parseInt(req.params.agentId);
+    const agentId = parseIntParam(req.params.agentId, res); if (agentId === null) return;
     const body = z.object({
       integrationId: z.number(),
       permissions: z.array(z.string()).optional().default(["read"]),
@@ -216,8 +217,8 @@ integrationsRouter.post("/agent/:agentId/assign", async (req: AuthRequest, res) 
 // ─── DELETE /api/integrations/agent/:agentId/assign/:assignmentId ────────────
 // Ownership check: verify the assignment belongs to an agent owned by the user
 integrationsRouter.delete("/agent/:agentId/assign/:assignmentId", async (req: AuthRequest, res) => {
-  const agentId = parseInt(req.params.agentId);
-  const assignmentId = parseInt(req.params.assignmentId);
+  const agentId = parseIntParam(req.params.agentId, res); if (agentId === null) return;
+  const assignmentId = parseIntParam(req.params.assignmentId, res); if (assignmentId === null) return;
 
   // Verify the agent belongs to the authenticated user
   const [agent] = await db
