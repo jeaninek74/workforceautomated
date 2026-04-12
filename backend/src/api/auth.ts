@@ -131,7 +131,7 @@ authRouter.patch("/admin/users/:userId", authenticate, async (req: AuthRequest, 
     if (plan) updates.plan = plan;
     if (role) updates.role = role;
     await db.update(users).set(updates).where(eq(users.id, userId));
-    await logAudit({ userId: req.user!.userId, action: "user.admin-update", entityType: "user", entityId: String(userId), req });
+    await logAudit({ userId: req.user!.id, action: "user.admin-update", entityType: "user", entityId: String(userId), req });
     res.json({ success: true, message: `User ${userId} updated` });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
