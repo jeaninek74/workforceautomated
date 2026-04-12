@@ -15,6 +15,17 @@ export interface EscalationNotificationPayload {
   output?: string;
 }
 
+// ─── HTML escaping — prevents XSS in email templates ─────────────────────────
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ─── Email via SMTP ───────────────────────────────────────────────────────────
 
 async function sendEmailNotification(
@@ -39,9 +50,17 @@ async function sendEmailNotification(
     auth: { user: smtpUser, pass: smtpPass },
   });
 
-  const source = payload.teamName
-    ? `Team: ${payload.teamName}`
-    : `Agent: ${payload.agentName || "Unknown"}`;
+  // Escape all user-controlled values before HTML interpolation
+  const safeAgentName = escapeHtml(payload.agentName || "Unknown");
+  const safeTeamName = payload.teamName ? escapeHtml(payload.teamName) : null;
+  const safeTaskInput = escapeHtml(payload.taskInput.slice(0, 300));
+  const safeEscalationReason = escapeHtml(payload.escalationReason);
+  const safeOutput = payload.output ? escapeHtml(payload.output.slice(0, 500)) : null;
+  const safeRiskLevel = escapeHtml(payload.riskLevel);
+
+  const source = safeTeamName
+    ? `Team: ${safeTeamName}`
+    : `Agent: ${safeAgentName}`;
 
   const confidencePct = Math.round(payload.confidenceScore * 100);
 
@@ -49,7 +68,7 @@ async function sendEmailNotification(
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; color: #e2e8f0; padding: 24px; border-radius: 12px;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
         <div style="background: #f59e0b; width: 8px; height: 8px; border-radius: 50%;"></div>
-        <h1 style="margin: 0; font-size: 18px; font-weight: 700; color: #f59e0b;">⚠️ Escalation Required</h1>
+        <h1 style="margin: 0; font-size: 18px; font-weight: 700; color: #f59e0b;">&#9888;&#65039; Escalation Required</h1>
       </div>
       
       <div style="background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
@@ -59,7 +78,7 @@ async function sendEmailNotification(
 
       <div style="background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
         <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Task</div>
-        <div style="color: #cbd5e1; font-size: 14px;">${payload.taskInput.slice(0, 300)}${payload.taskInput.length > 300 ? "..." : ""}</div>
+        <div style="color: #cbd5e1; font-size: 14px;">${safeTaskInput}${payload.taskInput.length > 300 ? "..." : ""}</div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -69,19 +88,19 @@ async function sendEmailNotification(
         </div>
         <div style="background: #1e293b; border-radius: 8px; padding: 12px; text-align: center;">
           <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Risk Level</div>
-          <div style="font-size: 18px; font-weight: 700; color: ${payload.riskLevel === "critical" ? "#f87171" : payload.riskLevel === "high" ? "#fb923c" : "#facc15"}; text-transform: capitalize;">${payload.riskLevel}</div>
+          <div style="font-size: 18px; font-weight: 700; color: ${payload.riskLevel === "critical" ? "#f87171" : payload.riskLevel === "high" ? "#fb923c" : "#facc15"}; text-transform: capitalize;">${safeRiskLevel}</div>
         </div>
       </div>
 
       <div style="background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
         <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Escalation Reason</div>
-        <div style="color: #fbbf24; font-size: 14px;">${payload.escalationReason}</div>
+        <div style="color: #fbbf24; font-size: 14px;">${safeEscalationReason}</div>
       </div>
 
-      ${payload.output ? `
+      ${safeOutput ? `
       <div style="background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
         <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Agent Output (Preview)</div>
-        <div style="color: #94a3b8; font-size: 13px; font-family: monospace; white-space: pre-wrap;">${payload.output.slice(0, 500)}${payload.output.length > 500 ? "\n..." : ""}</div>
+        <div style="color: #94a3b8; font-size: 13px; font-family: monospace; white-space: pre-wrap;">${safeOutput}${payload.output && payload.output.length > 500 ? "\n..." : ""}</div>
       </div>
       ` : ""}
 
@@ -93,7 +112,7 @@ async function sendEmailNotification(
       </div>
 
       <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #1e293b; font-size: 12px; color: #475569; text-align: center;">
-        WorkforceAutomated · AI Workforce Operating System
+        WorkforceAutomated &middot; AI Workforce Operating System
       </div>
     </div>
   `;
@@ -102,7 +121,7 @@ async function sendEmailNotification(
     await transporter.sendMail({
       from: `"WorkforceAutomated" <${fromEmail}>`,
       to,
-      subject: `⚠️ Escalation Required — ${source} (${payload.riskLevel} risk, ${confidencePct}% confidence)`,
+      subject: `Escalation Required — ${source} (${safeRiskLevel} risk, ${confidencePct}% confidence)`,
       html,
     });
     return true;
@@ -128,7 +147,7 @@ async function sendSlackNotification(
     blocks: [
       {
         type: "header",
-        text: { type: "plain_text", text: "⚠️ WorkforceAutomated — Escalation Required", emoji: true },
+        text: { type: "plain_text", text: "WorkforceAutomated — Escalation Required", emoji: true },
       },
       {
         type: "section",

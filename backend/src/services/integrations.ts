@@ -18,6 +18,64 @@ export interface ConnectorResult {
   error?: string;
 }
 
+// ─── SSRF Protection ──────────────────────────────────────────────────────────
+// Block requests to private/internal IP ranges to prevent SSRF attacks.
+
+import { URL } from "url";
+import dns from "dns/promises";
+
+const PRIVATE_IP_PATTERNS = [
+  /^127\./,                          // Loopback
+  /^10\./,                           // RFC1918
+  /^172\.(1[6-9]|2[0-9]|3[01])\./,  // RFC1918
+  /^192\.168\./,                     // RFC1918
+  /^169\.254\./,                     // Link-local / AWS metadata
+  /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./, // CGNAT
+  /^::1$/,                           // IPv6 loopback
+  /^fc00:/i,                         // IPv6 ULA
+  /^fd/i,                            // IPv6 ULA
+  /^fe80:/i,                         // IPv6 link-local
+  /^0\./,                            // 0.0.0.0/8
+];
+
+async function assertSafeUrl(rawUrl: string): Promise<void> {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error(`Invalid URL: ${rawUrl}`);
+  }
+
+  // Only allow http and https
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error(`URL protocol not allowed: ${parsed.protocol}`);
+  }
+
+  const hostname = parsed.hostname;
+
+  // Check if hostname is already a private IP
+  for (const pattern of PRIVATE_IP_PATTERNS) {
+    if (pattern.test(hostname)) {
+      throw new Error(`URL resolves to a private/internal address and is not allowed`);
+    }
+  }
+
+  // Resolve DNS to catch DNS rebinding attacks
+  try {
+    const addresses = await dns.lookup(hostname, { all: true });
+    for (const { address } of addresses) {
+      for (const pattern of PRIVATE_IP_PATTERNS) {
+        if (pattern.test(address)) {
+          throw new Error(`URL resolves to a private/internal address and is not allowed`);
+        }
+      }
+    }
+  } catch (err: any) {
+    if (err.message.includes("private/internal")) throw err;
+    // DNS resolution failure — let the fetch fail naturally
+  }
+}
+
 // ─── Google Drive Connector ───────────────────────────────────────────────────
 
 async function fetchGoogleDriveData(
@@ -31,9 +89,13 @@ async function fetchGoogleDriveData(
     throw new Error("Google Drive: No access token provided. Please re-authenticate.");
   }
 
+  // Sanitize folderId to prevent Google Drive query injection
+  // Google Drive file IDs are alphanumeric with hyphens and underscores only
+  const safeFolderId = folderId ? folderId.replace(/[^a-zA-Z0-9_\-]/g, "") : null;
+
   // Use Google Drive API v3 to list files in the specified folder
-  const query = folderId
-    ? `'${folderId}' in parents and trashed=false`
+  const query = safeFolderId
+    ? `'${safeFolderId}' in parents and trashed=false`
     : "trashed=false";
 
   const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,modifiedTime,size)&pageSize=20&orderBy=modifiedTime desc`;
@@ -51,11 +113,11 @@ async function fetchGoogleDriveData(
   const files: any[] = result.files || [];
 
   if (files.length === 0) {
-    return `Google Drive: No files found${folderId ? ` in folder ${folderId}` : ""}.`;
+    return `Google Drive: No files found${safeFolderId ? ` in folder ${safeFolderId}` : ""}.`;
   }
 
   const lines = [
-    `Google Drive Files (${files.length} found${folderId ? ` in folder ${folderId}` : ""}):`,
+    `Google Drive Files (${files.length} found${safeFolderId ? ` in folder ${safeFolderId}` : ""}):`,
     "",
   ];
 
@@ -65,8 +127,10 @@ async function fetchGoogleDriveData(
 
   // If a specific file ID is configured, try to fetch its content
   if (config.file_id) {
+    // Sanitize file_id as well
+    const safeFileId = config.file_id.replace(/[^a-zA-Z0-9_\-]/g, "");
     try {
-      const contentUrl = `https://www.googleapis.com/drive/v3/files/${config.file_id}/export?mimeType=text/plain`;
+      const contentUrl = `https://www.googleapis.com/drive/v3/files/${safeFileId}/export?mimeType=text/plain`;
       const contentResp = await fetch(contentUrl, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
@@ -150,6 +214,9 @@ async function fetchRestApiData(
   if (!base_url) throw new Error("REST API: No base_url configured.");
 
   const url = endpoint ? `${base_url.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}` : base_url;
+
+  // SSRF protection: block requests to private/internal addresses
+  await assertSafeUrl(url);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

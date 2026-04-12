@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db/index.js";
-import { integrations, agentIntegrations } from "../db/schema.js";
+import { integrations, agentIntegrations, agents } from "../db/schema.js";
 import { eq, and } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { testIntegration } from "../services/integrations.js";
@@ -140,8 +140,19 @@ integrationsRouter.post("/:id/test", async (req: AuthRequest, res) => {
 });
 
 // ─── GET /api/integrations/agent/:agentId ────────────────────────────────────
+// Ownership check: verify the agent belongs to the authenticated user
 integrationsRouter.get("/agent/:agentId", async (req: AuthRequest, res) => {
   const agentId = parseInt(req.params.agentId);
+
+  // Verify the agent belongs to the authenticated user
+  const [agent] = await db
+    .select({ id: agents.id })
+    .from(agents)
+    .where(and(eq(agents.id, agentId), eq(agents.userId, req.user!.id)))
+    .limit(1);
+
+  if (!agent) return res.status(404).json({ error: "Agent not found" });
+
   const assignments = await db
     .select({
       id: agentIntegrations.id,
@@ -160,6 +171,7 @@ integrationsRouter.get("/agent/:agentId", async (req: AuthRequest, res) => {
 });
 
 // ─── POST /api/integrations/agent/:agentId/assign ────────────────────────────
+// Ownership checks: verify both the agent and the integration belong to the user
 integrationsRouter.post("/agent/:agentId/assign", async (req: AuthRequest, res) => {
   try {
     const agentId = parseInt(req.params.agentId);
@@ -167,6 +179,24 @@ integrationsRouter.post("/agent/:agentId/assign", async (req: AuthRequest, res) 
       integrationId: z.number(),
       permissions: z.array(z.string()).optional().default(["read"]),
     }).parse(req.body);
+
+    // Verify the agent belongs to the authenticated user
+    const [agent] = await db
+      .select({ id: agents.id })
+      .from(agents)
+      .where(and(eq(agents.id, agentId), eq(agents.userId, req.user!.id)))
+      .limit(1);
+
+    if (!agent) return res.status(404).json({ error: "Agent not found" });
+
+    // Verify the integration belongs to the authenticated user
+    const [integration] = await db
+      .select({ id: integrations.id })
+      .from(integrations)
+      .where(and(eq(integrations.id, body.integrationId), eq(integrations.userId, req.user!.id)))
+      .limit(1);
+
+    if (!integration) return res.status(404).json({ error: "Integration not found" });
 
     const [assignment] = await db
       .insert(agentIntegrations)
@@ -184,11 +214,24 @@ integrationsRouter.post("/agent/:agentId/assign", async (req: AuthRequest, res) 
 });
 
 // ─── DELETE /api/integrations/agent/:agentId/assign/:assignmentId ────────────
+// Ownership check: verify the assignment belongs to an agent owned by the user
 integrationsRouter.delete("/agent/:agentId/assign/:assignmentId", async (req: AuthRequest, res) => {
+  const agentId = parseInt(req.params.agentId);
   const assignmentId = parseInt(req.params.assignmentId);
+
+  // Verify the agent belongs to the authenticated user
+  const [agent] = await db
+    .select({ id: agents.id })
+    .from(agents)
+    .where(and(eq(agents.id, agentId), eq(agents.userId, req.user!.id)))
+    .limit(1);
+
+  if (!agent) return res.status(404).json({ error: "Agent not found" });
+
+  // Delete only if the assignment belongs to this agent (which we've verified belongs to the user)
   const [deleted] = await db
     .delete(agentIntegrations)
-    .where(eq(agentIntegrations.id, assignmentId))
+    .where(and(eq(agentIntegrations.id, assignmentId), eq(agentIntegrations.agentId, agentId)))
     .returning({ id: agentIntegrations.id });
 
   if (!deleted) return res.status(404).json({ error: "Assignment not found" });

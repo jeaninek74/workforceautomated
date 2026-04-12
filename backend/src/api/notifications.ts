@@ -4,6 +4,27 @@ import { db } from "../db/index.js";
 import { notificationSettings } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { URL } from "url";
+import dns from "dns/promises";
+
+// ─── SSRF Protection ─────────────────────────────────────────────────────────
+const PRIVATE_IP_PATTERNS = [
+  /^127\./, /^10\./, /^172\.(1[6-9]|2[0-9]|3[01])\./, /^192\.168\./,
+  /^169\.254\./, /^::1$/, /^fc00:/i, /^fd/i, /^fe80:/i, /^0\./,
+];
+async function assertSafeUrl(rawUrl: string): Promise<void> {
+  let parsed: URL;
+  try { parsed = new URL(rawUrl); } catch { throw new Error(`Invalid URL: ${rawUrl}`); }
+  if (!["http:", "https:"].includes(parsed.protocol)) throw new Error(`URL protocol not allowed`);
+  const hostname = parsed.hostname;
+  for (const p of PRIVATE_IP_PATTERNS) { if (p.test(hostname)) throw new Error(`URL resolves to a private/internal address`); }
+  try {
+    const addrs = await dns.lookup(hostname, { all: true });
+    for (const { address } of addrs) {
+      for (const p of PRIVATE_IP_PATTERNS) { if (p.test(address)) throw new Error(`URL resolves to a private/internal address`); }
+    }
+  } catch (e: any) { if (e.message.includes("private/internal")) throw e; }
+}
 
 export const notificationsRouter = Router();
 notificationsRouter.use(authenticate);
@@ -85,6 +106,13 @@ notificationsRouter.post("/test-slack", async (req: AuthRequest, res) => {
 
   if (!settings?.slackWebhookUrl) {
     return res.status(400).json({ error: "No Slack webhook URL configured" });
+  }
+
+  // SSRF protection: block requests to private/internal addresses
+  try {
+    await assertSafeUrl(settings.slackWebhookUrl);
+  } catch (ssrfErr: any) {
+    return res.status(400).json({ error: `Webhook URL rejected: ${ssrfErr.message}` });
   }
 
   try {

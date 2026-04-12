@@ -4,6 +4,45 @@ import { db } from "../db/index.js";
 import { authenticate, requireAdmin, type AuthRequest } from "../middleware/auth.js";
 import { logAudit } from "../services/audit.js";
 import { pool } from "../db/index.js";
+import { URL } from "url";
+import dns from "dns/promises";
+
+// ── SSRF Protection (shared with integrations service) ───────────────────────
+const PRIVATE_IP_PATTERNS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2[0-9]|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./,
+  /^::1$/,
+  /^fc00:/i,
+  /^fd/i,
+  /^fe80:/i,
+  /^0\./,
+];
+
+async function assertSafeUrl(rawUrl: string): Promise<void> {
+  let parsed: URL;
+  try { parsed = new URL(rawUrl); } catch { throw new Error(`Invalid URL: ${rawUrl}`); }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error(`URL protocol not allowed: ${parsed.protocol}`);
+  }
+  const hostname = parsed.hostname;
+  for (const pattern of PRIVATE_IP_PATTERNS) {
+    if (pattern.test(hostname)) throw new Error(`URL resolves to a private/internal address and is not allowed`);
+  }
+  try {
+    const addresses = await dns.lookup(hostname, { all: true });
+    for (const { address } of addresses) {
+      for (const pattern of PRIVATE_IP_PATTERNS) {
+        if (pattern.test(address)) throw new Error(`URL resolves to a private/internal address and is not allowed`);
+      }
+    }
+  } catch (err: any) {
+    if (err.message.includes("private/internal")) throw err;
+  }
+}
 
 export const ssoRouter = Router();
 
@@ -156,6 +195,12 @@ ssoRouter.post("/test", authenticate, requireAdmin, async (req: AuthRequest, res
       if (!row.sso_url) return res.status(400).json({ error: "SSO URL is not configured" });
       if (!row.entity_id) return res.status(400).json({ error: "Entity ID is not configured" });
       if (!row.certificate) return res.status(400).json({ error: "X.509 certificate is not configured" });
+      // SSRF protection: block requests to private/internal addresses
+      try {
+        await assertSafeUrl(row.sso_url);
+      } catch (ssrfErr: any) {
+        return res.status(400).json({ error: `SSO URL rejected: ${ssrfErr.message}` });
+      }
       // Basic URL reachability check
       try {
         const controller = new AbortController();
