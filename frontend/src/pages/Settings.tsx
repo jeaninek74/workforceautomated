@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { User, Lock, Bell, Loader2, CheckCircle, Mail, MessageSquare, Send, Server, Eye, EyeOff, KeyRound, Activity } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { authApi } from "../lib/api";
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL || "";
+import { authApi, api } from "../lib/api";
 
 export default function Settings() {
   const { user, refreshUser } = useAuth();
@@ -43,7 +40,7 @@ export default function Settings() {
 
   useEffect(() => {
       if (tab === "notifications" || tab === "slack") {
-        axios.get(`${API}/api/notifications/settings`, { withCredentials: true })
+        api.get("/api/notifications/settings")
           .then((r) => {
             const s = r.data.settings;
             setNotifSettings({
@@ -58,7 +55,7 @@ export default function Settings() {
           })
           .catch(() => {});
         // Load SMTP config (masked)
-        axios.get(`${API}/api/notifications/smtp`, { withCredentials: true })
+        api.get("/api/notifications/smtp")
           .then((r) => {
             const s = r.data.smtp || {};
             setSmtpConfig({
@@ -218,7 +215,7 @@ export default function Settings() {
               onClick={async () => {
                 setLoadingEncryption(true);
                 try {
-                  const res = await axios.get(`${API}/api/security/encryption-key`, { withCredentials: true });
+                  const res = await api.get("/api/security/encryption-key");
                   setEncryptionKey(res.data);
                   setSuccess("Encryption key generated. Save your recovery key in a secure location!");
                 } catch (err: any) {
@@ -253,11 +250,11 @@ export default function Settings() {
               onClick={async () => {
                 setLoadingEncryption(true);
                 try {
-                  const res = await axios.post(`${API}/api/security/recovery-keys/generate`, {}, { withCredentials: true });
+                  const res = await api.post("/api/security/recovery-keys/generate", {});
                   setSuccess("Recovery key generated. Save it in a secure location!");
                   setEncryptionKey({ publicKey: "", recoveryKey: res.data.recoveryKey });
                   // Reload recovery keys
-                  const keysRes = await axios.get(`${API}/api/security/recovery-keys`, { withCredentials: true });
+                  const keysRes = await api.get("/api/security/recovery-keys");
                   setRecoveryKeys(keysRes.data.recoveryKeys);
                 } catch (err: any) {
                   setError(err.response?.data?.error || "Failed to generate recovery key");
@@ -281,7 +278,7 @@ export default function Settings() {
                     <button
                       onClick={async () => {
                         try {
-                          await axios.delete(`${API}/api/security/recovery-keys/${key.id}`, { withCredentials: true });
+                          await api.delete(`/api/security/recovery-keys/${key.id}`);
                           setRecoveryKeys(recoveryKeys.filter((k) => k.id !== key.id));
                           setSuccess("Recovery key revoked");
                         } catch (err: any) {
@@ -311,7 +308,7 @@ export default function Settings() {
               onClick={async () => {
                 setLoadingBackups(true);
                 try {
-                  const res = await axios.get(`${API}/api/security/backups`, { withCredentials: true });
+                  const res = await api.get("/api/security/backups");
                   setBackups(res.data.backups);
                   setSuccess("Backups loaded");
                 } catch (err: any) {
@@ -384,7 +381,7 @@ export default function Settings() {
           e.preventDefault();
           setNotifLoading(true); setError(""); setSuccess("");
           try {
-            await axios.put(`${API}/api/notifications/settings`, notifSettings, { withCredentials: true });
+            await api.put("/api/notifications/settings", notifSettings);
             setSuccess("Notification settings saved");
           } catch (err: any) {
             setError(err.response?.data?.error || "Failed to save notification settings");
@@ -500,7 +497,7 @@ export default function Settings() {
                 onClick={async () => {
                   setSavingSmtp(true); setError(""); setSuccess("");
                   try {
-                    await axios.put(`${API}/api/notifications/smtp`, smtpConfig, { withCredentials: true });
+                    await api.put("/api/notifications/smtp", smtpConfig);
                     setSuccess("SMTP configuration saved");
                   } catch (err: any) {
                     setError(err.response?.data?.error || "Failed to save SMTP configuration");
@@ -518,7 +515,7 @@ export default function Settings() {
                 onClick={async () => {
                   setTestingSmtp(true); setError(""); setSuccess("");
                   try {
-                    await axios.post(`${API}/api/notifications/test-smtp`, smtpConfig, { withCredentials: true });
+                    await api.post("/api/notifications/test-smtp", smtpConfig);
                     setSuccess("SMTP connection test passed — server is reachable");
                   } catch (err: any) {
                     setError(err.response?.data?.error || "SMTP connection test failed — check host, port, and credentials");
@@ -571,7 +568,7 @@ export default function Settings() {
                   onClick={async () => {
                     setTestingEmail(true); setError(""); setSuccess("");
                     try {
-                      await axios.post(`${API}/api/notifications/test-email`, {}, { withCredentials: true });
+                      await api.post("/api/notifications/test-email", {});
                       setSuccess("Test email sent — check your inbox");
                     } catch (err: any) {
                       setError(err.response?.data?.error || "Email test failed — check SMTP configuration");
@@ -673,7 +670,7 @@ export default function Settings() {
               e.preventDefault();
               setNotifLoading(true); setError(""); setSuccess("");
               try {
-                await axios.put(`${API}/api/notifications/settings`, notifSettings, { withCredentials: true });
+                await api.put("/api/notifications/settings", notifSettings);
                 setSuccess("Slack settings saved");
               } catch (err: any) {
                 setError(err.response?.data?.error || "Failed to save Slack settings");
@@ -741,7 +738,7 @@ export default function Settings() {
                 onClick={async () => {
                   setTestingSlack(true); setError(""); setSuccess("");
                   try {
-                    await axios.post(`${API}/api/notifications/test-slack`, {}, { withCredentials: true });
+                    await api.post("/api/notifications/test-slack", {});
                     setSuccess("Test Slack message sent — check your channel");
                   } catch (err: any) {
                     setError(err.response?.data?.error || "Slack test failed — check your webhook URL and save settings first");

@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { Shield, CheckCircle, AlertTriangle, Loader2, ExternalLink, Key, Settings, Info } from "lucide-react";
-import axios from "axios";
+import { api } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
-
-const API = import.meta.env.VITE_API_URL || "";
 
 const PROVIDERS = [
   { id: "okta", name: "Okta", logo: "🔐", docs: "https://developer.okta.com/docs/guides/build-sso-integration/saml2/main/" },
@@ -52,7 +50,7 @@ export default function SSOSettings() {
 
   async function fetchConfig() {
     try {
-      const res = await axios.get(`${API}/api/sso/config`, { withCredentials: true });
+      const res = await api.get("/api/sso/config");
       setConfig(res.data);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to load SSO configuration");
@@ -67,7 +65,7 @@ export default function SSOSettings() {
     setError("");
     setSuccess("");
     try {
-      await axios.put(`${API}/api/sso/config`, config, { withCredentials: true });
+      await api.put("/api/sso/config", config);
       setSuccess("SSO configuration saved successfully");
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to save SSO configuration");
@@ -81,7 +79,7 @@ export default function SSOSettings() {
     setTestResult(null);
     setError("");
     try {
-      const res = await axios.post(`${API}/api/sso/test`, {}, { withCredentials: true });
+      const res = await api.post("/api/sso/test", {});
       setTestResult(res.data);
     } catch (err: any) {
       setTestResult({ error: err.response?.data?.error || "Test failed" });
