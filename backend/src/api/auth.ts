@@ -34,7 +34,9 @@ authRouter.post("/register", async (req, res) => {
     }).returning({ id: users.id, email: users.email, name: users.name, role: users.role, plan: users.plan });
     // Create default governance settings
     await db.insert(governanceSettings).values({ userId: user.id }).onConflictDoNothing();
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET || "secret", { expiresIn: "30d" });
+    const appSecret = process.env.APP_SECRET;
+    if (!appSecret) return res.status(500).json({ error: "Server configuration error: APP_SECRET not set" });
+    const token = jwt.sign({ userId: user.id }, appSecret, { expiresIn: "30d" });
     await logAudit({ userId: user.id, action: "user.register", entityType: "user", entityId: String(user.id), req });
     res.status(201).json({ token, user });
   } catch (err: any) {
@@ -51,7 +53,9 @@ authRouter.post("/login", async (req, res) => {
     const valid = await bcrypt.compare(body.password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: "Invalid credentials" });
     await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, user.id));
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET || "secret", { expiresIn: "30d" });
+    const appSecret = process.env.APP_SECRET;
+    if (!appSecret) return res.status(500).json({ error: "Server configuration error: APP_SECRET not set" });
+    const token = jwt.sign({ userId: user.id }, appSecret, { expiresIn: "30d" });
     await logAudit({ userId: user.id, action: "user.login", entityType: "user", entityId: String(user.id), req });
     const { passwordHash: _, ...safeUser } = user;
     res.json({ token, user: safeUser });
@@ -79,9 +83,9 @@ authRouter.put("/profile", authenticate, async (req: AuthRequest, res) => {
 authRouter.post("/promote-admin", authenticate, async (req: AuthRequest, res) => {
   try {
     const { userId: targetUserId } = z.object({ userId: z.number() }).parse(req.body);
-    // Only admins or user promoting themselves (first user) can do this
-    if (req.user!.role !== 'admin' && req.user!.id !== targetUserId) {
-      return res.status(403).json({ error: "Forbidden" });
+    // Only existing admins can promote users
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Forbidden: admin role required" });
     }
     await db.update(users).set({ role: 'admin' as any, updatedAt: new Date() }).where(eq(users.id, targetUserId));
     res.json({ success: true, message: "User promoted to admin" });

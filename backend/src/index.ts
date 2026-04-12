@@ -48,9 +48,13 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
+const corsOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",") : undefined;
+if (!corsOrigins) {
+  console.warn("FRONTEND_URL not set — CORS will reject cross-origin requests. Set FRONTEND_URL to allow specific origins.");
+}
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",") : "*",
+    origin: corsOrigins || false,
     credentials: true,
   })
 );

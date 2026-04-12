@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import { db } from "../db/index.js";
 import { governanceSettings } from "../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -15,9 +16,20 @@ governanceRouter.get("/settings", async (req: AuthRequest, res) => {
   res.json({ settings });
 });
 
+const governanceUpdateSchema = z.object({
+  globalConfidenceThreshold: z.number().min(0).max(1).optional(),
+  globalEscalationThreshold: z.number().min(0).max(1).optional(),
+  requireApprovalForWriteBack: z.boolean().optional(),
+  maxConcurrentExecutions: z.number().int().min(1).max(100).optional(),
+  autoEscalateHighRisk: z.boolean().optional(),
+  notifyOnEscalation: z.boolean().optional(),
+  retentionDays: z.number().int().min(1).max(3650).optional(),
+});
+
 governanceRouter.put("/settings", async (req: AuthRequest, res) => {
+  const validated = governanceUpdateSchema.parse(req.body);
   const [settings] = await db.update(governanceSettings)
-    .set({ ...req.body, updatedAt: new Date() })
+    .set({ ...validated, updatedAt: new Date() })
     .where(eq(governanceSettings.userId, req.user!.id)).returning();
   res.json({ settings });
 });

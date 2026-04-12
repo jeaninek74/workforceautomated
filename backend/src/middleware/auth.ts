@@ -15,7 +15,12 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
   }
   const token = authHeader.slice(7);
   try {
-    const payload = jwt.verify(token, process.env.APP_SECRET || "secret") as { userId: number };
+    const appSecret = process.env.APP_SECRET;
+    if (!appSecret) {
+      console.error("APP_SECRET environment variable is not set — refusing to verify tokens");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+    const payload = jwt.verify(token, appSecret) as { userId: number };
     const result = await db.select({
       id: users.id, email: users.email, role: users.role, plan: users.plan, name: users.name
     }).from(users).where(eq(users.id, payload.userId)).limit(1);

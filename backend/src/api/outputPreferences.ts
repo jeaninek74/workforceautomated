@@ -28,6 +28,9 @@ outputPreferencesRouter.put("/", async (req: AuthRequest, res) => {
     if (typeof outputPreferences !== "string") {
       return res.status(400).json({ error: "outputPreferences must be a string" });
     }
+    if (outputPreferences.length > 5000) {
+      return res.status(400).json({ error: "outputPreferences must be 5000 characters or fewer" });
+    }
     await db
       .update(users)
       .set({ outputPreferences: outputPreferences || null, updatedAt: new Date() })
