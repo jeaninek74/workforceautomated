@@ -22,10 +22,12 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     }
     const payload = jwt.verify(token, appSecret) as { userId: number };
     const result = await db.select({
-      id: users.id, email: users.email, role: users.role, plan: users.plan, name: users.name
+      id: users.id, email: users.email, role: users.role, plan: users.plan, name: users.name, isActive: users.isActive
     }).from(users).where(eq(users.id, payload.userId)).limit(1);
     if (!result[0]) return res.status(401).json({ error: "User not found" });
-    req.user = result[0];
+    if (!result[0].isActive) return res.status(401).json({ error: "Account deactivated" });
+    const { isActive: _, ...safeUser } = result[0];
+    req.user = safeUser;
     next();
   } catch {
     return res.status(401).json({ error: "Invalid token" });

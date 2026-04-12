@@ -50,6 +50,7 @@ authRouter.post("/login", async (req, res) => {
     const body = loginSchema.parse(req.body);
     const [user] = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user.isActive) return res.status(401).json({ error: "Invalid credentials" });
     const valid = await bcrypt.compare(body.password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: "Invalid credentials" });
     await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, user.id));
@@ -74,6 +75,24 @@ authRouter.put("/profile", authenticate, async (req: AuthRequest, res) => {
     const { name } = z.object({ name: z.string().min(2) }).parse(req.body);
     await db.update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, req.user!.id));
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Admin-only: deactivate a user account
+authRouter.post("/deactivate-user", authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { userId: targetUserId } = z.object({ userId: z.number() }).parse(req.body);
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Forbidden: admin role required" });
+    }
+    if (req.user!.id === targetUserId) {
+      return res.status(400).json({ error: "Cannot deactivate your own account" });
+    }
+    await db.update(users).set({ isActive: false, updatedAt: new Date() }).where(eq(users.id, targetUserId));
+    await logAudit({ userId: req.user!.id, action: "user.deactivate", entityType: "user", entityId: String(targetUserId), req });
+    res.json({ success: true, message: "User deactivated" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
