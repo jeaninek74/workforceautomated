@@ -41,6 +41,16 @@ import { eq as _eq } from "drizzle-orm";
 const app = express();
 const PORT = parseInt(process.env.PORT || "3001");
 
+// Redirect www.workforceautomated.com → workforceautomated.com (permanent 301)
+app.use((req, res, next) => {
+  const host = req.headers.host || "";
+  if (host.startsWith("www.")) {
+    const apexHost = host.slice(4); // strip "www."
+    return res.redirect(301, `https://${apexHost}${req.originalUrl}`);
+  }
+  next();
+});
+
 app.set("trust proxy", 1);
 app.use(
   helmet({
